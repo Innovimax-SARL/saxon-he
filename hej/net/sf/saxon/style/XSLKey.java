@@ -132,7 +132,7 @@ public class XSLKey extends StyleElement implements StylesheetComponent {
 
         if (nameAtt == null) {
             reportAbsence("name");
-            return;
+            nameAtt = "_dummy_key_name";
         }
         try {
             keyName = makeQName(nameAtt);
