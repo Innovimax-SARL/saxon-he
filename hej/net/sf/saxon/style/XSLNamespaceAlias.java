@@ -54,14 +54,14 @@ public class XSLNamespaceAlias extends StyleElement {
         }
         if (stylesheetPrefix == null) {
             reportAbsence("stylesheet-prefix");
-            return;
+            stylesheetPrefix = "";
         }
         if (stylesheetPrefix.equals("#default")) {
             stylesheetPrefix = "";
         }
         if (resultPrefix == null) {
             reportAbsence("result-prefix");
-            return;
+            resultPrefix = "";
         }
         if (resultPrefix.equals("#default")) {
             resultPrefix = "";
