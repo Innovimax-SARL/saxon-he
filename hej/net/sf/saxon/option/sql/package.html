@@ -1,0 +1,47 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<!-- Copyright (c) 2014 Saxonica Limited. -->
+<!-- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. -->
+<!-- If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<!-- This Source Code Form is "Incompatible With Secondary Licenses", as defined by the Mozilla Public License, v. 2.0. -->
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<html>
+
+<head>
+    <title>Package overview for net.sf.saxon.sql</title>
+</head>
+
+<body>
+
+<p>This package provides some sample extension elements for loading data into an SQL database.</p>
+
+<p>These classes are not intended as a production-quality tool, rather as an illustration
+    of what can be achieved using XSLT extension instructions.</p>
+
+<p>Because Saxon-HE (home edition) does not support the use of XSLT extension instructions,
+    these classes require Saxon-PE (professional edition) or Saxon-EE (enterprise edition).
+    However, the code of the extension itself is open source and is issued under the Mozilla
+    Public License, meaning it can be freely modified.</p>
+
+<p>The classes are not distributed in the main
+    JAR file, but in a separate <code>saxon9-sql.jar</code> file, which must
+    be added to the classpath when these extensions are used. In addition, the extension must be
+    registered with the Saxon Configuration. This can be done either by calling the method
+    <code>Configuration.setExtensionElementNamespace()</code>, or by including a line such
+    as the following in the configuration file:</p>
+
+<p><code>&lt;extensionElement namespace="http://ns.saxonica.com/sql"
+    factory="net.sf.saxon.option.sql.SQLElementFactory"/&gt;</code></p>
+
+<p>The extension can be registered under any namespace. The conventional namespace is
+    <code>http://ns.saxonica.com/sql</code>, and the conventional prefix is <code>sql</code>.</p>
+
+<p>These SQL extensions are documented in the file <code>sql-extension.html</code> in the main
+    documentation directory.</p>
+<hr>
+
+<p align="center"><i>Michael H. Kay<br/>
+    Saxonica Limited<br/>
+    9 June 2009</i></p>
+</body>
+</html>

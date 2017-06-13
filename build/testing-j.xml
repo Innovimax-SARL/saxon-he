@@ -1,0 +1,1023 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="Test Saxon for the Java platform"
+    xmlns:dn="antlib:org.apache.ant.dotnet">
+
+    
+    <import file="build-constants.xml"/>  
+    <import file="build-j.xml"/>
+
+
+    <property name="temp-output.dir" value="${temp.dir}/test-output"/>
+
+    <!-- build directory for this version -->
+    <property name="build.dir" value="${repository}/build98"/>
+
+    <!-- directory holding test results -->
+    <property name="test-results.dir" value="${build.dir}/test-results"/>
+
+    <!-- directory holding Saxon qt3extra tests -->
+    <property name="qt3extra.dir" value="${repository}/tests/qt3extra/9.8"/>
+
+    <!-- directory holding Saxon xslt30extra tests -->
+    <property name="xslt30extra.dir" value="${repository}/tests/xslt30extra/9.8"/>
+
+
+
+    <!-- ============ SAMPLES TESTS =============== -->
+
+    <!-- ========= Main targets to run all samples tests =========== -->
+
+    <target name="test-cmd-j" depends="test-cmd-config, test-cmd-books-j, test-cmd-knights-tour-j, test-cmd-othello-j,  test-cmd-bible-j"/>
+
+
+
+    <target name="test-samples-j" depends="
+    test-samples-s9api-j, test-samples-JAXPExamples-j, test-samples-XQJExamples-j,
+    test-samples-ApplyXPathJAXP-j, test-samples-XPathExample-j, test-samples-JDOM2Example-j,
+    test-samples-PullExamples-j, test-samples-QuickValidator-j, test-samples-SchemaValidatorExample-j,
+    test-samples-SchemaValidatorHandlerExample-j, test-samples-XPathExampleSA-j"/>
+
+
+    <!-- XMarkBenchmark sample test, requires EE (takes approx 6 mins) -->
+    <target name="test-samples-XMarkBenchmark-j" depends="samples-j" description="Run test of XMarkBenchmark sample">
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/XMarkBenchmark"/>
+            <arg line="-dir:${xmark.dir}"/>
+        </exec>
+
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/XMarkBenchmark"/>
+            <arg line="-dir:${xmark.dir}"/>
+            <arg line="-sa"/>
+        </exec>
+    </target>
+
+
+    <!-- ============ TEST SUITE TESTS =============== -->
+
+    <!-- ========= Main targets to run XSLT 3.0 test suite =========== -->
+
+    <!-- Running XSLT 3.0 test catalog with all editions -->
+    <target name="xslt30-tests-j" depends="xslt30-tests-hej, xslt30-tests-pej, xslt30-tests-eej"/>
+
+    <!-- generate a report of the XSLT 3.0 test suite results for different Saxon editions/configurations -->
+    <target name="generate-xslt30-tests-report" depends="xslt30-test-results-dir">
+        <generate-test-report test-suite="xslt30"/>
+    </target>
+
+    <!-- ========= Main targets to run XSLT 3.0 extra test suite =========== -->
+
+    <!-- Running XSLT 3.0 extra test catalog with all editions -->
+    <target name="xslt30extra-tests-j" depends="xslt30extra-tests-pej, xslt30extra-tests-eej"/>
+
+    <!-- generate a report of the XSLT 3.0 extra test suite results for different Saxon editions/configurations -->
+    <target name="generate-xslt30extra-tests-report" depends="xslt30-test-results-dir">
+        <generate-test-report test-suite="xslt30extra"/>
+    </target>
+
+
+    <!-- ========= Main targets to run QT3 test suite =========== -->
+
+    <!-- Running QT3 test catalog with all editions -->
+    <target name="qt3-tests-j" depends="qt3-tests-hej, qt3-tests-pej, qt3-tests-eej"/>
+
+    <!-- generate a report of the QT3 test suite results for different Saxon editions/configurations -->
+    <target name="generate-qt3-tests-report" depends="qt3-test-results-dir">
+        <generate-test-report test-suite="qt3"/>
+    </target>
+
+
+    <!-- ========= Main targets to run QT3extra test suite =========== -->
+
+    <!-- Running QT3extra test catalog with all editions -->
+    <target name="qt3extra-tests-j" depends="qt3extra-tests-pej, qt3extra-tests-eej"/>
+
+    <!-- generate a report of the QT3extra test suite results for different Saxon editions/configurations -->
+    <target name="generate-qt3extra-tests-report" depends="qt3-test-results-dir">
+        <generate-test-report test-suite="qt3extra"/>
+    </target>
+
+
+
+
+
+
+    <!-- ========= TARGETS FOR SAMPLES TESTS =========== -->
+
+    <!-- Validate configuration file samples -->
+    <macrodef name="cmd-config"
+              description="Validation test for config files">
+        <attribute name="schema"/>
+        <attribute name="file"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+                <arg line="com.saxonica.Validate"/>
+                <arg line="-t"/>
+                <arg line="-s:${build-resources.dir}/samples/config/@{file}"/>
+                <arg line="-xsd:${build-resources.dir}/samples/config/@{schema}"/>
+                <!-- TODO xslt30.xsd should no longer be required -->
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-cmd-config" depends="samples-j">
+        <cmd-config schema="config.xsd" file="config.xml"/>
+        <cmd-config schema="config.xsd" file="config-HE.xml"/>
+        <cmd-config schema="annotatedConfig.xsd" file="config.xml"/>
+    </target>
+
+    <!-- Command line books tests -->
+    <macrodef name="cmd-books-xslt1"
+        description="Test command line transform1">
+        <attribute name="version"/>
+        <element name="other-arg" optional="yes"/>
+        <sequential>
+            <exec executable="java"
+                failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Transform"/>
+                <arg line="-t"/>
+                <arg line="-s:${build-resources.dir}/samples/data/books.xml"/>
+                <arg line="-xsl:${build-resources.dir}/samples/styles/books.xsl"/>
+                <arg line="-o:${temp-output.dir}/@{version}j/output.html"/>
+                <other-arg/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="cmd-books-xslt2"
+              description="Test command line transform2">
+        <attribute name="version"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Transform"/>
+                <arg line="-t"/>
+                <arg line="-s:${build-resources.dir}/samples/data/books.xml"/>
+                <arg line="-xsl:${build-resources.dir}/samples/styles/books-csv.xsl"/>
+            </exec>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="cmd-books-xquery1"
+        description="Test command line query1">
+        <attribute name="version"/>
+        <sequential>
+            <exec executable="java"
+                failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Query"/>   
+                <arg line="-t"/>
+                <arg line="-s:${build-resources.dir}/samples/data/books.xml"/>
+                <arg line="-q:${build-resources.dir}/samples/query/books.xq"/>                
+            </exec>
+        </sequential>
+    </macrodef>  
+    
+    <macrodef name="cmd-books-xquery2"
+        description="Test command line query2">
+        <attribute name="version"/>
+        <sequential>
+            <exec executable="java"
+                failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Query"/>   
+                <arg line="-t"/>
+                <arg line="-s:${build-resources.dir}/samples/data/books.xml"/>
+                <arg line="-qs:saxon:line-number((//*)[last()])"/>
+                <arg line="-l:on"/>
+            </exec>
+        </sequential>
+    </macrodef> 
+    
+    <target name="test-cmd-books-hej" depends="samples-j">
+        <cmd-books-xslt1 version="he">
+            <other-arg>
+                <arg line="top-author='Thomas Hardy'"/>
+            </other-arg>
+        </cmd-books-xslt1>
+        <cmd-books-xslt2 version="he"/>
+        <cmd-books-xquery1 version="he"/>
+    </target>   
+    
+    <target name="test-cmd-books-pej" depends="samples-j">
+        <cmd-books-xslt1 version="pe"/>
+        <cmd-books-xslt2 version="pe"/>
+        <cmd-books-xquery1 version="pe"/>
+        <cmd-books-xquery2 version="pe"/>
+    </target>
+    
+    <target name="test-cmd-books-eej" depends="samples-j">
+        <cmd-books-xslt1 version="ee">
+            <other-arg>
+                <arg line="top-author='Jane Austen'"/>
+            </other-arg>
+        </cmd-books-xslt1>
+        <cmd-books-xslt2 version="ee"/>
+        <cmd-books-xquery1 version="ee"/>
+        <cmd-books-xquery2 version="ee"/>
+        <exec executable="java"
+            failonerror="true">
+            <arg line="-cp ${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="com.saxonica.Validate"/>  
+            <arg line="-t"/>
+            <arg line="-s:${build-resources.dir}/samples/data/books.xml"/>
+            <arg line="-xsd:${build-resources.dir}/samples/data/books.xsd"/>
+        </exec>
+    </target>
+
+    <target name="test-cmd-books-j" depends="test-cmd-books-hej, test-cmd-books-pej, test-cmd-books-eej"/>
+
+    <!-- Command line Knight's Tour tests -->
+    <macrodef name="cmd-knights-tour-xslt"
+              description="Test command line Knight's Tour transform">
+        <attribute name="version"/>
+        <element name="other-arg" optional="yes"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Transform"/>
+                <arg line="-it:main"/>
+                <arg line="-xsl:${build-resources.dir}/samples/styles/tour.xsl"/>
+                <other-arg/>
+                <arg line="-o:${temp-output.dir}/@{version}j/tour-t.html"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="cmd-knights-tour-xquery"
+              description="Test command line Knight's Tour query">
+        <attribute name="version"/>
+        <element name="other-arg" optional="yes"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Query"/>
+                <arg line="-q:${build-resources.dir}/samples/query/tour.xq"/>
+                <other-arg/>
+                <arg line="-o:${temp-output.dir}/@{version}j/tour-q.html"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-cmd-knights-tour-j" depends="samples-j">
+        <cmd-knights-tour-xslt version="he">
+            <other-arg>
+                <arg line="start=a6"/>
+            </other-arg>
+        </cmd-knights-tour-xslt>
+        <cmd-knights-tour-xslt version="pe">
+            <other-arg>
+                <arg line="start=g2"/>
+            </other-arg>
+        </cmd-knights-tour-xslt>
+        <cmd-knights-tour-xslt version="ee"/>
+        <cmd-knights-tour-xquery version="he">
+            <other-arg>
+                <arg line="start=e5"/>
+            </other-arg>
+        </cmd-knights-tour-xquery>
+        <cmd-knights-tour-xquery version="pe">
+            <other-arg>
+                <arg line="start=d2 end=42"/>
+            </other-arg>
+        </cmd-knights-tour-xquery>
+        <cmd-knights-tour-xquery version="ee">
+            <other-arg>
+                <arg line="end=61"/>
+            </other-arg>
+        </cmd-knights-tour-xquery>
+    </target>
+
+    <!-- Command line Shakespeare transform tests -->
+    <macrodef name="cmd-othello-xslt"
+              description="Test command line Othello transform">
+        <attribute name="version"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Transform"/>
+                <arg line="-t"/>
+                <arg line="-s:${build-resources.dir}/samples/data/othello.xml"/>
+                <arg line="-xsl:${build-resources.dir}/samples/styles/play.xsl"/>
+                <arg line="dir=${temp-output.dir}/@{version}j/playhtml"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-cmd-othello-j" depends="samples-j">
+        <cmd-othello-xslt version="he"/>
+        <cmd-othello-xslt version="pe"/>
+        <cmd-othello-xslt version="ee"/>
+    </target>
+
+    <!-- XPathExample sample tests -->
+    <property name="LF" value="&#x0A;" />
+    <macrodef name="samples-XPathExample"
+              description="Run test of XPathExample sample">
+        <attribute name="version"/>
+        <attribute name="search-word"/>
+        <attribute name="app" default="he/XPathExample"/>
+        <sequential>
+            <exec executable="java"
+                  dir="${build-resources.dir}/samples"
+                  inputstring="@{search-word}&#x0A;."
+                  failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="@{app} data/othello.xml"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-samples-XPathExample-j" depends="samples-j">
+        <samples-XPathExample version="he" search-word="handkerchief"/>
+        <samples-XPathExample version="pe" search-word="castle"/>
+        <samples-XPathExample version="ee" search-word="monkey"/>
+        <samples-XPathExample version="he" search-word="trouble" app="he/XPathExampleDOM"/>
+        <samples-XPathExample version="pe" search-word="William" app="he/XPathExampleDOM"/>
+        <samples-XPathExample version="ee" search-word="cloth" app="he/XPathExampleDOM"/>
+    </target>
+
+    <!-- Command line Bible transform tests -->
+    <macrodef name="cmd-bible-xslt"
+              description="Test command line Bible transform">
+        <attribute name="version"/>
+        <sequential>
+            <exec executable="java"
+                  dir="${build-resources.dir}/samples"
+                  failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Transform"/>
+                <arg line="-t"/>
+                <arg line="${basedir}/../tests/junit/testdata/bible/nt/nt.xml"/>
+                <arg line="styles/bible.xsl"/>
+                <arg line="dir=${basedir}/${temp-output.dir}/@{version}j/biblehtml"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-cmd-bible-j" depends="samples-j">
+        <cmd-bible-xslt version="he"/>
+        <cmd-bible-xslt version="pe"/>
+        <cmd-bible-xslt version="ee"/>
+    </target>
+
+
+
+    <!-- S9APIExamples sample tests -->
+    <macrodef name="samples-s9api"
+        description="Run test of s9api samples">
+        <attribute name="version"/>
+        <attribute name="target"/>
+        <sequential>
+            <!--<echo message="${build-resources.dir}/samples/java/classes${Z}${build-@{version}j.dir}/saxon9@{version}.jar${Z}${lib.dir}/jdom.jar${Z}${lib.dir}/xom-1.2.1.jar${Z}${lib.dir}/dom4j-1.6.1.jar${Z}${license.dir}"/>-->
+            <exec executable="java"
+                dir="${build-resources.dir}/samples"
+                failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${basedir}/${lib.dir}/jdom-2.0.4.jar${Z}${basedir}/${lib.dir}/xom-1.2.1.jar${Z}${basedir}/${lib.dir}/dom4j-1.6.1.jar${Z}${license.dir}"/>
+                <arg line="he/S9APIExamples"/>
+                <arg line="@{target}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+    
+    <target name="test-samples-s9api-hej" depends="samples-j">
+        <samples-s9api version="he" target="QueryA"/>
+        <samples-s9api version="he" target="QueryB"/>
+        <samples-s9api version="he" target="QueryC"/>
+        <samples-s9api version="he" target="QueryD"/>
+        <samples-s9api version="he" target="QueryE"/>
+        <!--<samples-s9api version="he" target="QueryF"/>--> <!-- This test should fail in HE -->
+<!--        <samples-s9api version="he" target="QueryG"/>-->
+<!--        <samples-s9api version="he" target="QueryUpdateA"/>-->
+        <samples-s9api version="he" target="TransformA"/>
+        <samples-s9api version="he" target="TransformB"/>
+        <samples-s9api version="he" target="TransformC"/>
+        <samples-s9api version="he" target="TransformD"/>
+        <samples-s9api version="he" target="TransformE"/>
+        <samples-s9api version="he" target="TransformF"/>
+<!--        <samples-s9api version="he" target="SchemaA"/>-->
+<!--        <samples-s9api version="he" target="SchemaB"/>-->
+        <samples-s9api version="he" target="XPathA"/>
+        <samples-s9api version="he" target="XPathB"/>
+<!--        <samples-s9api version="he" target="XPathC"/>-->
+        <samples-s9api version="he" target="XPathDOM"/>
+<!--        <samples-s9api version="he" target="XPathJDOM"/>-->
+<!--        <samples-s9api version="he" target="XPathXOM"/>-->
+<!--        <samples-s9api version="he" target="XPathDOM4J"/>-->
+        <samples-s9api version="he" target="SerializeA"/>
+        <samples-s9api version="he" target="SerializeB"/>
+        <samples-s9api version="he" target="SerializeC"/>
+        <!--<samples-s9api version="he" target="SerializeD"/>-->
+    </target> 
+        
+    <target name="test-samples-s9api-pej" depends="samples-j">
+        <samples-s9api version="pe" target="nonschema"/>
+    </target>
+    
+    <target name="test-samples-s9api-eej" depends="samples-j">
+        <samples-s9api version="ee" target="all"/>
+    </target>
+
+    <target name="test-samples-s9api-j" depends="test-samples-s9api-hej, test-samples-s9api-pej, test-samples-s9api-eej"/>
+
+    <!-- JAXPExamples sample tests -->
+    <macrodef name="samples-JAXPExamples"
+              description="Run test of JAXPExamples samples">
+        <attribute name="version"/>
+        <attribute name="target"/>
+        <sequential>
+            <exec executable="java"
+                  dir="${build-resources.dir}/samples"
+                  failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>
+                <arg line="he/JAXPExamples"/>
+                <arg line="@{target}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-samples-JAXPExamples-j" depends="samples-j">
+        <samples-JAXPExamples version="he" target="all"/>
+        <samples-JAXPExamples version="pe" target="all"/>
+        <samples-JAXPExamples version="ee" target="all"/>
+    </target>
+
+    <!-- XQJExamples sample tests -->
+    <macrodef name="samples-XQJExamples"
+              description="Run test of XQJExamples samples">
+        <attribute name="version"/>
+        <attribute name="target"/>
+        <sequential>
+            <exec executable="java"
+                  dir="${build-resources.dir}/samples"
+                  failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${basedir}/${lib.dir}/xqjapi.jar${Z}${license.dir}"/>
+                <arg line="ee/XQJExamples"/>
+                <arg line="@{target}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-samples-XQJExamples-j" depends="samples-j">
+        <!--<samples-XQJExamples version="he" target="all"/>--> <!-- TODO xqt jar not found -->
+        <samples-XQJExamples version="pe" target="all"/>
+        <samples-XQJExamples version="ee" target="all"/>
+    </target>
+
+    <!-- ApplyXPathJAXP sample tests -->
+    <macrodef name="samples-ApplyXPathJAXP"
+        description="Run test of ApplyXPathJAXP sample">
+        <attribute name="version"/>
+        <attribute name="file"/>
+        <attribute name="xpath"/>
+        <attribute name="object-model" default=""/>
+        <sequential>
+            <exec executable="java"
+                dir="${build-resources.dir}/samples"
+                failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${basedir}/${lib.dir}/jdom.jar${Z}${basedir}/${lib.dir}/xom-1.2.1.jar${Z}${basedir}/${lib.dir}/dom4j-1.6.1.jar${Z}${basedir}/${lib.dir}/jdom-2.0.4.jar${Z}${license.dir}"/>
+                <arg line="he/ApplyXPathJAXP"/>
+                <arg line="data/@{file}"/>     
+                <arg line="@{xpath}"/>
+                <arg line="@{object-model}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+    
+    <target name="test-samples-ApplyXPathJAXP-hej" depends="samples-j">
+        <samples-ApplyXPathJAXP version="he" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="saxon"/>
+        <samples-ApplyXPathJAXP version="he" file="books.xml" xpath="count(//ITEM)" object-model="dom"/>
+    </target>
+    
+    <target name="test-samples-ApplyXPathJAXP-pej" depends="samples-j">
+        <samples-ApplyXPathJAXP version="pe" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="saxon"/>
+        <samples-ApplyXPathJAXP version="pe" file="books.xml" xpath="count(//ITEM)" object-model="dom"/>
+        <samples-ApplyXPathJAXP version="pe" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="jdom"/>
+        <samples-ApplyXPathJAXP version="pe" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="xom"/>
+        <samples-ApplyXPathJAXP version="pe" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="dom4j"/>
+    </target>
+    
+    <target name="test-samples-ApplyXPathJAXP-eej" depends="samples-j">
+        <samples-ApplyXPathJAXP version="ee" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="saxon"/>
+        <samples-ApplyXPathJAXP version="ee" file="books.xml" xpath="count(//ITEM)" object-model="dom"/>
+        <samples-ApplyXPathJAXP version="ee" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="jdom"/>
+        <samples-ApplyXPathJAXP version="ee" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="xom"/>
+        <samples-ApplyXPathJAXP version="ee" file="books.xml" xpath="BOOKLIST/BOOKS/ITEM[1]/AUTHOR" object-model="dom4j"/>
+    </target>
+
+    <target name="test-samples-ApplyXPathJAXP-j" depends="test-samples-ApplyXPathJAXP-hej, test-samples-ApplyXPathJAXP-pej, test-samples-ApplyXPathJAXP-eej"/>
+
+    <!-- JDOM2Example sample tests, requires PE or EE -->
+    <macrodef name="samples-JDOM2Example"
+              description="Run test of JDOM2Example sample">
+        <attribute name="version"/>
+        <sequential>
+            <exec executable="java"
+                  dir="${build-resources.dir}/samples"
+                  failonerror="true">
+                <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-@{version}j.dir}/saxon9@{version}.jar${Z}${basedir}/${lib.dir}/jdom-2.0.4.jar${Z}${license.dir}${Z}${lib.dir}/xerces.jar${Z}${lib.dir}/xercesImpl.jar"/>
+                <arg line="ee/JDOM2Example"/>
+                <arg line="data/books.xml"/>
+                <arg line="styles/total.xsl"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="test-samples-JDOM2Example-j" depends="samples-j">
+        <samples-JDOM2Example version="pe"/>
+        <samples-JDOM2Example version="ee"/>
+    </target>
+
+    <!-- PullExamples sample tests, requires EE -->
+    <target name="test-samples-PullExamples-j" description="Run test of PullExamples sample" depends="samples-j">
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/PullExamples"/>
+            <arg line="#"/>
+        </exec>
+    </target>
+
+    <!-- QuickValidator sample test, requires EE -->
+    <target name="test-samples-QuickValidator-j" description="Run test of QuickValidator sample" depends="samples-j">
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/QuickValidator"/>
+            <arg line="data/books.xml"/>
+            <arg line="data/books.xsd"/>
+        </exec>
+    </target>
+
+    <!-- SchemaValidatorExample sample test, requires EE -->
+    <target name="test-samples-SchemaValidatorExample-j" description="Run test of SchemaValidatorExample sample" depends="samples-j">
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/SchemaValidatorExample"/>
+            <arg line="data/books.xsd"/>
+            <arg line="data/books.xml"/>
+        </exec>
+    </target>
+
+    <!-- SchemaValidatorHandlerExample sample test, requires EE -->
+    <target name="test-samples-SchemaValidatorHandlerExample-j" description="Run test of SchemaValidatorHandlerExample sample" depends="samples-j">
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/SchemaValidatorHandlerExample"/>
+            <arg line="data/books.xsd"/>
+            <arg line="data/books.xml"/>
+        </exec>
+    </target>
+
+    <!-- XPathExampleSA sample test, requires EE -->
+    <target name="test-samples-XPathExampleSA-j" description="Run test of XPathExampleSA sample" depends="samples-j">
+        <exec executable="java"
+              dir="${build-resources.dir}/samples"
+              failonerror="true">
+            <arg line="-cp ${basedir}/${build-resources.dir}/samples/java/classes${Z}${basedir}/${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+            <arg line="ee/XPathExampleSA"/>
+            <arg line="data/books.xml"/>
+            <arg line="data/books.xsd"/>
+        </exec>
+    </target>
+
+
+
+
+
+
+
+    <!-- ============ TARGETS TO RUN TEST SUITE TESTS =============== -->
+
+
+    <!-- Running XSLT 3.0 test catalog -->
+
+    <!-- Compile test drivers - to run test suites (XSLT, QT3, etc.) -->
+
+    <target name="compile-testdrivers-j">
+        <delete dir="${build.dir}/test-drivers"/>
+        <mkdir dir="${build.dir}/test-drivers"/>
+        <copy todir="${build.dir}/test-drivers">
+            <fileset dir="${source-eej.dir}">
+                <include name="com/saxonica/testdriver/*.java"/>
+            </fileset>
+            <fileset dir="${source-hej.dir}">
+                <include name="net/sf/saxon/testdriver/*.java"/>
+            </fileset>
+        </copy>
+        <javac debug="true" debuglevel="${build.debuglevel}"
+               destdir="${build.dir}/test-drivers"
+               srcdir="${build.dir}/test-drivers" source="${build.compiler.source}"
+               target="${build.compiler.target}" includeantruntime="false">
+            <include name="com/saxonica/testdriver/*.java"/>
+            <include name="net/sf/saxon/testdriver/*.java"/>
+            <classpath>
+                <path refid="classpath-samples"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- generating reports of different test suites (XSLT, QT3) results for different Saxon editions/configurations -->
+    <macrodef name="generate-test-report"
+              description="Generate report from named test suite results">
+        <attribute name="test-suite"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build-eej.dir}/saxon9ee.jar${Z}${license.dir}"/>
+                <arg line="net.sf.saxon.Transform"/>
+                <arg line="-t"/>
+                <arg line="-s:${build.dir}/build.xml"/>
+                <arg line="-xsl:${test-results.dir}/@{test-suite}/report.xsl"/>
+                <arg line="-o:${test-results.dir}/@{test-suite}/${DSTAMP}/report.xml"/>
+                <arg line="rundate=${DSTAMP}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+
+    <!-- XSLT 3.0 test suite -->
+
+    <!-- Create date-stamped directory for new XSLT 3.0 test results, containing exceptions file -->
+    <target name="xslt30-test-results-dir">
+        <tstamp/>
+        <mkdir dir="${test-results.dir}/xslt30/${DSTAMP}"/>
+        <mkdir dir="${test-results.dir}/xslt30/${DSTAMP}/results"/>
+        <copy file="${test-results.dir}/xslt30/exceptions.xml"
+              tofile="${test-results.dir}/xslt30/${DSTAMP}/exceptions.xml">
+        </copy>
+        <mkdir dir="${test-results.dir}/xslt30extra/${DSTAMP}"/>
+        <mkdir dir="${test-results.dir}/xslt30extra/${DSTAMP}/results"/>
+        <copy file="${test-results.dir}/xslt30extra/exceptions.xml"
+              tofile="${test-results.dir}/xslt30extra/${DSTAMP}/exceptions.xml">
+        </copy>
+    </target>
+
+    <!-- Running XSLT 3.0 test catalog -->
+    <macrodef name="xslt30-tests"
+              description="Run XSLT 3.0 test catalog">
+        <attribute name="catalog" default="xslt30"/>
+        <attribute name="version"/>
+        <attribute name="lang"/>
+        <attribute name="bc" default=""/>
+        <attribute name="test-driver" default="com.saxonica.testdriver.Xslt30TestSuiteDriver"/>
+        <element name="other-arg" optional="yes"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-Xmx2G"/>
+                <arg line="-cp ${build.dir}/test-drivers${Z}${build-@{version}j.dir}/saxon9@{version}.jar${Z}${build-@{version}j.dir}/saxon9-sql.jar${Z}${license.dir}${Z}${product.dir}/pej/icu4j-59_1.jar${Z}${lib.dir}/tagsoup-1.2.1.jar${Z}${lib.dir}/xerces.jar${Z}${lib.dir}/xercesImpl.jar"/>
+                <!--                <arg line="-cp ${build.dir}/test-drivers${Z}${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}"/>-->
+                <arg line="@{test-driver}"/>
+                <arg line="${@{catalog}.dir}"/>
+                <arg line="catalog.xml"/>
+                <arg line="-o:${test-results.dir}/@{catalog}/${DSTAMP}"/>
+                <arg line="-lang:XT@{lang}0"/>
+                <arg line= "-ps:off"/>
+                <!--<arg line="-quiet"/>-->
+                <!--<arg line="-s:threads"/>
+                <arg line="-t:threads-022"/>-->
+                <arg line="-debug"/>
+                <other-arg/>            </exec>
+            <copy file="${test-results.dir}/@{catalog}/${DSTAMP}/results_XSLT@{lang}.0_${version}.xml"
+                  tofile="${test-results.dir}/@{catalog}/${DSTAMP}/results/saxon-@{version}-XT@{lang}0@{bc}.xml">
+            </copy>
+        </sequential>
+    </macrodef>
+
+    <!-- Running XSLT 3.0 test catalog with HE -->
+    <target name="xslt30-tests-hej" depends="compile-testdrivers-j, xslt30-test-results-dir">
+        <xslt30-tests version="he" lang="3" test-driver="net.sf.saxon.testdriver.Xslt30TestSuiteDriverHE"/>
+    </target>
+ 
+    <!-- Running XSLT 3.0 test catalog with PE -->
+    <target name="xslt30-tests-pej" depends="compile-testdrivers-j, xslt30-test-results-dir">
+        <xslt30-tests version="pe" lang="3" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverPE"/>
+    </target>
+
+    <!-- Running XSLT 3.0 test catalog with EE -->
+    <target name="xslt30-tests-eej" depends="compile-testdrivers-j, xslt30-test-results-dir">
+        <xslt30-tests version="ee" lang="3" bc="-on" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </xslt30-tests>
+        <xslt30-tests version="ee" lang="3" bc="-off" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </xslt30-tests>
+    </target>
+
+
+    <!-- Running XSLT 3.0 extra test catalog with HE -->
+    <target name="xslt30extra-tests-hej" depends="compile-testdrivers-j, xslt30-test-results-dir">
+        <xslt30-tests catalog="xslt30extra" version="he" lang="2" test-driver="net.sf.saxon.testdriver.Xslt30TestSuiteDriverHE"/>
+        <!-- Saxon-HE does not support XSLT3.0-->
+    </target>
+
+    <!-- Running XSLT 3.0 extra test catalog with PE -->
+    <target name="xslt30extra-tests-pej" depends="compile-testdrivers-j, xslt30-test-results-dir">
+        <!--<xslt30-tests catalog="xslt30extra" version="pe" lang="2" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverPE"/>-->
+        <xslt30-tests catalog="xslt30extra" version="pe" lang="3" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverPE"/>
+    </target>
+
+    <!-- Running XSLT 3.0 extra test catalog with EE -->
+    <target name="xslt30extra-tests-eej" depends="compile-testdrivers-j, xslt30-test-results-dir">
+        <!--<xslt30-tests catalog="xslt30extra" version="ee" lang="2" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </xslt30-tests>
+        <xslt30-tests catalog="xslt30extra" version="ee" lang="2" bc="-off">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </xslt30-tests>-->
+        <xslt30-tests catalog="xslt30extra" version="ee" lang="3" bc="-on" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </xslt30-tests>
+        <xslt30-tests catalog="xslt30extra" version="ee" lang="3" bc="-off" test-driver="com.saxonica.testdriver.Xslt30TestSuiteDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </xslt30-tests>
+    </target>
+
+
+
+    <!-- QT3 test suites -->
+
+    <!-- Create date-stamped directory for new QT3 test results -->
+    <target name="qt3-test-results-dir">
+        <tstamp/>
+        <mkdir dir="${test-results.dir}/qt3/${DSTAMP}"/>
+        <mkdir dir="${test-results.dir}/qt3/${DSTAMP}/results"/>
+        <copy file="${test-results.dir}/qt3/exceptions.xml"
+              tofile="${test-results.dir}/qt3/${DSTAMP}/exceptions.xml">
+        </copy>
+        <mkdir dir="${test-results.dir}/qt3extra/${DSTAMP}"/>
+        <mkdir dir="${test-results.dir}/qt3extra/${DSTAMP}/results"/>
+    </target>
+
+    <!-- Running QT3 test catalog -->
+    <property name="XP20" value="XPath2.0"/>
+    <property name="XP30" value="XPath3.0"/>
+    <property name="XP31" value="XPath3.1"/>
+    <property name="XQ10" value="XQuery1.0"/>
+    <property name="XQ30" value="XQuery3.0"/>
+    <property name="XQ31" value="XQuery3.1"/>
+    <macrodef name="qt3-tests"
+              description="Run QT3 test catalog">
+        <attribute name="catalog"/>
+        <attribute name="version"/>
+        <attribute name="lang"/>
+        <attribute name="bc" default=""/>
+        <attribute name="test-driver" default="com.saxonica.testdriver.QT3TestDriverEE"/>
+        <element name="other-arg" optional="yes"/>
+        <sequential>
+            <exec executable="java"
+                  failonerror="true">
+                <arg line="-cp ${build.dir}/test-drivers${Z}${build-@{version}j.dir}/saxon9@{version}.jar${Z}${license.dir}${Z}${lib.dir}/mail.jar${Z}${build-@{version}j.dir}/icu4j-59_1.jar${Z}${lib.dir}/xerces.jar${Z}${lib.dir}/xercesImpl.jar"/> <!--${Z}${build-@{version}j.dir}/saxon9-sql.jar-->
+                <arg line="@{test-driver}"/>
+                <arg line="${@{catalog}.dir}"/>
+                <arg line="catalog.xml"/>
+                <arg line="-o:${test-results.dir}/@{catalog}/${DSTAMP}"/>
+                <arg line="-lang:@{lang}"/>
+                <other-arg/>
+            </exec>
+            <copy file="${test-results.dir}/@{catalog}/${DSTAMP}/results_${@{lang}}_${version}.xml"
+                  tofile="${test-results.dir}/@{catalog}/${DSTAMP}/results/saxon-@{version}-@{lang}@{bc}.xml">
+            </copy>
+        </sequential>
+    </macrodef>
+
+    <!-- Running W3C QT3 test catalog with HE -->
+    <target name="qt3-tests-hej" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3" version="he" lang="XP20" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+        <!--<qt3-tests catalog="qt3" version="he" lang="XP30" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>-->
+        <qt3-tests catalog="qt3" version="he" lang="XP31" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+        <!--<qt3-tests catalog="qt3" version="he" lang="XQ10" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+        <qt3-tests catalog="qt3" version="he" lang="XQ30" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>-->
+        <qt3-tests catalog="qt3" version="he" lang="XQ31" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+    </target>
+
+    <!-- Running W3C QT3 test catalog with PE -->
+    <target name="qt3-tests-pej" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3" version="pe" lang="XP20" test-driver="com.saxonica.testdriver.QT3TestDriverPE"/>
+        <!--<qt3-tests catalog="qt3" version="pe" lang="XP30"/>-->
+        <qt3-tests catalog="qt3" version="pe" lang="XP31" test-driver="com.saxonica.testdriver.QT3TestDriverPE"/>
+        <!--<qt3-tests catalog="qt3" version="pe" lang="XQ10"/>
+        <qt3-tests catalog="qt3" version="pe" lang="XQ30"/>-->
+        <qt3-tests catalog="qt3" version="pe" lang="XQ31" test-driver="com.saxonica.testdriver.QT3TestDriverPE"/>
+    </target>
+
+    <!-- Running W3C QT3 test catalog with EE 
+         These are split into 6 subtargets such that each can be run independently -->
+    
+    <!-- MHK 2017-05-26: dropped all except XP20, XP31, and XQ31 as Saxon 9.8 no longer supports other XP/XQ versions -->
+    <!--<target name="qt3-tests-eej" depends="compile-testdrivers-j, qt3-test-results-dir, 
+        qt3-tests-eej-XP20, qt3-tests-eej-XP30, qt3-tests-eej-XP31, qt3-tests-eej-XQ10,
+        qt3-tests-eej-XQ30, qt3-tests-eej-XQ31">-->
+    <!--</target>-->
+    <target name="qt3-tests-eej" depends="compile-testdrivers-j, qt3-test-results-dir, 
+        qt3-tests-eej-XP20, qt3-tests-eej-XP31, qt3-tests-eej-XQ31">
+    </target>
+
+    <target name="qt3-tests-eej-XP20" depends="compile-testdrivers-j, qt3-test-results-dir">        
+        <qt3-tests catalog="qt3" version="ee" lang="XP20" bc="-off" >
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XP20" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+    <target name="qt3-tests-eej-XP30" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3" version="ee" lang="XP30" bc="-off">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XP30" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+    <target name="qt3-tests-eej-XP31" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3" version="ee" lang="XP31" bc="-off">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XP31" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+    <target name="qt3-tests-eej-XQ10" depends="compile-testdrivers-j, qt3-test-results-dir">        
+        <qt3-tests catalog="qt3" version="ee" lang="XQ10" bc="-off">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XQ10" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+    <target name="qt3-tests-eej-XQ30" depends="compile-testdrivers-j, qt3-test-results-dir">        
+        <qt3-tests catalog="qt3" version="ee" lang="XQ30" bc="-off">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XQ30" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XQ30" bc="-on-unfolded">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+                <arg line="-unfolded:yes"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+    <target name="qt3-tests-eej-XQ31" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3" version="ee" lang="XQ31" bc="-off">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XQ31" bc="-on">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3" version="ee" lang="XQ31" bc="-on-unfolded">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+                <arg line="-unfolded:yes"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+    
+
+
+
+
+    <!-- Running Saxon's QT3extra test catalog with HE -->
+    <!--<target name="qt3extra-tests-hej" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3extra" version="he" lang="XP20" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+        <qt3-tests catalog="qt3extra" version="he" lang="XP30" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+        <qt3-tests catalog="qt3extra" version="he" lang="XQ10" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+        <qt3-tests catalog="qt3extra" version="he" lang="XQ30" test-driver="net.sf.saxon.testdriver.QT3TestDriverHE"/>
+    </target>-->
+
+    <!-- Running Saxon's QT3extra test catalog with PE -->
+    <target name="qt3extra-tests-pej" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3extra" version="pe" lang="XP20" test-driver="com.saxonica.testdriver.QT3TestDriverPE"/>
+        <!--<qt3-tests catalog="qt3extra" version="pe" lang="XP30"/>-->
+        <qt3-tests catalog="qt3extra" version="pe" lang="XP31" test-driver="com.saxonica.testdriver.QT3TestDriverPE"/>
+        <!--<qt3-tests catalog="qt3extra" version="pe" lang="XQ10"/>
+        <qt3-tests catalog="qt3extra" version="pe" lang="XQ30"/>-->
+        <qt3-tests catalog="qt3extra" version="pe" lang="XQ31" test-driver="com.saxonica.testdriver.QT3TestDriverPE"/>
+    </target>
+
+    <!-- Running Saxon's QT3extra test catalog with EE -->
+    <target name="qt3extra-tests-eej" depends="compile-testdrivers-j, qt3-test-results-dir">
+        <qt3-tests catalog="qt3extra" version="ee" lang="XP20" bc="-off" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XP20" bc="-on" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XP30" bc="-off" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XP30" bc="-on" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XP31" bc="-off" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XP31" bc="-on" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XQ10" bc="-off" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XQ10" bc="-on" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XQ30" bc="-off" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XQ30" bc="-on" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XQ31" bc="-off" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:off"/>
+            </other-arg>
+        </qt3-tests>
+        <qt3-tests catalog="qt3extra" version="ee" lang="XQ31" bc="-on" test-driver="com.saxonica.testdriver.QT3TestDriverEE">
+            <other-arg>
+                <arg line= "-bytecode:on"/>
+            </other-arg>
+        </qt3-tests>
+    </target>
+
+
+
+    
+</project>

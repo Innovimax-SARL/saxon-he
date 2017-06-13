@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="Saxon: The XSLT and XQuery Processor: build constants"
+    xmlns:dn="antlib:org.apache.ant.dotnet">
+
+    <!--TODO: 1: ensure saxon9api.netmodule is included in the build
+           2: remove the archive target before shipping this file-->
+
+    <!-- note : Ant 1.7 is needed for this script -->
+
+    <!-- Ant 1.7 introduces a <service> element to allow META-INF/services
+         directories to be created in JAR files. Unfortunately it is broken,
+         see http://issues.apache.org/bugzilla/show_bug.cgi?id=41201. The relevant
+         code here is retained in the form of comments, and can be reinstated
+         when the bug is fixed. Meanwhile the directories are created manually -->
+
+    <!-- Build file for Saxon. This builds all six for the released products:
+         Saxon-HE, -PE, and -EE, on both the Java and .NET platforms. It also builds
+         the released resources file. A full build requires access to Saxonica
+         proprietary source code. The open source Saxon-HE product can be built for
+         Java using target "hej"; but building Saxon-HE for .NET may require some
+         disentangling of tasks that depend on Saxon-EE code being present. -->
+
+
+    <!-- Naming conventions:
+         -n   : .NET
+         -j   : Java
+         -he  : Home Edition
+         -pe  : Professional Edition
+         -ee  : Enterprise Edition
+         combined as appropriate, so -pej denotes Saxon-PE on the Java platform
+    -->
+
+    <import file="build-locations.xml"/>
+    <!-- defines $repo-os and $repo-priv and other local machine directories -->
+
+    <property name="version" value="9.8.0.1"/>
+    <property name="versionh" value="9-8-0-1"/>
+    <property name="major.version" value="9.8"/>
+    <property name="major.versionh" value="9-8"/>
+    <property name="release.date" value="2017-06-08"/>
+    <property name="version.maven" value="9.8.0-1"/>
+
+    <!-- REMEMBER ALSO TO SET THE VERSION IN Version.java -->
+
+    <makeurl file="${basedir}" property="baseurl"/>
+
+    <!-- following locations are specific to the machine -->
+
+    <!-- Java source (used for building both the Java and .NET products) -->
+
+    <property name="repository" value=".."/>
+    <property name="repository.uri" value="${basedir}/.."/>
+
+    <property name="development-j.dir" value="${repository}/src"/>
+    <property name="development-data.dir" value="${development-j.dir}/he/java/net/sf/saxon/data"/>
+    <property name="stats-data.dir" value="${development-j.dir}/ee/data"/>
+    <property name="source-hej.dir" value="${repo-os}/he/java"/>
+    <property name="source-eej.dir" value="${repo-priv}/ee/java"/>
+
+    <!-- a suitable saxon license file -->
+    <property name="saxon.license" value="${license.dir}/saxon-license.lic"
+        description="A Saxon license capable of running EE"/>
+
+    <!-- directory holding XML user documentation -->
+    <property name="userdoc.dir" value="${repository}/userdoc"/>
+
+    <!-- Location of userdoc source -->
+    <property name="userdoc.uri" value="${repository.uri}/userdoc"
+              description="Userdoc directory in development repository"/>
+
+    <!-- Location of viewer_app output directory -  development userdoc directory -->
+    <property name="viewer_app.dir" value="${repository.uri}/userdoc/saxon9/viewer_app"
+              description="Viewer app built in userdoc directory in development repository"/>
+
+
+    <!-- Full URI for viewer_app output directory (supplied to stylesheets as parameter) -->
+    <property name="viewer_app.full-uri" value="${viewer_app.dir}"
+              description="Full URI for viewer app in userdoc directory in development repository"/>
+
+    <!-- directories holding use cases and sample applications -->
+    <property name="usecases.dir" value="${repository}/use-cases"/>
+    <property name="samples.dir" value="${repository}/samples"/>
+    <property name="samples.uri" value="${repository.uri}/samples"/>
+    
+    <!-- Location of Feature Keys Tools directory -->
+    <property name="featureKeys.dir" value="${repository}/tools/featureKeys"
+        description="Feature Keys directory in development repository"/>
+
+
+    <!-- following locations are relative to the build file -->
+
+    <!-- directory in which to build the product for release -->
+    <property name="output.dir" value="output"/>
+
+    <condition property="product.dir" value="${output.dir}/saxon-build/${version}">
+        <or>
+            <os family="unix"/>
+            <os family="mac"/>
+        </or>
+    </condition>
+    <condition property="product.dir" value="${output.dir}/saxon-build/${version}">
+        <os family="windows"/>
+    </condition>
+    
+    <!-- Character used as file separator in classpaths -->
+    <condition property="Z" value=";">
+        <os family="windows"/>
+    </condition>
+    
+    <condition property="Z" value=":">
+        <or>
+            <os family="unix"/>
+            <os family="mac"/>
+        </or>
+    </condition>
+    
+
+    <!-- directory in which to build the issued .ZIP files -->
+    <property name="issue.dir"
+        value="${output.dir}/saxon-issues/saxon-issue-${release.date} (${version})"/>
+
+    <!-- location of the archive directory -->
+    <property name="archive.dir" value="../archive${versionh}"/>
+
+
+    <property name="lib.dir" value="../lib"/>
+    <property name="temp.dir" value="temp"/>
+
+    <!-- following locations are relative to the destination directory -->
+
+    <property name="build-resources.dir" value="${product.dir}/resources"/>
+
+    <property name="build.debug" value="true"/>
+    <property name="build.debuglevel" value="source,lines,vars"/>
+    <property name="build.deprecation" value="true"/>
+    <property name="build.optimize" value="true"/>
+    <property name="build.compiler" value="javac1.5"/>
+    <property name="build.compiler.source" value="1.5"/>
+    <property name="build.compiler.target" value="1.5"/>
+    <property name="build.compress" value="true"/>
+
+    
+    <!-- version of the ASM library to use -->
+    <property name="asm.version" value="5.0.3"/>
+
+</project>

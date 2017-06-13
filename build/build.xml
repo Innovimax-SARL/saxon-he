@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="Saxon 9.8: The XSLT and XQuery Processor"
+    xmlns:dn="antlib:org.apache.ant.dotnet" xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+    <!-- note : Ant 1.9.1 is needed for this script -->
+
+    <!-- Ant 1.9.1 supports the use of @ant:if and @ant:unless conditional attributes
+         which are used for alternatives, currently in ICU building and documentation generation -->
+
+    <!-- The use of ant:if and ant:unless requires Ant 1.9.1 -
+        for IntelliJ the built-in is 1.8.2, but an external Ant can be configured on the Ant menu  -->
+
+    <!-- note : Ant 1.7 is needed for this script -->
+
+    <!-- Ant 1.7 introduces a <service> element to allow META-INF/services
+         directories to be created in JAR files. Unfortunately it is broken,
+         see http://issues.apache.org/bugzilla/show_bug.cgi?id=41201. The relevant
+         code here is retained in the form of comments, and can be reinstated
+         when the bug is fixed. Meanwhile the directories are created manually -->
+
+    <!-- Build file for Saxon. This builds all six for the released products:
+         Saxon-HE, -PE, and -EE, on both the Java and .NET platforms. It also builds
+         the released resources file. A full build requires access to Saxonica
+         proprietary source code. The open source Saxon-HE product can be built for
+         Java using target "hej"; but building Saxon-HE for .NET may require some
+         disentangling of tasks that depend on Saxon-EE code being present. -->
+
+    <!-- Useful targets:
+    
+         prepare      clears temporary directories, generates fixed files
+         j            builds executables for Saxon on Java
+         n            builds executables for Saxon on .NET
+         build        builds all executables
+         resources    builds samples and documentation
+         release      builds ZIP files for published downloads, runs regression tests
+         archive      produces a back-up archive  -->
+
+
+    <!-- Naming conventions:
+         -n   : .NET
+         -j   : Java
+         -he  : Home Edition
+         -pe  : Professional Edition
+         -ee  : Enterprise Edition
+         combined as appropriate, so -pej denotes Saxon-PE on the Java platform
+    -->
+
+    <import file="build-constants.xml"/>
+
+    <!-- If building for only one platform,
+       (a) remove one of the imports below
+       (b) remove dependencies on targets in that build file, which are always suffixed -j or -n respectively
+    -->
+
+    <import file="build-j.xml"/>
+    <import file="build-n.xml"/>
+    <!--<import file="build-c.xml"/>-->
+    <import file="test-n.xml"/>
+    <import file="testing-j.xml"/>
+
+
+    <import file="samples-common.xml"/>
+    <import file="documentation.xml"/>
+    <import file="jd-build/build-jd.xml"/>
+
+
+    <!-- Saxon used for some late-stage operations, notably documentation generation -->
+    <property name="use.EE" value="true" description="Use -EE for documentation, otherwise PE"/>
+    <property if:true="${use.EE}" name="saxon.edition" value="Enterprise"
+        description="Enterprise Saxon"/>
+    <property unless:true="${use.EE}" name="saxon.edition" value="Professional"
+        description="Professional Saxon"/>
+
+
+    <path id="saxon.class.path">
+        <fileset if:true="${use.EE}" dir="${product.dir}/eej">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset unless:true="${use.EE}" dir="${product.dir}/pej">
+            <include name="*.jar"/>
+        </fileset>
+        <!-- <pathelement path="${lib.dir}"/>-->
+        <!--<pathelement path="${product.dir}/eej"/>-->
+    </path>
+
+    <path id="saxonee.class.path">
+        <!-- <pathelement path="${lib.dir}"/>-->
+        <pathelement path="${product.dir}/eej"/>
+    </path>
+
+
+
+    <target name="clean" description="Clean all files other than source code and downloaded jars.">
+        <delete dir="${temp.dir}"/>
+        <delete dir="${product.dir}"/>
+        <mkdir dir="${product.dir}"/>
+    </target>
+
+    <target name="prepare" description="Create 'fixed' files in build libraries"
+        depends="clean, prepare-n, prepare-j"/>
+
+
+    <!-- The Saxonica build creates a cross-platform samples directory, but it's separated
+         by platform in case a platform-specific build is needed -->
+
+
+    <!--REMOVE COMMENT to include dotnet  <target name="samples" depends="samples-j, samples-n"/>  -->
+     <target name="samples" depends="samples-j"/>
+
+
+
+
+   <target name="release-source" description="Generate Zip file containing issued Source Code">
+        <zip zipfile="${product.dir}/saxon${versionh}source.zip">
+            <fileset dir="${temp-src-prep-hej.dir}">
+                <include name="net/**/*.java"/>
+                <include name="net/**/package.html"/>
+            </fileset>
+            <fileset dir="${temp-src-nc.dir}">
+                <include name="api/**/*.cs"/>
+                <include name="cmd/**/*.cs"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${repo-priv}/releases/saxonee${versionh}source.zip">
+            <fileset dir="${source-eej.dir}">
+                <include name="com/saxonica/**/*.java"/>
+                <include name="com/saxonica/**/package.html"/>
+            </fileset>
+        </zip>
+    </target>
+
+
+    <target name="NO-resources" depends="release-source, release-userdoc"/>
+
+    <!--REMOVE COMMENT to include dotnet <target name="resources" description="Generate contents of released resources file"
+        depends="product-xsljavadoc, product-dotnetdoc, release-userdoc, product-javadoc,
+      	         samples, testdrivers-j">  -->
+
+    <!-- Generate javadoc-xml (using jd-build/build-jd/product-xsljavadoc target)
+    and dotnetdoc-xml (using build-n/product-dotnetdoc target) before target release-userdoc -->
+    <!-- The product-javadoc target then generates the HTML version,
+     which goes in resources/doc dir -->
+
+    <target name="resources" description="Generate contents of released resources file"
+            depends="product-xsljavadoc, product-dotnetdoc, release-userdoc, product-javadoc,
+      	         samples, testdrivers-j">
+        <mkdir dir="${product.dir}/resources/build"/>
+        <copy todir="${product.dir}/resources/build">
+            <fileset dir="${basedir}">
+                <include name="build.xml"/>
+                <include name="build-n.xml"/>
+                <include name="build-j.xml"/>
+                <include name="build-constants.xml"/>
+                <include name="testing-j.xml"/>
+                <include name="test-n.xml"/>
+
+            </fileset>
+        </copy>
+        <copy todir="${product.dir}/resources">
+            <fileset dir="${userdoc.dir}/saxon9/welcome">
+                <include name="notices/**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="release-resources" description="Create saxon-resources .ZIP file for release"
+            depends="resources">
+        <zip zipfile="${issue.dir}/saxon-resources${major.versionh}.zip">
+            <fileset dir="${product.dir}/resources"/>
+        </zip>
+    </target>
+
+
+   <!-- REMOVE COMMENT to include dotnet <target name="build" description="Complete Saxon product build" depends="j, n"/> -->
+    <target name="build" description="Complete Saxon product build" depends="j"/>
+
+    <!-- REMOVE COMMENT to include dotnet <target name="test" description="Run regression tests" depends="test-j, test-n"/> -->
+  <!--  <target name="test" description="Run regression tests" depends="test-j, test-n"/>-->
+
+    <!--REMOVE COMMENT to include dotnet and resources <target name="release" description="Create .ZIP files for release"
+        depends="build, release-j, release-n, release-source, release-resources">  -->
+    <target name="release" description="Create .ZIP files for release"
+        depends="build, release-j, release-source, release-resources">
+
+        <mkdir dir="${issue.dir}"/>
+        <!-- <zip zipfile="${issue.dir}/saxonhe${versionh}j.zip">
+          <fileset dir="${product.dir}/hej"/>
+        </zip>
+        <zip zipfile="${issue.dir}/saxonhe${versionh}n.zip">
+          <fileset dir="${product.dir}/hen"/>
+        </zip>
+        <zip zipfile="${issue.dir}/saxonpe${versionh}j.zip">
+          <fileset dir="${product.dir}/pej"/>
+        </zip>
+        <zip zipfile="${issue.dir}/saxonpe${versionh}n.zip">
+          <fileset dir="${product.dir}/pen"/>
+        </zip>
+        <zip zipfile="${issue.dir}/saxonee${versionh}j.zip">
+          <fileset dir="${product.dir}/eej"/>
+        </zip>
+        <zip zipfile="${issue.dir}/saxonee${versionh}n.zip">
+          <fileset dir="${product.dir}/een"/>
+        </zip>-->
+        <copy file="${product.dir}/saxon${versionh}source.zip" todir="${issue.dir}"/>
+    </target>
+
+    <target name="archive" description="Archive everything needed for backup">
+        <mkdir dir="${archive.dir}"/>
+        <copy file="archive-contents.txt" todir="${archive.dir}"/>
+        <replace file="${archive.dir}/archive-contents.txt" token="N-N-N-N" value="${version}"
+            summary="yes"/>
+        <copy todir="${archive.dir}">
+            <fileset dir="${issue.dir}"/>
+            <fileset dir="${source-eej.dir}" includes="saxonee${version}source.zip"/>
+            <fileset dir="${build-resources.dir}" includes="saxon${version}source.zip"/>
+        </copy>
+        <zip zipfile="${archive.dir}/testsuite.zip">
+            <fileset dir="e:/tests">
+                <include name="testsuite/**"/>
+                <include name="gold/**"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${archive.dir}/schematests.zip">
+            <fileset dir="e:/tests">
+                <include name="xmlschema2006-11-06/**"/>
+                <exclude name="xmlschema2006-11-06/msData/**"/>
+                <exclude name="xmlschema2006-11-06/sunData/**"/>
+                <exclude name="xmlschema2006-11-06/nistData/**"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${archive.dir}/querytests.zip">
+            <fileset dir="e:/tests/xqts-extra"/>
+            <fileset dir="e:/xqts/saxon">
+                <exclude name="results/**"/>
+                <exclude name="results.net/**"/>
+                <exclude name="**/java/**"/>
+            </fileset>
+            <fileset dir="e:/xquts/saxon">
+                <exclude name="results/**"/>
+                <exclude name="results.net/**"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${archive.dir}/xslttests.zip">
+            <fileset dir="e:/xslts-extra"/>
+            <fileset dir="e:/xslt20-test/TestSuiteStagingArea/SaxonResults">
+                <include name="*.xml"/>
+                <include name="*.xsl"/>
+            </fileset>
+            <fileset dir="e:/xslt20-test/TestSuiteStagingArea/SaxonResults.Net">
+                <include name="*.xml"/>
+                <include name="*.xsl"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${archive.dir}/javatests.zip">
+            <fileset dir="c:/MyJava/testcode"/>
+        </zip>
+        <zip zipfile="${archive.dir}/doc.zip">
+            <fileset dir="c:/MyJava/doc"/>
+        </zip>
+        <zip zipfile="${archive.dir}/licensetool.zip">
+            <fileset dir="c:/MyJava/licensetool"/>
+        </zip>
+        <zip zipfile="${archive.dir}/dotnetmake.zip">
+            <fileset dir="c:/MyDotNet/make"/>
+        </zip>
+        <zip zipfile="${archive.dir}/licenses.zip">
+            <fileset dir="c:/saxon-licenses">
+                <exclude name="archived-licenses/**"/>
+                <exclude name="licenses/**"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${archive.dir}/build.zip">
+            <fileset dir="c:/MyJava/build">
+                <exclude name="c:/MyJava/build/temp/**"/>
+            </fileset>
+        </zip>
+    </target>
+
+
+</project>
