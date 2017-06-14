@@ -592,7 +592,7 @@ public class ConfigurationReader implements ContentHandler, NamespaceResolver {
         applyProperty(props, "strictStreamability", FeatureKeys.STRICT_STREAMABILITY);
         applyProperty(props, "styleParser", FeatureKeys.STYLE_PARSER_CLASS);
         applyProperty(props, "version", FeatureKeys.XSLT_VERSION);
-        applyProperty(props, "versionWarning", FeatureKeys.VERSION_WARNING);
+        //applyProperty(props, "versionWarning", FeatureKeys.VERSION_WARNING);
     }
 
     private void readXsdElement(Attributes atts) {

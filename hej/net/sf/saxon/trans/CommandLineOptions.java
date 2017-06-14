@@ -402,12 +402,6 @@ public class CommandLineOptions {
             }
         }
 
-        value = getOptionValue("versionmsg");
-        if (value != null) {
-            processor.setConfigurationProperty(FeatureKeys.VERSION_WARNING,
-                    "on".equals(value));
-        }
-
         value = getOptionValue("warnings");
         if (value != null) {
             if ("silent".equals(value)) {

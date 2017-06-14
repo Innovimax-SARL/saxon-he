@@ -2293,23 +2293,25 @@ public class Configuration implements SourceResolver, NotationSet {
      *
      * @return true if these messages are to be output.
      * @since 8.4
+     * @deprecated since 9.8.0.2: the method now always returns false. See bug 3278.
      */
 
     public boolean isVersionWarning() {
-        return defaultXsltCompilerInfo.isVersionWarning();
+        return false;
     }
 
     /**
      * Determine whether a warning is to be output when the version attribute of the stylesheet does
      * not match the XSLT processor version. (In the case where the stylesheet version is "1.0",
-     * the XSLT specification requires such a warning unless the user disables it.)
+     * the XSLT 2.0 specification requires such a warning unless the user disables it.)
      *
      * @param warn true if these warning messages are to be output.
      * @since 8.4
+     * @deprecated since 9.8.0.2: the method no longer has any effect. See bug 3278.
      */
 
     public void setVersionWarning(boolean warn) {
-        defaultXsltCompilerInfo.setVersionWarning(warn);
+        //defaultXsltCompilerInfo.setVersionWarning(warn);
     }
 
     /**
@@ -4490,7 +4492,7 @@ public class Configuration implements SourceResolver, NotationSet {
             setValidationWarnings(requireBoolean(name, value));
 
         } else if (name.equals(FeatureKeys.VERSION_WARNING)) {
-            setVersionWarning(requireBoolean(name, value));
+            // no action
 
         } else if (name.equals(FeatureKeys.XINCLUDE)) {
             setXIncludeAware(requireBoolean(name, value));
@@ -4944,7 +4946,7 @@ public class Configuration implements SourceResolver, NotationSet {
             return isValidationWarnings();
 
         } else if (name.equals(FeatureKeys.VERSION_WARNING)) {
-            return isVersionWarning();
+            return false;
 
         } else if (name.equals(FeatureKeys.XINCLUDE)) {
             return isXIncludeAware();

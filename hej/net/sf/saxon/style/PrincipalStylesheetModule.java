@@ -480,15 +480,16 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
      */
 
     protected void spliceUsePackages(XSLPackage xslpackage, Compilation compilation) throws XPathException {
-        CompilerInfo info = compilation.getCompilerInfo();
+//        CompilerInfo info = compilation.getCompilerInfo();
 
-        if (info.isVersionWarning() &&
-                xslpackage.getEffectiveVersion() != 30) {
-            XPathException w = new XPathException(
-                    "Running an XSLT " + xslpackage.getEffectiveVersionAsString() + " stylesheet with an XSLT 3.0 processor");
-            w.setLocator(xslpackage);
-            compilation.reportWarning(w);
-        }
+        // Warning message deleted by bug 3278
+//        if (info.isVersionWarning() &&
+//                xslpackage.getEffectiveVersion() != 30) {
+//            XPathException w = new XPathException(
+//                    "Running an XSLT " + xslpackage.getEffectiveVersionAsString() + " stylesheet with an XSLT 3.0 processor");
+//            w.setLocator(xslpackage);
+//            compilation.reportWarning(w);
+//        }
 
         List<XSLUsePackage> useDeclarations = new ArrayList<XSLUsePackage>();
         gatherUsePackageDeclarations(compilation, xslpackage, useDeclarations);

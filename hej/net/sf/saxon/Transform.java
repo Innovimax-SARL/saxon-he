@@ -192,7 +192,7 @@ public class Transform {
                                     "Apply validation to source documents");
         options.setPermittedValues("val", new String[]{"strict", "lax"}, "strict");
         options.addRecognizedOption("versionmsg", CommandLineOptions.TYPE_BOOLEAN,
-                                    "Output warning when stylesheet specifies version='1.0");
+                                    "No longer used");
         options.addRecognizedOption("warnings", CommandLineOptions.TYPE_ENUMERATION | CommandLineOptions.VALUE_REQUIRED,
                                     "Handling of recoverable dynamic errors");
         options.setPermittedValues("warnings", new String[]{"silent", "recover", "fatal"}, null);
@@ -315,7 +315,7 @@ public class Transform {
             processor = new Processor(true);
             config = processor.getUnderlyingConfiguration();
             initializeConfiguration(config);
-            config.setVersionWarning(true);  // unless suppressed by command line options
+            //config.setVersionWarning(true);  // unless suppressed by command line options
             try {
                 setFactoryConfiguration(schemaAware, null);
                 CompilerInfo defaultCompilerInfo = config.getDefaultXsltCompilerInfo();

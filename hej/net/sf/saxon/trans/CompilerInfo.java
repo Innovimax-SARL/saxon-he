@@ -36,7 +36,7 @@ public class CompilerInfo {
     private CodeInjector codeInjector;
     private int recoveryPolicy = Configuration.RECOVER_WITH_WARNINGS;
     private boolean schemaAware;
-    private boolean versionWarning;
+    //private boolean versionWarning;
     private String messageReceiverClassName = "net.sf.saxon.serialize.MessageEmitter";
     private StructuredQName defaultInitialMode;
     private StructuredQName defaultInitialTemplate;
@@ -86,7 +86,7 @@ public class CompilerInfo {
         codeInjector = info.codeInjector;
         recoveryPolicy = info.recoveryPolicy;
         schemaAware = info.schemaAware;
-        versionWarning = info.versionWarning;
+        //versionWarning = info.versionWarning;
         messageReceiverClassName = info.messageReceiverClassName;
         defaultInitialMode = info.defaultInitialMode;
         defaultInitialTemplate = info.defaultInitialTemplate;
@@ -478,10 +478,11 @@ public class CompilerInfo {
      *
      * @return true if these messages are to be output.
      * @since 9.2
+     * @deprecated since 9.8.0.2. Always now returns false. See bug 3278.
      */
 
     public boolean isVersionWarning() {
-        return versionWarning;
+        return false;
     }
 
     /**
@@ -490,10 +491,11 @@ public class CompilerInfo {
      *
      * @param warn true if these messages are to be output.
      * @since 9.2
+     * @deprecated since 9.8.0.2. The method no longer has any effect. See bug 3278.
      */
 
     public void setVersionWarning(boolean warn) {
-        versionWarning = warn;
+
     }
 
     /**
