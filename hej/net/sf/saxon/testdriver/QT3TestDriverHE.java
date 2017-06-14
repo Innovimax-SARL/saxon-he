@@ -231,6 +231,8 @@ public class QT3TestDriverHE extends TestDriver {
                 }
             } else if ("staticTyping".equals(value)) {
                 return inverse;
+            } else if ("remote_http".equals(value)) {
+                return !inverse;
             } else if ("moduleImport".equals(value)) {
                 return !inverse;
             } else if ("schema-location-hint".equals(value)) {

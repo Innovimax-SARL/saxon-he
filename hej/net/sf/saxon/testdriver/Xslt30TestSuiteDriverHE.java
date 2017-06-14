@@ -1048,6 +1048,7 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
         alwaysOn.add("feature/namespace_axis");
         alwaysOn.add("feature/dtd");
         alwaysOn.add("feature/built_in_derived_types");
+        alwaysOn.add("feature/remote_http");
         alwaysOn.add("feature/xsl-stylesheet-processing-instruction");
         alwaysOn.add("feature/fn-transform-XSLT");
         alwaysOn.add("available_documents");
