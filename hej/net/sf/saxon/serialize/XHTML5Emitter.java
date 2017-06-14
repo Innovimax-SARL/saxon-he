@@ -32,7 +32,7 @@ public class XHTML5Emitter extends XMLEmitter {
     private static String[] html5ElementNames = {
             "a", "abbr", "address", "area", "article", "aside", "audio",
             "b", "base", "bdi", "bdo", "blockquote", "body", "br", "button",
-            "canvas", "caption", "cite", "code", "col", "colgroup", "command",
+            "canvas", "caption", "cite", "code", "col", "colgroup", /*"command",*/
             "datalist", "dd", "del", "details", "dfn", "dialog", "div", "dl", "dt",
             "em", "embed",
             "fieldset", "figcaption", "figure", "footer", "form",
@@ -58,7 +58,7 @@ public class XHTML5Emitter extends XMLEmitter {
     static Set<String> emptyTags5 = new HashSet<String>(31);
 
     private static String[] emptyTagNames5 = {
-            "area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param",
+            "area", "base", "br", "col", /*"command",*/ "embed", "hr", "img", "input", "keygen", "link", "meta", "param",
             "source", "track", "wbr"
     };
 

@@ -26,7 +26,7 @@ public class HTML50Emitter extends HTMLEmitter {
         setEmptyTag("basefont");
         setEmptyTag("br");
         setEmptyTag("col");
-        setEmptyTag("command");
+        //setEmptyTag("command"); // bug 3277 (spec bug 30119)
         setEmptyTag("embed");
         setEmptyTag("frame");
         setEmptyTag("hr");
