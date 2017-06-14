@@ -579,11 +579,6 @@ public final class FilterExpression extends BinaryExpression implements ContextS
      */
 
     private Expression tryToRewritePositionalFilter(ExpressionVisitor visitor, boolean tracing) throws XPathException {
-        if (visitor.isOptimizeForStreaming()) {
-            // TODO: we're suppressing these optimizations because they generate expressions that
-            // can't currently be streamed. But in principle the optimizations are still worth doing.
-            return null;
-        }
         Configuration config = visitor.getConfiguration();
         TypeHierarchy th = config.getTypeHierarchy();
         if (getFilter() instanceof Literal) {
