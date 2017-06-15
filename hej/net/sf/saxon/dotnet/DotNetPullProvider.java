@@ -138,7 +138,7 @@ public class DotNetPullProvider implements PullProvider, Location {
      * {@link #ATTRIBUTE}, or {@link #NAMESPACE} events. With some PullProvider implementations,
      * it can also be used after {@link #END_ELEMENT}, but this is not guaranteed: a client who
      * requires the information at that point (for example, to do serialization) should insert an
-     * {@link com.saxonica.pull.ElementNameTracker} into the pipeline.
+     * {@link com.saxonica.xqj.pull.ElementNameTracker} into the pipeline.
      * If called at other times, the result is undefined and may result in an IllegalStateException.
      * If called when the current node is an unnamed namespace node (a node representing the default namespace)
      * the returned value is null.
