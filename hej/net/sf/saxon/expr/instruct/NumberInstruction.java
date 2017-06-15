@@ -145,14 +145,19 @@ public class NumberInstruction extends Expression {
 
     /*@NotNull*/
     public Expression copy(RebindingMap rebindings) {
-        NumberInstruction exp = new NumberInstruction(copy(selectOp), level, getCount(), getFrom());
+        NumberInstruction exp = new NumberInstruction(copy(selectOp, rebindings), level,
+                                                      copy(getCount(), rebindings),
+                                                      copy(getFrom(), rebindings));
         ExpressionTool.copyLocationInfo(this, exp);
         return exp;
-        // TODO: copy the patterns (level and count)
     }
 
-    private Expression copy(Operand op) {
-        return op == null ? null : op.getChildExpression().copy(new RebindingMap());
+    private Expression copy(Operand op, RebindingMap rebindings) {
+        return op == null ? null : op.getChildExpression().copy(rebindings);
+    }
+
+    private Pattern copy(Pattern op, RebindingMap rebindings) {
+        return op == null ? null : op.copy(rebindings);
     }
 
 
