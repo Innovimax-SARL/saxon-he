@@ -94,12 +94,22 @@ public class DocumentSorter extends UnaryExpression {
     public Expression optimize(ExpressionVisitor visitor, ContextItemStaticInfo contextInfo) throws XPathException {
         getOperand().optimize(visitor, contextInfo);
         Expression operand = getBaseExpression();
-        if ((operand.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
-            // this can happen as a result of further simplification
-            return operand;
-        }
-        if (!Cardinality.allowsMany(operand.getCardinality())) {
-            return operand;
+        boolean tryHarder = operand.isStaticPropertiesKnown();
+        while (true) {
+            if ((operand.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
+                // this can happen as a result of further simplification
+                return operand;
+            }
+            if (!Cardinality.allowsMany(operand.getCardinality())) {
+                return operand;
+            }
+            // Try once more after recomputing the static properties of the expression
+            if (tryHarder) {
+                operand.resetLocalStaticProperties();
+                tryHarder = false;
+            } else {
+                break;
+            }
         }
         if (operand instanceof SlashExpression && !visitor.isOptimizeForStreaming()) {
             return visitor.getConfiguration().obtainOptimizer().makeConditionalDocumentSorter(

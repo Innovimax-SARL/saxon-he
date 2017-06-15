@@ -1158,6 +1158,15 @@ public abstract class Expression implements IdentityComparable {
     }
 
     /**
+     * Ask whether the static properties of the expression have been computed
+     * @return true if the static properties have been computed
+     */
+
+    public boolean isStaticPropertiesKnown() {
+        return staticProperties != -1;
+    }
+
+    /**
      * Compute the static cardinality of this expression
      *
      * @return the computed cardinality, as one of the values {@link StaticProperty#ALLOWS_ZERO_OR_ONE},
