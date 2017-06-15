@@ -136,7 +136,7 @@ public abstract class Expression implements IdentityComparable {
             Expression child = o.getChildExpression();
             if (child.getParentExpression() != this) {
                 String message = "*** Bad parent pointer found in " + child.toShortString() +
-                        " at " + child.getLocation().getLineNumber() + " ***";
+                        " at " + child.getLocation().getSystemId() + "#" + child.getLocation().getLineNumber() + " ***";
                 try {
                     Configuration config = getConfiguration();
                     Logger logger = config == null ? null : config.getLogger();
