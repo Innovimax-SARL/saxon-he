@@ -26,7 +26,7 @@ import java.util.Set;
  * (such as xs:decimal or xs:anyURI) or a derived type (such as xs:ID or xs:dayTimeDuration).
  */
 
-public class BuiltInAtomicType implements AtomicType {
+public class BuiltInAtomicType implements AtomicType, ItemType.WithSequenceTypeCache {
 
     private int fingerprint;
     private int baseFingerprint;

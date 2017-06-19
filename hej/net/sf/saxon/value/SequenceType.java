@@ -34,44 +34,42 @@ public final class SequenceType {
      */
 
     public static final SequenceType ANY_SEQUENCE =
-            makeSequenceType(AnyItemType.getInstance(), StaticProperty.ALLOWS_ZERO_OR_MORE);
+            AnyItemType.getInstance().zeroOrMore();
 
     /**
      * A type that allows exactly one item, of any kind
      */
 
     public static final SequenceType SINGLE_ITEM =
-            makeSequenceType(AnyItemType.getInstance(), StaticProperty.EXACTLY_ONE);
+            AnyItemType.getInstance().one();
 
     /**
      * A type that allows zero or one items, of any kind
      */
 
     public static final SequenceType OPTIONAL_ITEM =
-            makeSequenceType(AnyItemType.getInstance(), StaticProperty.ALLOWS_ZERO_OR_ONE);
+            AnyItemType.getInstance().zeroOrOne();
 
     /**
      * A type that allows exactly one atomic value
      */
 
     public static final SequenceType SINGLE_ATOMIC =
-            makeSequenceType(BuiltInAtomicType.ANY_ATOMIC,
-                             StaticProperty.EXACTLY_ONE);
+            BuiltInAtomicType.ANY_ATOMIC.one();
 
     /**
      * A type that allows zero or one atomic values
      */
 
     public static final SequenceType OPTIONAL_ATOMIC =
-            makeSequenceType(BuiltInAtomicType.ANY_ATOMIC,
-                             StaticProperty.ALLOWS_ZERO_OR_ONE);
-    /**
+            BuiltInAtomicType.ANY_ATOMIC.zeroOrOne();
+    /*
+
      * A type that allows zero or more atomic values
      */
 
     public static final SequenceType ATOMIC_SEQUENCE =
-            makeSequenceType(BuiltInAtomicType.ANY_ATOMIC,
-                             StaticProperty.ALLOWS_ZERO_OR_MORE);
+            BuiltInAtomicType.ANY_ATOMIC.zeroOrMore();
 
     /**
      * A type that allows a single string
@@ -129,41 +127,6 @@ public final class SequenceType {
     public static final SequenceType OPTIONAL_INTEGER =
             BuiltInAtomicType.INTEGER.zeroOrOne();
 
-    /**
-     * A type that allows a single long
-     */
-
-    public static final SequenceType SINGLE_LONG =
-            BuiltInAtomicType.LONG.one();
-
-    /**
-     * A type that allows a single URI
-     */
-
-    public static final SequenceType SINGLE_ANY_URI =
-            BuiltInAtomicType.ANY_URI.one();
-
-
-    /**
-     * A type that allows a single optional long
-     */
-
-    public static final SequenceType OPTIONAL_LONG =
-            BuiltInAtomicType.LONG.zeroOrOne();
-
-    /**
-     * A type that allows a single int
-     */
-
-    public static final SequenceType SINGLE_INT =
-            BuiltInAtomicType.INT.one();
-
-    /**
-     * A type that allows a single optional int
-     */
-
-    public static final SequenceType OPTIONAL_INT =
-            BuiltInAtomicType.INT.zeroOrOne();
 
     /**
      * A type that allows a single short
@@ -360,70 +323,28 @@ public final class SequenceType {
      */
 
     public static final SequenceType OPTIONAL_NODE =
-            makeSequenceType(AnyNodeTest.getInstance(),
-                             StaticProperty.ALLOWS_ZERO_OR_ONE);
+            AnyNodeTest.getInstance().zeroOrOne();
 
     /**
      * A type that allows a single node
      */
 
     public static final SequenceType SINGLE_NODE =
-            makeSequenceType(AnyNodeTest.getInstance(),
-                             StaticProperty.EXACTLY_ONE);
+            AnyNodeTest.getInstance().one();
 
     /**
      * A type that allows a single document node
      */
 
     public static final SequenceType OPTIONAL_DOCUMENT_NODE =
-            makeSequenceType(NodeKindTest.DOCUMENT,
-                             StaticProperty.ALLOWS_ZERO_OR_ONE);
-    /**
-     * A type that allows a single element node
-     */
-
-    public static final SequenceType SINGLE_ELEMENT_NODE =
-            makeSequenceType(NodeKindTest.ELEMENT,
-                             StaticProperty.EXACTLY_ONE);
-
-    /**
-     * A type that allows an optional element node
-     */
-
-    public static final SequenceType OPTIONAL_ELEMENT_NODE =
-            makeSequenceType(NodeKindTest.ELEMENT,
-                             StaticProperty.ALLOWS_ZERO_OR_ONE);
-
-    /**
-     * A type that allows an optional attribute node
-     */
-
-    public static final SequenceType OPTIONAL_ATTRIBUTE_NODE =
-            makeSequenceType(NodeKindTest.ATTRIBUTE,
-                             StaticProperty.ALLOWS_ZERO_OR_ONE);
-
+            NodeKindTest.DOCUMENT.zeroOrOne();
 
     /**
      * A type that allows a sequence of zero or more nodes
      */
 
     public static final SequenceType NODE_SEQUENCE =
-            makeSequenceType(AnyNodeTest.getInstance(),
-                             StaticProperty.ALLOWS_ZERO_OR_MORE);
-
-    /**
-     * A type that allows a sequence of zero or more numeric values
-     */
-
-    public static final SequenceType NUMERIC_SEQUENCE =
-            makeSequenceType(NumericType.getInstance(), StaticProperty.ALLOWS_ZERO_OR_MORE);
-
-    /**
-     * A type that allows a sequence of zero or more integer values
-     */
-
-    public static final SequenceType INTEGER_SEQUENCE =
-            BuiltInAtomicType.INTEGER.zeroOrMore();
+            AnyNodeTest.getInstance().zeroOrMore();
 
     /**
      * A type that allows a sequence of zero or more string values
@@ -432,12 +353,10 @@ public final class SequenceType {
             BuiltInAtomicType.STRING.zeroOrMore();
 
     /**
-     * A type that allows a sequence of zero or more base64 binary values
+     * A type that allows a single function item
      */
-    public static final SequenceType BASE64_BINARY_SEQUENCE =
-            BuiltInAtomicType.BASE64_BINARY.zeroOrMore();
 
-    public static SequenceType SINGLE_FUNCTION =
+    public static final SequenceType SINGLE_FUNCTION =
             makeSequenceType(AnyFunctionType.ANY_FUNCTION, StaticProperty.EXACTLY_ONE);
 
     /**
@@ -495,8 +414,8 @@ public final class SequenceType {
 
     public static SequenceType makeSequenceType(ItemType primaryType, int cardinality) {
 
-        if (primaryType instanceof BuiltInAtomicType) {
-            BuiltInAtomicType bat = (BuiltInAtomicType) primaryType;
+        if (primaryType instanceof ItemType.WithSequenceTypeCache) {
+            ItemType.WithSequenceTypeCache bat = (ItemType.WithSequenceTypeCache) primaryType;
             switch (cardinality) {
                 case StaticProperty.EXACTLY_ONE:
                     return bat.one();

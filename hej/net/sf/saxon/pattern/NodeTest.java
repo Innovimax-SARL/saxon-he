@@ -7,10 +7,12 @@
 
 package net.sf.saxon.pattern;
 
+import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.om.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.tiny.NodeVectorTree;
 import net.sf.saxon.type.*;
+import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.z.IntPredicate;
 import net.sf.saxon.z.IntSet;
 import net.sf.saxon.z.IntUniversalSet;
@@ -34,7 +36,12 @@ import java.util.Set;
  * @author Michael H. Kay
  */
 
-public abstract class NodeTest implements ItemType {
+public abstract class NodeTest implements ItemType.WithSequenceTypeCache {
+
+    private SequenceType _one;
+    private SequenceType _oneOrMore;
+    private SequenceType _zeroOrOne;
+    private SequenceType _zeroOrMore;
 
     /**
      * Determine the default priority to use if this node-test appears as a match pattern
@@ -298,5 +305,62 @@ public abstract class NodeTest implements ItemType {
         return "function test(item) {" + generateJavaScriptItemTypeTest(AnyItemType.getInstance()) + "};" +
                 "if (test(val)) {return val;} else {throw SaxonJS.XError('Conversion failed', '" + errorCode + "');}";
     }
+
+    /**
+     * Get a sequence type representing exactly one instance of this atomic type
+     *
+     * @return a sequence type representing exactly one instance of this atomic type
+     * @since 9.8.0.2
+     */
+
+    public SequenceType one() {
+        if (_one == null) {
+            _one = new SequenceType(this, StaticProperty.EXACTLY_ONE);
+        }
+        return _one;
+    }
+
+    /**
+     * Get a sequence type representing zero or one instances of this atomic type
+     *
+     * @return a sequence type representing zero or one instances of this atomic type
+     * @since 9.8.0.2
+     */
+
+    public SequenceType zeroOrOne() {
+        if (_zeroOrOne == null) {
+            _zeroOrOne = new SequenceType(this, StaticProperty.ALLOWS_ZERO_OR_ONE);
+        }
+        return _zeroOrOne;
+    }
+
+    /**
+     * Get a sequence type representing one or more instances of this atomic type
+     *
+     * @return a sequence type representing one or more instances of this atomic type
+     * @since 9.8.0.2
+     */
+
+    public SequenceType oneOrMore() {
+        if (_oneOrMore == null) {
+            _oneOrMore = new SequenceType(this, StaticProperty.ALLOWS_ONE_OR_MORE);
+        }
+        return _oneOrMore;
+    }
+
+    /**
+     * Get a sequence type representing one or more instances of this atomic type
+     *
+     * @return a sequence type representing one or more instances of this atomic type
+     * @since 9.8.0.2
+     */
+
+    public SequenceType zeroOrMore() {
+        if (_zeroOrMore == null) {
+            _zeroOrMore = new SequenceType(this, StaticProperty.ALLOWS_ZERO_OR_MORE);
+        }
+        return _zeroOrMore;
+    }
+
 }
 
