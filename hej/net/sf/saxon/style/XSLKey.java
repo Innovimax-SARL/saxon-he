@@ -189,7 +189,7 @@ public class XSLKey extends StyleElement implements StylesheetComponent {
                 //role.setSourceLocator(new ExpressionLocation(this));
                 use = config.getTypeChecker(false).staticTypeCheck(
                         use,
-                        SequenceType.makeSequenceType(BuiltInAtomicType.ANY_ATOMIC, StaticProperty.ALLOWS_ZERO_OR_MORE),
+                        SequenceType.ATOMIC_SEQUENCE,
                         role, makeExpressionVisitor());
             } catch (XPathException err) {
                 compileError(err);
@@ -280,7 +280,7 @@ public class XSLKey extends StyleElement implements StylesheetComponent {
                 //role.setSourceLocator(new ExpressionLocation(this));
                 use = config.getTypeChecker(false).staticTypeCheck(
                         use,
-                        SequenceType.makeSequenceType(BuiltInAtomicType.ANY_ATOMIC, StaticProperty.ALLOWS_ZERO_OR_MORE),
+                        SequenceType.OPTIONAL_ATOMIC,
                         role, makeExpressionVisitor());
                 // Do a further check that the use expression makes sense in the context of the match pattern
                 assert match != null;

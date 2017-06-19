@@ -49,7 +49,7 @@ import java.util.Properties;
 public class Serialize extends SystemFunction implements Callable {
     
     public static OptionsParameter makeOptionsParameter() {
-        SequenceType listOfQNames = SequenceType.makeSequenceType(BuiltInAtomicType.QNAME, StaticProperty.ALLOWS_ZERO_OR_MORE);
+        SequenceType listOfQNames = BuiltInAtomicType.QNAME.zeroOrMore();
         OptionsParameter op = new OptionsParameter();
         op.addAllowedOption("allow-duplicate-names", SequenceType.SINGLE_BOOLEAN); //yes-no-param-type
         op.addAllowedOption("byte-order-mark", SequenceType.SINGLE_BOOLEAN); //yes-no-param-type
@@ -134,7 +134,7 @@ public class Serialize extends SystemFunction implements Callable {
     static {
         requiredTypes.put("allow-duplicate-names", SequenceType.SINGLE_BOOLEAN); //yes-no-param-type
         requiredTypes.put("byte-order-mark", SequenceType.SINGLE_BOOLEAN); //yes-no-param-type
-        requiredTypes.put("cdata-section-elements", SequenceType.makeSequenceType(BuiltInAtomicType.QNAME, StaticProperty.ALLOWS_ZERO_OR_MORE));
+        requiredTypes.put("cdata-section-elements", BuiltInAtomicType.QNAME.zeroOrMore());
         //QNames-param-type - sequence or an array of xs:QName values. Note that an array will be converted to a sequence, as required
         requiredTypes.put("doctype-public", SequenceType.SINGLE_STRING); //doctype-public-param-type pubid-char-string-type
         requiredTypes.put("doctype-system", SequenceType.SINGLE_STRING); //doctype-system-param-type system-id-string-type
@@ -153,7 +153,7 @@ public class Serialize extends SystemFunction implements Callable {
         //NMTOKEN-param-type  BuiltInAtomicType.NMTOKEN
         requiredTypes.put("omit-xml-declaration", SequenceType.SINGLE_BOOLEAN); //yes-no-param-type
         requiredTypes.put("standalone", SequenceType.OPTIONAL_BOOLEAN); //yes-no-omit-type
-        requiredTypes.put("suppress-indentation", SequenceType.makeSequenceType(BuiltInAtomicType.QNAME, StaticProperty.ALLOWS_ZERO_OR_MORE));
+        requiredTypes.put("suppress-indentation", BuiltInAtomicType.QNAME.zeroOrMore());
         //QNames-param-type - sequence or an array of xs:QName values. Note that an array will be converted to a sequence, as required
         requiredTypes.put("undeclare-prefixes", SequenceType.SINGLE_BOOLEAN); //yes-no-param-type
         requiredTypes.put("use-character-maps", SequenceType.makeSequenceType(MapType.ANY_MAP_TYPE, StaticProperty.EXACTLY_ONE));
@@ -164,10 +164,10 @@ public class Serialize extends SystemFunction implements Callable {
     private final static Map<String, SequenceType> requiredTypesSaxon = new HashMap<String, SequenceType>(20);
 
     static {
-        requiredTypesSaxon.put("attribute-order", SequenceType.makeSequenceType(BuiltInAtomicType.QNAME, StaticProperty.ALLOWS_ZERO_OR_MORE));
+        requiredTypesSaxon.put("attribute-order", BuiltInAtomicType.QNAME.zeroOrMore());
         //eqnames
         requiredTypesSaxon.put("character-representation", SequenceType.SINGLE_STRING); //string
-        requiredTypesSaxon.put("double-space", SequenceType.makeSequenceType(BuiltInAtomicType.QNAME, StaticProperty.ALLOWS_ZERO_OR_MORE));
+        requiredTypesSaxon.put("double-space", BuiltInAtomicType.QNAME.zeroOrMore());
         //eqnames
         requiredTypesSaxon.put("indent-spaces", SequenceType.SINGLE_INTEGER); //integer
         requiredTypesSaxon.put("line-length", SequenceType.SINGLE_INTEGER); //integer
@@ -176,7 +176,7 @@ public class Serialize extends SystemFunction implements Callable {
         requiredTypesSaxon.put("require-well-formed", SequenceType.SINGLE_BOOLEAN); //boolean
         requiredTypesSaxon.put("single-quotes", SequenceType.SINGLE_BOOLEAN); //boolean
         requiredTypesSaxon.put("supply-source-locator", SequenceType.SINGLE_BOOLEAN); //boolean
-        requiredTypesSaxon.put("suppress-indentation", SequenceType.makeSequenceType(BuiltInAtomicType.QNAME, StaticProperty.ALLOWS_ZERO_OR_MORE));
+        requiredTypesSaxon.put("suppress-indentation", BuiltInAtomicType.QNAME.zeroOrMore());
         //eqnames
     }
 

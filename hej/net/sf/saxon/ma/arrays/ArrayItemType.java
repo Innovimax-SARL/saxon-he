@@ -7,9 +7,7 @@
 
 package net.sf.saxon.ma.arrays;
 
-import net.sf.saxon.type.SpecificFunctionType;
 import net.sf.saxon.expr.Expression;
-import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.parser.RoleDiagnostic;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.Sequence;
@@ -105,7 +103,7 @@ public class ArrayItemType extends AnyFunctionType {
 
     public SequenceType[] getArgumentTypes() {
         // regardless of the key type, a function call on this map can supply any atomic value
-        return new SequenceType[]{SequenceType.makeSequenceType(BuiltInAtomicType.INTEGER, StaticProperty.EXACTLY_ONE)};
+        return new SequenceType[]{BuiltInAtomicType.INTEGER.one()};
     }
 
     /**

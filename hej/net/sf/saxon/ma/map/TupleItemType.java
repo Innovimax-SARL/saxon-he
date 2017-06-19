@@ -8,7 +8,6 @@
 package net.sf.saxon.ma.map;
 
 import net.sf.saxon.expr.Expression;
-import net.sf.saxon.expr.StaticProperty;
 import net.sf.saxon.expr.parser.RoleDiagnostic;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.Sequence;
@@ -116,7 +115,7 @@ public class TupleItemType extends AnyFunctionType {
 
     public SequenceType[] getArgumentTypes() {
         // regardless of the key type, a function call on this map can supply any atomic value
-        return new SequenceType[]{SequenceType.makeSequenceType(BuiltInAtomicType.ANY_ATOMIC, StaticProperty.EXACTLY_ONE)};
+        return new SequenceType[]{SequenceType.SINGLE_ATOMIC};
     }
 
     /**
