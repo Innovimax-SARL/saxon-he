@@ -13,6 +13,7 @@ import cli.System.Type;
 import cli.System.Uri;
 import cli.System.Xml.XmlResolver;
 import net.sf.saxon.functions.ResolveURI;
+import net.sf.saxon.lib.AugmentedSource;
 import net.sf.saxon.lib.RelativeURIResolver;
 import net.sf.saxon.trans.XPathException;
 import org.xml.sax.EntityResolver;
@@ -144,7 +145,9 @@ public class DotNetURIResolver implements RelativeURIResolver, EntityResolver {
             if (obj instanceof Stream) {
                 StreamSource source = new StreamSource(new DotNetInputStream((Stream) obj));
                 source.setSystemId(abs.toString());
-                return source;
+                AugmentedSource as = AugmentedSource.makeAugmentedSource(source);
+                as.setPleaseCloseAfterUse(true);
+                return as;
             } else if (obj instanceof TextReader) {
                 StreamSource source = new StreamSource(new DotNetReader((TextReader) obj));
                 source.setSystemId(abs.toString());
