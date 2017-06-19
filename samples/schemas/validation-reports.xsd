@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" 
+  targetNamespace="http://saxon.sf.net/ns/validation" xmlns:saxon="http://saxon.sf.net/" xmlns:v="http://saxon.sf.net/ns/validation">
+  <xs:element name="validation-reports">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="v:validation-report"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="validation-report">
+    <xs:annotation>
+      <xs:documentation>Defines the individual report for a source document.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="v:error"/>
+        <xs:element ref="v:meta-data" maxOccurs="1" minOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="system-id" use="required" type="xs:anyURI"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="error">
+    <xs:complexType mixed="true">
+      <xs:attribute name="column" use="optional" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>Defines the column number where the error occurs. 
+            This attribute and the path attribute are mutually exclusive.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="path" use="optional" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>Defines the path where the error occurs if the column number is unavailable.
+            This attribute and the path attribute are mutually exclusive.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="line" use="optional" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>Defines the line number location for the validation error if available.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="context-path" use="optional" type="xs:anyURI" >
+        <xs:annotation>
+          <xs:documentation>Defines a hierarchic path giving the logical position in the instance 
+            document where the validation error was found</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="xsd-part" use="optional" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Defines the part number of the XSD schema specification containing 
+            the constraint that has been violated</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="constraint" use="optional" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Get the clause number of the rule that has been violated</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="system-id" use="optional" type="xs:anyURI"/>      
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="meta-data">
+    <xs:annotation>
+      <xs:documentation>Defines a summary of the validation report for the specific source document</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="v:validator"/>
+        <xs:element ref="v:results"/>
+        <xs:element ref="v:schema"/>
+        <xs:element ref="v:run"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="validator">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Defines the Schema validation product</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="vendor" use="optional" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Defines the vendor of the Schema validation product</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="version" use="required" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>The version of the product used to validate the source document</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="results">
+    <xs:complexType>
+      <xs:attribute name="errors" use="required" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>Defines the number of the validation error found in the source document</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="warnings" use="required" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>Defines the number of the validation warnings found in the source document</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="schema">
+    <xs:complexType>
+      <xs:attribute name="file" use="required" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>Defines the name of the XSD schema used to validate the source document</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="xsd-version" use="required" type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Defines the XSD Schema version used to validate the source document</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="run">
+    <xs:complexType>
+      <xs:attribute name="at" use="required" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>Defines the date as to when the validation was run.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
