@@ -130,6 +130,7 @@ public class XSLGlobalVariable extends StyleElement implements StylesheetCompone
             gv = this instanceof XSLGlobalParam ? new GlobalParam() : new GlobalVariable();
             gv.setPackageData(getCompilation().getPackageData());
             gv.makeDeclaringComponent(getVisibility(), getContainingPackage());
+            gv.setRequiredType(sourceBinding.getDeclaredType());
             gv.setDeclaredVisibility(getDeclaredVisibility());
             gv.setVariableQName(sourceBinding.getVariableQName());
             gv.setSystemId(getSystemId());
