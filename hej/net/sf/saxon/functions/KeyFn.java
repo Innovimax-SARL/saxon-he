@@ -254,7 +254,12 @@ public class KeyFn extends SystemFunction {
         NodeInfo doc = origin.getRoot();
         if (selectedKeySet.isComposite()) {
             SequenceIterator soughtKey = sought.iterate();
-            return new LazySequence(keyManager.selectByCompositeKey(selectedKeySet, doc.getTreeInfo(), soughtKey, context));
+            SequenceIterator all =
+                    keyManager.selectByCompositeKey(selectedKeySet, doc.getTreeInfo(), soughtKey, context);
+            if (origin.isSameNodeInfo(doc)) {
+                return new LazySequence(all);
+            }
+            return new LazySequence(new ItemMappingIterator(all, new SubtreeFilter(origin)));
 
         } else {
             // Changed by bug 2929
