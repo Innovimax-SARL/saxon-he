@@ -4757,6 +4757,7 @@ public class Configuration implements SourceResolver, NotationSet {
         booleanPropertyNames.add(FeatureKeys.STABLE_UNPARSED_TEXT);
         booleanPropertyNames.add(FeatureKeys.STREAMING_FALLBACK);
         booleanPropertyNames.add(FeatureKeys.STRICT_STREAMABILITY);
+        booleanPropertyNames.add(FeatureKeys.SUPPRESS_XPATH_WARNINGS);
         booleanPropertyNames.add(FeatureKeys.SUPPRESS_XSLT_NAMESPACE_CHECK);
         booleanPropertyNames.add(FeatureKeys.TRACE_EXTERNAL_FUNCTIONS);
         booleanPropertyNames.add(FeatureKeys.TRACE_OPTIMIZER_DECISIONS);

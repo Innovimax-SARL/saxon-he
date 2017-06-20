@@ -297,11 +297,13 @@ public class XPathParser {
      */
 
     protected void warning(/*@NotNull*/ String message) throws XPathException {
-        String s = t.recentText(-1);
-        String prefix =
-                (message.startsWith("...") ? "near" : "in") +
-                        ' ' + Err.wrap(s) + ":\n    ";
-        env.issueWarning(prefix + message, makeLocation());
+        if (!env.getConfiguration().getBooleanProperty(FeatureKeys.SUPPRESS_XPATH_WARNINGS)) {
+            String s = t.recentText(-1);
+            String prefix =
+                    (message.startsWith("...") ? "near" : "in") +
+                            ' ' + Err.wrap(s) + ":\n    ";
+            env.issueWarning(prefix + message, makeLocation());
+        }
     }
 
     /**
