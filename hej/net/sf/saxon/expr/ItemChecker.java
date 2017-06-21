@@ -149,6 +149,32 @@ public final class ItemChecker extends UnaryExpression {
     }
 
     /**
+     * Perform optimisation of an expression and its subexpressions.
+     * <p/>
+     * <p>This method is called after all references to functions and variables have been resolved
+     * to the declaration of the function or variable, and after all type checking has been done.</p>
+     *
+     * @param visitor     an expression visitor
+     * @param contextInfo the static type of "." at the point where this expression is invoked.
+     *                    The parameter is set to null if it is known statically that the context item will be undefined.
+     *                    If the type of the context item is not known statically, the argument is set to
+     *                    {@link Type#ITEM_TYPE}
+     * @return the original expression, rewritten if appropriate to optimize execution
+     * @throws XPathException if an error is discovered during this phase
+     *                        (typically a type error)
+     */
+    @Override
+    public Expression optimize(ExpressionVisitor visitor, ContextItemStaticInfo contextInfo) throws XPathException {
+        optimizeChildren(visitor, contextInfo);
+        TypeHierarchy th = visitor.getConfiguration().getTypeHierarchy();
+        int rel = th.relationship(requiredItemType, getBaseExpression().getItemType());
+        if (rel == TypeHierarchy.SAME_TYPE || rel == TypeHierarchy.SUBSUMES) {
+            return getBaseExpression();
+        }
+        return this;
+    }
+
+    /**
      * An implementation of Expression must provide at least one of the methods evaluateItem(), iterate(), or process().
      * This method indicates which of these methods is provided. This implementation provides both iterate() and
      * process() methods natively.
