@@ -282,6 +282,16 @@ public final class Atomizer extends UnaryExpression {
     }
 
     /**
+     * Reset the static properties of the expression to -1, so that they have to be recomputed
+     * next time they are used.
+     */
+    @Override
+    public void resetLocalStaticProperties() {
+        super.resetLocalStaticProperties();
+        operandItemType = null;
+    }
+
+    /**
      * Copy an expression. This makes a deep copy.
      *
      * @return the copy of the original expression

@@ -121,8 +121,10 @@ public class LiteralResultElement extends StyleElement {
                         // deal with this later
                     } else if (fp == StandardNames.XSL_INHERIT_NAMESPACES) {
                         inheritNamespaces = processBooleanAttribute("xsl:inherit-namespaces", atts.getValue(i));
+                    } else if (forwardsCompatibleModeIsEnabled()) {
+                        // the attribute is ignored
                     } else {
-                        compileError("Unknown XSL attribute " + atts.getNodeName(i).getDisplayName(), "XTSE0805");
+                        compileError("Unknown XSLT attribute " + atts.getNodeName(i).getDisplayName(), "XTSE0805");
                     }
                 } else {
                     attributeNames[numberOfAttributes] = new FingerprintedQName(atts.getPrefix(i), atts.getURI(i), atts.getLocalName(i), fp);

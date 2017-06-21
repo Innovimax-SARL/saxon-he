@@ -181,9 +181,9 @@ public class XSLPackage extends XSLModuleRoot {
      * @return true if forwards-compatible mode is enabled
      */
 
-    public boolean forwardsCompatibleModeIsEnabled() {
-        return false;
-    }
+//    public boolean forwardsCompatibleModeIsEnabled() {
+//        return false;
+//    }
 
     /**
      * Ask whether it is required that modes be explicitly declared

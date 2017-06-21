@@ -50,18 +50,6 @@ public class XSLStylesheet extends XSLModuleRoot {
                 //
             } else if (f.equals("exclude-result-prefixes")) {
                 //
-//            } else if (f.equals("default-validation")) {
-//                // already handled
-//                String val = Whitespace.trim(atts.getValue(a));
-//                defaultValidation = Validation.getCode(val);
-//                if (defaultValidation == Validation.INVALID ||
-//                    defaultValidation == Validation.STRICT || defaultValidation == Validation.LAX) {
-//                    invalidAttribute("default-validation", "preserve|strip");
-//                } else if (!isSchemaAware() && defaultValidation != Validation.STRIP) {
-//                    defaultValidation = Validation.STRIP;
-//                    compileError("default-validation='" + val + "' requires a schema-aware processor",
-//                            "XTSE1660");
-//                }
             } else if (f.equals("input-type-annotations")) {
                 inputTypeAnnotationsAtt = atts.getValue(a);
             } else {

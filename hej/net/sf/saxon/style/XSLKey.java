@@ -10,22 +10,24 @@ package net.sf.saxon.style;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.Version;
 import net.sf.saxon.expr.*;
+import net.sf.saxon.expr.instruct.Actor;
 import net.sf.saxon.expr.instruct.ApplyTemplates;
 import net.sf.saxon.expr.instruct.CallTemplate;
-import net.sf.saxon.expr.instruct.Actor;
 import net.sf.saxon.expr.instruct.SlotManager;
 import net.sf.saxon.expr.parser.*;
 import net.sf.saxon.expr.sort.CodepointCollator;
 import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.lib.StringCollator;
-import net.sf.saxon.om.*;
+import net.sf.saxon.om.AttributeCollection;
+import net.sf.saxon.om.NamespaceException;
+import net.sf.saxon.om.StandardNames;
+import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.pattern.NodeTestPattern;
 import net.sf.saxon.pattern.Pattern;
 import net.sf.saxon.trans.*;
 import net.sf.saxon.type.BuiltInAtomicType;
 import net.sf.saxon.type.ErrorType;
 import net.sf.saxon.type.ItemType;
-import net.sf.saxon.type.TypeHierarchy;
 import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.Whitespace;
 
@@ -295,7 +297,6 @@ public class XSLKey extends StyleElement implements StylesheetComponent {
         ExpressionVisitor visitor = makeExpressionVisitor();
         ContextItemStaticInfo contextItemType = getConfiguration().makeContextItemStaticInfo(match.getItemType(), false);
         use = use.optimize(visitor, contextItemType);
-        final TypeHierarchy th = config.getTypeHierarchy();
         ItemType useItemType = use.getItemType();
         if (useItemType == ErrorType.getInstance()) {
             useItemType = BuiltInAtomicType.STRING; // corner case, prevents crashing

@@ -17,6 +17,7 @@ import net.sf.saxon.expr.XPathContextMajor;
 import net.sf.saxon.expr.instruct.SlotManager;
 import net.sf.saxon.expr.parser.*;
 import net.sf.saxon.functions.DocumentFn;
+import net.sf.saxon.functions.ElementAvailable;
 import net.sf.saxon.functions.FunctionLibraryList;
 import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.om.*;
@@ -26,11 +27,11 @@ import net.sf.saxon.tree.linked.DocumentImpl;
 import net.sf.saxon.tree.util.AttributeCollectionImpl;
 import net.sf.saxon.type.*;
 import net.sf.saxon.value.*;
-import net.sf.saxon.value.StringValue;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -52,6 +53,7 @@ public class UseWhenFilter extends ProxyReceiver {
     private int depthOfHole = 0;
     private boolean emptyStylesheetElement = false;
     private Stack<String> defaultNamespaceStack = new Stack<String>();
+    private Stack<Integer> versionStack = new Stack<Integer>();
     private DateTimeValue currentDateTime = DateTimeValue.getCurrentDateTime(null);
     private Compilation compilation;
     private Stack<String> systemIdStack = new Stack<String>();
@@ -123,25 +125,43 @@ public class UseWhenFilter extends ProxyReceiver {
         if (depthOfHole == 0) {
             URI baseUri = processBaseUri(location);
 
+            boolean ignore = false;
+            int fp = -1;
             if (inXsltNamespace) {
+                fp = elemName.obtainFingerprint(getNamePool());
+            }
+
+            int version = Integer.MIN_VALUE;
+            if (inXsltNamespace) {
+                if (fp != StandardNames.XSL_OUTPUT) {
+                    String versionAtt = startTag.getAttribute("", "version");
+                    version = processVersionAttribute(versionAtt);
+                }
+            } else {
+                // simplified stylesheet: look for xsl:version attribute
+                String versionAtt = startTag.getAttribute(NamespaceConstant.XSLT, "version");
+                version = processVersionAttribute(versionAtt);
+            }
+
+            if (version == Integer.MIN_VALUE) {
+                version = versionStack.isEmpty() ? 30 : versionStack.peek();
+            }
+            versionStack.push(version);
+
+            if (inXsltNamespace && defaultNamespaceStack.size() == 2
+                    && version > 30 && !ElementAvailable.isXslt30Element(fp)) {
+                // top level unknown XSLT element is ignored in forwards-compatibility mode
+                ignore = true;
+            }
+
+            if (inXsltNamespace && !ignore) {
                 processShadowAttributes(location, baseUri);
             }
 
-            String useWhen = startTag.getAttribute(stdAttUri, "use-when");
+            String useWhen = ignore ? "false()" : startTag.getAttribute(stdAttUri, "use-when");
 
             boolean isStylesheetElement = inXsltNamespace &&
                     (elemName.getLocalPart().equals("stylesheet") || elemName.getLocalPart().equals("transform") || elemName.getLocalPart().equals("package"));
-
-
-            if (isStylesheetElement) {
-                String version = startTag.getAttribute("", "version");
-                processVersionAttribute(version);
-            } else {
-                // simplified stylesheet: look for xsl:version attribute
-                String version = startTag.getAttribute(NamespaceConstant.XSLT, "version");
-                processVersionAttribute(version);
-            }
-
 
             if (useWhen != null) {
                 try {
@@ -183,7 +203,7 @@ public class UseWhenFilter extends ProxyReceiver {
 
                 boolean isInclude = elemName.getLocalPart().equals("include");
                 boolean isImport = elemName.getLocalPart().equals("import");
-                if (isInclude || isImport) {
+                if ((isInclude || isImport) && defaultNamespaceStack.size() == 2) {
                     // We need to process the included/imported stylesheet now, because its static variables
                     // can be used later in this module
                     processIncludeImport(elemName, location, baseUri, isImport);
@@ -191,22 +211,22 @@ public class UseWhenFilter extends ProxyReceiver {
 
                 // Handle xsl:import-schema
 
-                if (elemName.getLocalPart().equals("import-schema")) {
+                if (elemName.getLocalPart().equals("import-schema") && defaultNamespaceStack.size() == 2) {
                     compilation.setSchemaAware(true);   // bug 3105
                 }
 
                 // Handle xsl:use-package
 
-                if (elemName.getLocalPart().equals("use-package")) {
+                if (elemName.getLocalPart().equals("use-package") && defaultNamespaceStack.size() == 2) {
                     if (precedence.getDepth() > 1) {
                         throw new XPathException("xsl:use-package cannot appear in an imported stylesheet", "XTSE3008");
                     }
                     AttributeCollection atts = startTag.getAllAttributes();
                     String name = atts.getValue("", "name");
-                    String version = atts.getValue("", "package-version");
+                    String pversion = atts.getValue("", "package-version");
                     if (name != null) {
                         try {
-                            UsePack use = new UsePack(name, version, location.saveLocation());
+                            UsePack use = new UsePack(name, pversion, location.saveLocation());
                             compilation.registerPackageDependency(use);
                         } catch (XPathException err) {
                             // No action, error will be reported later.
@@ -408,15 +428,16 @@ public class UseWhenFilter extends ProxyReceiver {
         return baseUri;
     }
 
-    private void processVersionAttribute(String version) throws XPathException {
+    private int processVersionAttribute(String version) throws XPathException {
         if (version != null) {
             ConversionResult cr = BigDecimalValue.makeDecimalValue(version, true);
             if (cr instanceof ValidationFailure) {
                 throw new XPathException("Invalid version number: " + version, "XTSE0110");
             }
-//            BigDecimalValue d = (BigDecimalValue) cr.asAtomic();
-//            int v = d.getDecimalValue().multiply(BigDecimal.TEN).intValue();
-//            compilation.setProcessorVersion(v);
+            BigDecimalValue d = (BigDecimalValue) cr.asAtomic();
+            return d.getDecimalValue().multiply(BigDecimal.TEN).intValue();
+        } else {
+            return Integer.MIN_VALUE;
         }
     }
 
@@ -503,6 +524,7 @@ public class UseWhenFilter extends ProxyReceiver {
         } else {
             systemIdStack.pop();
             baseUriStack.pop();
+            versionStack.pop();
             nextReceiver.endElement();
         }
     }

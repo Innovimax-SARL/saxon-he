@@ -34,6 +34,9 @@ public class AbsentExtensionElement extends StyleElement {
      */
 
     public void processAllAttributes() throws XPathException {
+        if (reportingCircumstances == IGNORED_INSTRUCTION) {
+            return;
+        }
         if (reportingCircumstances == REPORT_ALWAYS) {
             throw validationError;
         }
@@ -55,7 +58,7 @@ public class AbsentExtensionElement extends StyleElement {
      */
 
     public void validateSubtree(ComponentDeclaration decl, boolean excludeStylesheet) throws XPathException {
-        if (isTopLevel() && forwardsCompatibleModeIsEnabled()) {
+        if (reportingCircumstances == IGNORED_INSTRUCTION || (isTopLevel() && forwardsCompatibleModeIsEnabled())) {
             // do nothing
         } else {
             super.validateSubtree(decl, excludeStylesheet);
@@ -68,7 +71,7 @@ public class AbsentExtensionElement extends StyleElement {
     /*@Nullable*/
     public Expression compile(Compilation exec, ComponentDeclaration decl) throws XPathException {
 
-        if (isTopLevel()) {
+        if (isTopLevel() || reportingCircumstances == IGNORED_INSTRUCTION) {
             return null;
         }
 
