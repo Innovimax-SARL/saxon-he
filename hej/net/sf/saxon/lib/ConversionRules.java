@@ -190,6 +190,16 @@ public class ConversionRules {
 
     /*@Nullable*/
     public Converter getConverter(AtomicType source, AtomicType target) {
+        // Handle some common cases before looking in the cache
+        if (source == target) {
+            return Converter.IDENTITY_CONVERTER;
+        } else if (source == BuiltInAtomicType.STRING || source == BuiltInAtomicType.UNTYPED_ATOMIC) {
+            return target.getStringConverter(this);
+        } else if (target == BuiltInAtomicType.STRING) {
+            return Converter.TO_STRING;
+        } else if (target == BuiltInAtomicType.UNTYPED_ATOMIC) {
+            return Converter.TO_UNTYPED_ATOMIC;
+        }
         // For a lookup key, use the primitive type of the source type (always 10 bits) and the
         // fingerprint of the target type (20 bits)
         int key = (source.getPrimitiveType() << 20) | target.getFingerprint();
