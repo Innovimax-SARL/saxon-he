@@ -58,8 +58,6 @@
     <localization lang="sv" class="net.sf.saxon.option.local.Numberer_sv"/>
   </localizations>
   <xslt recoveryPolicy="recoverWithWarnings"
-        version="2.0"
-        versionWarning="false"
         schemaAware="true"
         messageEmitter=""
         staticUriResolver=""
@@ -68,8 +66,7 @@
         styleParser="">
     <extensionElement namespace="http://saxon.sf.net/sql" factory="net.sf.saxon.option.sql.SQLElementFactory"/>
   </xslt>
-  <xquery version="1.1"
-          allowUpdate="false"
+  <xquery allowUpdate="false"
           moduleUriResolver="net.sf.saxon.lib.StandardModuleURIResolver"
           inheritNamespaces="true"
           preserveNamespaces="true"

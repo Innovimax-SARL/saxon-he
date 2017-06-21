@@ -313,6 +313,7 @@ public class ConfigurationReader implements ContentHandler, NamespaceResolver {
         applyProperty(props, "stripSpace", FeatureKeys.STRIP_WHITESPACE);
         applyProperty(props, "styleParser", FeatureKeys.STYLE_PARSER_CLASS);
         applyProperty(props, "suppressEvaluationExpiryWarning", FeatureKeys.SUPPRESS_EVALUATION_EXPIRY_WARNING);
+        applyProperty(props, "suppressXPathWarnings", FeatureKeys.SUPPRESS_XPATH_WARNINGS);
         applyProperty(props, "suppressXsltNamespaceCheck", FeatureKeys.SUPPRESS_XSLT_NAMESPACE_CHECK);
         applyProperty(props, "timing", FeatureKeys.TIMING);
         applyProperty(props, "traceExternalFunctions", FeatureKeys.TRACE_EXTERNAL_FUNCTIONS);

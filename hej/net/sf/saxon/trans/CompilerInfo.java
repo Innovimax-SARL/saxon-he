@@ -599,7 +599,7 @@ public class CompilerInfo {
      *
      * @return 30 (for XSLT 3.0)
      * @since 9.3  Changed in 9.7 to take an integer rather than a decimal. Changed in 9.8 to return the
-     * value 30 unconditinoally.
+     * value 30 unconditionally.
      * @deprecated since 9.8 (always returns 30)
      */
 

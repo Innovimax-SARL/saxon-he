@@ -54,7 +54,6 @@
     <localization lang="sv" class="net.sf.saxon.option.local.Numberer_sv"/>
   </localizations>
   <xslt recoveryPolicy="recoverWithWarnings"
-        version="2.0"
         versionWarning="false"
         schemaAware="false"
         messageEmitter=""
@@ -63,8 +62,7 @@
         outputUriResolver=""
         styleParser=""/>   
   
-  <xquery version="1.1"
-          allowUpdate="false"
+  <xquery allowUpdate="false"
           moduleUriResolver="net.sf.saxon.lib.StandardModuleURIResolver"
           inheritNamespaces="true"
           preserveNamespaces="true"

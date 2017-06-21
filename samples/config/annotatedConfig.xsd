@@ -429,6 +429,13 @@
                </xs:documentation>
             </xs:annotation>
          </xs:attribute>
+         <xs:attribute name="suppressXPathWarnings" use="optional" type="xs:boolean">
+            <xs:annotation>
+               <xs:documentation>
+                  <p>Suppresses all warnings from the XPath/XQuery parser.</p>
+               </xs:documentation>
+            </xs:annotation>
+         </xs:attribute>
          <xs:attribute name="suppressXsltNamespaceCheck" use="optional" type="xs:boolean">
             <xs:annotation>
                <xs:documentation>
@@ -662,8 +669,8 @@
          <xs:attribute name="version" use="optional" type="xs:decimal">
             <xs:annotation>
                <xs:documentation>
-                  <p>XSLT language version to be supported by the processor. The value 0.0 indicates that
-                the version is taken from the <code>xsl:stylesheet</code> element.</p>
+                  <p>XSLT language version to be supported by the processor. From Saxon 9.8, an XSLT 3.0
+                processor is always used by default. So setting this property has no effect.</p>
                </xs:documentation>
             </xs:annotation>
          </xs:attribute>
@@ -671,7 +678,8 @@
             <xs:annotation>
                <xs:documentation>
                   <p>False suppresses the warning produced when the XSLT processor version is not the same
-                as the version in the <code>xsl:stylesheet</code> element.</p>
+                as the version in the <code>xsl:stylesheet</code> element. From Saxon 9.8, the
+                warning is no longer output, so this attribute is ignored.</p>
                </xs:documentation>
             </xs:annotation>
          </xs:attribute>
@@ -924,7 +932,8 @@
          <xs:attribute name="version" use="optional" type="xs:decimal">
             <xs:annotation>
                <xs:documentation>
-                  <p>Indicates whether XQuery 3.0 syntax is accepted.</p>
+                  <p>Indicates whether XQuery 3.0 or 3.1 syntax is accepted. From Saxon 9.8, an XQuery 3.1
+                processor is always used by default. So setting this property has no effect.</p>
                </xs:documentation>
             </xs:annotation>
          </xs:attribute>

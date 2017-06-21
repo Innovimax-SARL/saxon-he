@@ -92,6 +92,7 @@
       <xs:attribute name="stripSpace" use="optional" type="c:stripSpaceType"/>
       <xs:attribute name="styleParser" use="optional" type="c:javaClassNameType"/>
       <xs:attribute name="suppressEvaluationExpiryWarning" use="optional" type="xs:boolean"/>
+      <xs:attribute name="suppressXPathWarnings" use="optional" type="xs:boolean"/>
       <xs:attribute name="suppressXsltNamespaceCheck" use="optional" type="xs:boolean"/>
       <xs:attribute name="timing" use="optional" type="xs:boolean"/>
       <xs:attribute name="traceExternalFunctions" use="optional" type="xs:boolean"/>
