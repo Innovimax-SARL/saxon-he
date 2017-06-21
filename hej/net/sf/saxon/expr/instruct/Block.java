@@ -349,12 +349,16 @@ public class Block extends Instruction {
         if (size() == 0) {
             return ErrorType.getInstance();
         }
-        ItemType t1 = child(0).getItemType();
+        ItemType t1 = null;
         TypeHierarchy th = getConfiguration().getTypeHierarchy();
-        for (int i = 1; i < size(); i++) {
-            t1 = Type.getCommonSuperType(t1, child(i).getItemType(), th);
-            if (t1 instanceof AnyItemType) {
-                return t1;  // no point going any further
+        for (int i = 0; i < size(); i++) {
+            Expression child = child(i);
+            if (!(child instanceof Message)) {
+                ItemType t = child(i).getItemType();
+                t1 = (t1 == null ? t : Type.getCommonSuperType(t1, t, th));
+                if (t1 instanceof AnyItemType) {
+                    return t1;  // no point going any further
+                }
             }
         }
         return t1;
