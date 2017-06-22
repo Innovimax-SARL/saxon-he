@@ -354,14 +354,14 @@ public class Block extends Instruction {
         for (int i = 0; i < size(); i++) {
             Expression child = child(i);
             if (!(child instanceof Message)) {
-                ItemType t = child(i).getItemType();
+                ItemType t = child.getItemType();
                 t1 = (t1 == null ? t : Type.getCommonSuperType(t1, t, th));
                 if (t1 instanceof AnyItemType) {
                     return t1;  // no point going any further
                 }
             }
         }
-        return t1;
+        return t1 == null ? ErrorType.getInstance() : t1;
     }
 
     /**
