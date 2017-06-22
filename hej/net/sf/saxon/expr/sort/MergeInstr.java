@@ -16,7 +16,10 @@ import net.sf.saxon.expr.accum.AccumulatorManager;
 import net.sf.saxon.expr.instruct.Instruction;
 import net.sf.saxon.expr.instruct.TailCall;
 import net.sf.saxon.expr.parser.*;
-import net.sf.saxon.functions.*;
+import net.sf.saxon.functions.Count;
+import net.sf.saxon.functions.CurrentMergeGroup;
+import net.sf.saxon.functions.CurrentMergeKey;
+import net.sf.saxon.functions.DocumentFn;
 import net.sf.saxon.lib.ParseOptions;
 import net.sf.saxon.lib.Validation;
 import net.sf.saxon.om.*;
@@ -54,6 +57,7 @@ public class MergeInstr extends Instruction {
     public static class MergeSource {
 
         private MergeInstr instruction;
+        public Location location;
         private Operand forEachItemOp = null;
         private Operand forEachStreamOp = null;
         private Operand rowSelectOp = null;
@@ -64,6 +68,7 @@ public class MergeInstr extends Instruction {
         public SchemaType schemaType;
         public boolean streamable;
         public Set<Accumulator> accumulators;
+        public Object invertedAction; // used when streaming
 
         public MergeSource(MergeInstr mi) {
             this.instruction = mi;
@@ -123,6 +128,7 @@ public class MergeInstr extends Instruction {
             ms.validation = validation;
             ms.schemaType = schemaType;
             ms.streamable = streamable;
+            ms.location = location;
             return ms;
         }
 
@@ -519,54 +525,16 @@ public class MergeInstr extends Instruction {
         SequenceIterator inputIterator = EmptyIterator.getInstance();
         for (final MergeSource ms : mergeSources) {
 
-            // addMergeKeys is a mapping function which converts an item being merged into an ObjectValue
-            // representing that item together with the values of its merge keys
-
-//            ContextMappingFunction /*<ObjectValue<ItemWithMergeKeys>>*/ addMergeKeys =
-//                    new ContextMappingFunction /*<ObjectValue<ItemWithMergeKeys>>*/() {
-//                        public SequenceIterator/*<ObjectValue<ItemWithMergeKeys>>*/ map(XPathContext context)
-//                                throws XPathException {
-//                            Item currentItem = context.getContextItem();
-//
-//                            XPathContext c3 = context.newMinorContext();
-//                            c3.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
-//                            ManualIterator mi = new ManualIterator(currentItem);
-//                            c3.setCurrentIterator(mi);
-//
-//                            ItemWithMergeKeys newItem = new ItemWithMergeKeys(currentItem, ms.mergeKeyDefinitions, ms.sourceName, context);
-//                            return SingletonIterator.makeIterator(new ObjectValue<ItemWithMergeKeys>(newItem));
-//                        }
-//                    };
-
             SequenceIterator anchorsIter = null;
 
-
             if (ms.streamable && ms.getForEachSource() != null) {
-                SequenceIterator uriIter = ms.getForEachSource().iterate(c1);
-                Item uri;
-                while ((uri = uriIter.next()) != null) {
-                    ParseOptions options = new ParseOptions(context.getConfiguration().getParseOptions());
-                    options.setSchemaValidationMode(ms.validation);
-                    options.setTopLevelType(ms.schemaType);
-                    options.setApplicableAccumulators(ms.accumulators);
-                    // TODO: avoid creating instructions at run-time
-                    Expression body = SystemFunction.makeCall("snapshot", getRetainedStaticContext(), ms.getRowSelect());
-                    Expression si = context.getConfiguration().makeStreamInstruction(
-                            new StringLiteral(uri.getStringValue()),
-                            body,
-                            options,
-                            getPackageData(),
-                            getLocation(),
-                            getRetainedStaticContext());
-
-                    FocusIterator iter2 = new FocusTrackingIterator(si.iterate(context));
-                    XPathContext c2 = context.newMinorContext();
-                    c2.setCurrentIterator(iter2);
-                    MergeKeyMappingFunction addMergeKeys = new MergeKeyMappingFunction(c2, ms);
-                    ContextMappingIterator<ObjectValue<ItemWithMergeKeys>> iter3 =
-                            new ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>(addMergeKeys, c2);
-                    inputIterator = makeMergeIterator(inputIterator, comps, ms, iter3);
+//#ifdefined STREAM
+                List<ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>> msIters =
+                        MergeInstrAdjunct.makeSourceIterators(ms, getPackageData(), c1);
+                for (ContextMappingIterator<ObjectValue<ItemWithMergeKeys>> iter : msIters) {
+                    inputIterator = makeMergeIterator(inputIterator, comps, ms, iter);
                 }
+//#endif
             } else if (ms.getForEachSource() != null) {
                 final ParseOptions options = new ParseOptions(context.getConfiguration().getParseOptions());
                 options.setSchemaValidationMode(ms.validation);
@@ -860,7 +828,7 @@ public class MergeInstr extends Instruction {
         return "MergeInstr";
     }
 
-    private static class MergeKeyMappingFunction implements ContextMappingFunction {
+    public static class MergeKeyMappingFunction implements ContextMappingFunction {
         private MergeSource ms;
         private XPathContext baseContext;
         private XPathContext keyContext;
