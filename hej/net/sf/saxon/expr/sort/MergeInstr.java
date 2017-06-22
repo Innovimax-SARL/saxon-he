@@ -25,6 +25,7 @@ import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.NoDynamicContextException;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.EmptyIterator;
+import net.sf.saxon.tree.iter.ManualIterator;
 import net.sf.saxon.tree.iter.SingletonIterator;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.type.ItemType;
@@ -521,15 +522,21 @@ public class MergeInstr extends Instruction {
             // addMergeKeys is a mapping function which converts an item being merged into an ObjectValue
             // representing that item together with the values of its merge keys
 
-            ContextMappingFunction /*<ObjectValue<ItemWithMergeKeys>>*/ addMergeKeys =
-                    new ContextMappingFunction /*<ObjectValue<ItemWithMergeKeys>>*/() {
-                        public SequenceIterator/*<ObjectValue<ItemWithMergeKeys>>*/ map(XPathContext context)
-                                throws XPathException {
-                            Item currentItem = context.getContextItem();
-                            ItemWithMergeKeys newItem = new ItemWithMergeKeys(currentItem, ms.mergeKeyDefinitions, ms.sourceName, context);
-                            return SingletonIterator.makeIterator(new ObjectValue<ItemWithMergeKeys>(newItem));
-                        }
-                    };
+//            ContextMappingFunction /*<ObjectValue<ItemWithMergeKeys>>*/ addMergeKeys =
+//                    new ContextMappingFunction /*<ObjectValue<ItemWithMergeKeys>>*/() {
+//                        public SequenceIterator/*<ObjectValue<ItemWithMergeKeys>>*/ map(XPathContext context)
+//                                throws XPathException {
+//                            Item currentItem = context.getContextItem();
+//
+//                            XPathContext c3 = context.newMinorContext();
+//                            c3.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
+//                            ManualIterator mi = new ManualIterator(currentItem);
+//                            c3.setCurrentIterator(mi);
+//
+//                            ItemWithMergeKeys newItem = new ItemWithMergeKeys(currentItem, ms.mergeKeyDefinitions, ms.sourceName, context);
+//                            return SingletonIterator.makeIterator(new ObjectValue<ItemWithMergeKeys>(newItem));
+//                        }
+//                    };
 
             SequenceIterator anchorsIter = null;
 
@@ -553,11 +560,11 @@ public class MergeInstr extends Instruction {
                             getRetainedStaticContext());
 
                     FocusIterator iter2 = new FocusTrackingIterator(si.iterate(context));
-                    XPathContext c3 = context.newMinorContext();
-                    c3.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
-                    c3.setCurrentIterator(iter2);
+                    XPathContext c2 = context.newMinorContext();
+                    c2.setCurrentIterator(iter2);
+                    MergeKeyMappingFunction addMergeKeys = new MergeKeyMappingFunction(c2, ms);
                     ContextMappingIterator<ObjectValue<ItemWithMergeKeys>> iter3 =
-                            new ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>(addMergeKeys, c3);
+                            new ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>(addMergeKeys, c2);
                     inputIterator = makeMergeIterator(inputIterator, comps, ms, iter3);
                 }
             } else if (ms.getForEachSource() != null) {
@@ -583,8 +590,8 @@ public class MergeInstr extends Instruction {
                 while (anchorsIterFocus.next() != null) {
                     FocusIterator rowIntr = new FocusTrackingIterator(ms.getRowSelect().iterate(c2));
                     XPathContext c4 = c2.newMinorContext();
-                    c4.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
                     c4.setCurrentIterator(rowIntr);
+                    MergeKeyMappingFunction addMergeKeys = new MergeKeyMappingFunction(c4, ms);
                     ContextMappingIterator<ObjectValue<ItemWithMergeKeys>> contextMapKeysItr =
                             new ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>(addMergeKeys, c4);
                     inputIterator = makeMergeIterator(inputIterator, comps, ms, contextMapKeysItr);
@@ -599,6 +606,7 @@ public class MergeInstr extends Instruction {
                     XPathContext c4 = c2.newMinorContext();
                     c4.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
                     c4.setCurrentIterator(rowIntr);
+                    MergeKeyMappingFunction addMergeKeys = new MergeKeyMappingFunction(c4, ms);
                     ContextMappingIterator<ObjectValue<ItemWithMergeKeys>> contextMapKeysItr =
                             new ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>(addMergeKeys, c4);
                     inputIterator = makeMergeIterator(inputIterator, comps, ms, contextMapKeysItr);
@@ -608,6 +616,7 @@ public class MergeInstr extends Instruction {
                 XPathContext c4 = c1.newMinorContext();
                 c4.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
                 c4.setCurrentIterator(rowIntr);
+                MergeKeyMappingFunction addMergeKeys = new MergeKeyMappingFunction(c4, ms);
                 ContextMappingIterator<ObjectValue<ItemWithMergeKeys>> contextMapKeysItr =
                         new ContextMappingIterator<ObjectValue<ItemWithMergeKeys>>(addMergeKeys, c4);
                 inputIterator = makeMergeIterator(inputIterator, comps, ms, contextMapKeysItr);
@@ -849,6 +858,31 @@ public class MergeInstr extends Instruction {
     @Override
     public String getStreamerName() {
         return "MergeInstr";
+    }
+
+    private static class MergeKeyMappingFunction implements ContextMappingFunction {
+        private MergeSource ms;
+        private XPathContext baseContext;
+        private XPathContext keyContext;
+        private ManualIterator manualIterator;
+
+        public MergeKeyMappingFunction(XPathContext baseContext, MergeSource ms) {
+            this.baseContext = baseContext;
+            this.ms = ms;
+            keyContext = baseContext.newMinorContext();
+            keyContext.setTemporaryOutputState(StandardNames.XSL_MERGE_KEY);
+            manualIterator = new ManualIterator();
+            manualIterator.setPosition(1);
+            keyContext.setCurrentIterator(manualIterator);
+        }
+        public SequenceIterator map(XPathContext context)
+                            throws XPathException {
+            Item currentItem = context.getContextItem();
+            manualIterator.setContextItem(currentItem);
+            ItemWithMergeKeys newItem = new ItemWithMergeKeys(currentItem, ms.mergeKeyDefinitions, ms.sourceName, keyContext);
+            return SingletonIterator.makeIterator(new ObjectValue<ItemWithMergeKeys>(newItem));
+
+        };
     }
 }
 
