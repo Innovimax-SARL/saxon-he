@@ -25,7 +25,7 @@ import java.net.URL;
  * This class supports the resolve-uri() function in XPath 2.0
  */
 
-public class ResolveURI extends SystemFunction  {
+public class ResolveURI extends SystemFunction {
 
     /**
      * Evaluate the expression
@@ -33,8 +33,7 @@ public class ResolveURI extends SystemFunction  {
      * @param context   the dynamic evaluation context
      * @param arguments the values of the arguments, supplied as SequenceIterators
      * @return the result of the evaluation, in the form of a SequenceIterator
-     * @throws net.sf.saxon.trans.XPathException
-     *          if a dynamic error occurs during the evaluation of the expression
+     * @throws net.sf.saxon.trans.XPathException if a dynamic error occurs during the evaluation of the expression
      */
     /*@Nullable*/
     public ZeroOrOne<AnyURIValue> call(XPathContext context, Sequence[] arguments) throws XPathException {
@@ -59,72 +58,92 @@ public class ResolveURI extends SystemFunction  {
 
     /*@NotNull*/
     private AnyURIValue resolve(String base, String relative, XPathContext context) throws XPathException {
-        try {
+//        try {
 
-            // Rule 4: "The function resolves the relative IRI reference $relative against the base IRI $base using
-            // the algorithm defined in [RFC 3986], adapted by treating any ·character· that would not be valid in
-            // an RFC3986 URI or relative reference in the same way that RFC3986 treats unreserved characters.
-            // No percent-encoding takes place.
+        // Rule 4: "The function resolves the relative IRI reference $relative against the base IRI $base using
+        // the algorithm defined in [RFC 3986], adapted by treating any ·character· that would not be valid in
+        // an RFC3986 URI or relative reference in the same way that RFC3986 treats unreserved characters.
+        // No percent-encoding takes place.
 
-            // We rely on the Java implementation, but the Java implementation will not handle invalid characters
-            // notably spaces. If there are spaces present, we escape them to prevent Java objecting, and then unescape
-            // them at the end. We accept the consequence that if the input contains both escaped and unescaped spaces,
-            // they will all be unescaped at the end.
+        // We rely on the Java implementation, but the Java implementation will not handle invalid characters
+        // notably spaces. If there are spaces present, we escape them to prevent Java objecting, and then unescape
+        // them at the end. We accept the consequence that if the input contains both escaped and unescaped spaces,
+        // they will all be unescaped at the end.
 
-            boolean escaped = false;
-            if (relative.contains(" ")) {
-                relative = escapeSpaces(relative);
-                escaped = true;
-            }
-            if (base.contains(" ")) {
-                base = escapeSpaces(base);
-                escaped = true;
-            }
-
-            URI relativeURI = new URI(relative);
-            if (relativeURI.isAbsolute()) {
-                return new AnyURIValue(relative);
-            }
-
-            URI absoluteURI = new URI(base);
-            if (!absoluteURI.isAbsolute()) {
-                throw new XPathException("Base URI " + Err.wrap(base) + " is not an absolute URI", "FORG0002", context);
-            }
-            if (absoluteURI.isOpaque() && !base.startsWith("jar:")) {
-                // Special-case JAR file URLs, even though non-conformant
-                throw new XPathException("Base URI " + Err.wrap(base) + " is a non-hierarchic URI", "FORG0002", context);
-            }
-            if (absoluteURI.getRawFragment() != null) {
-                throw new XPathException("Base URI " + Err.wrap(base) + " contains a fragment identifier", "FORG0002", context);
-            }
-            if (!base.startsWith("jar:") && absoluteURI.getPath() != null && absoluteURI.getPath().isEmpty()) {
-                // This deals with cases like base=http://www.example.com - changing it to http://www.example.com/
-                absoluteURI = new URI(absoluteURI.getScheme(), absoluteURI.getUserInfo(), absoluteURI.getHost(),
-                    absoluteURI.getPort(), "/", absoluteURI.getQuery(), absoluteURI.getFragment());
-                base = absoluteURI.toString();
-            }
-            URI resolved = makeAbsolute(relative, base);
-            if(!resolved.toASCIIString().startsWith("file:////")) {
-                resolved = resolved.normalize();
-            }
-            String result = escaped ? unescapeSpaces(resolved.toString()) : resolved.toString();
-
-            // Test case XSLT3 resolve-uri-022. Java even after normalization can leave a URI with trailing "../" or ".." parts.
-            // Pragmatically, we just strip these off. This might not be enough if there are query or fragment parts, but it
-            // gets us through the test
-
-            while (result.endsWith("..")) {
-                result = result.substring(0, result.length() - 2);
-            }
-            while (result.endsWith("../")) {
-                result = result.substring(0, result.length()-3);
-            }
-
-            return new AnyURIValue(result);
-        } catch (URISyntaxException err) {
-            throw new XPathException("Base URI " + Err.wrap(base) + " is invalid: " + err.getMessage(),
-                    "FORG0002", context);
+        boolean escaped = false;
+        if (relative.contains(" ")) {
+            relative = escapeSpaces(relative);
+            escaped = true;
         }
+        if (base.contains(" ")) {
+            base = escapeSpaces(base);
+            escaped = true;
+        }
+
+        URI relativeURI = null;
+        try {
+            relativeURI = new URI(relative);
+        } catch (URISyntaxException e) {
+            throw new XPathException("Relative URI " + Err.wrap(relative) + " is invalid: " + e.getMessage(),
+                                     "FORG0002", context);
+        }
+        if (relativeURI.isAbsolute()) {
+            return new AnyURIValue(relative);
+        }
+
+        URI absoluteURI = null;
+        try {
+            absoluteURI = new URI(base);
+        } catch (URISyntaxException e) {
+            throw new XPathException("Base URI " + Err.wrap(base) + " is invalid: " + e.getMessage(),
+                                     "FORG0002", context);
+        }
+        if (!absoluteURI.isAbsolute()) {
+            throw new XPathException("Base URI " + Err.wrap(base) + " is not an absolute URI", "FORG0002", context);
+        }
+        if (absoluteURI.isOpaque() && !base.startsWith("jar:")) {
+            // Special-case JAR file URLs, even though non-conformant
+            throw new XPathException("Base URI " + Err.wrap(base) + " is a non-hierarchic URI", "FORG0002", context);
+        }
+        if (absoluteURI.getRawFragment() != null) {
+            throw new XPathException("Base URI " + Err.wrap(base) + " contains a fragment identifier", "FORG0002", context);
+        }
+        if (!base.startsWith("jar:") && absoluteURI.getPath() != null && absoluteURI.getPath().isEmpty()) {
+            // This deals with cases like base=http://www.example.com - changing it to http://www.example.com/
+            try {
+                absoluteURI = new URI(absoluteURI.getScheme(), absoluteURI.getUserInfo(), absoluteURI.getHost(),
+                                      absoluteURI.getPort(), "/", absoluteURI.getQuery(), absoluteURI.getFragment());
+            } catch (URISyntaxException e) {
+                throw new XPathException("Failed to parse JAR scheme URI " +
+                                                 Err.wrap(absoluteURI.toASCIIString()), "FORG0002", context);
+
+            }
+            base = absoluteURI.toString();
+        }
+        URI resolved = null;
+        try {
+            resolved = makeAbsolute(relative, base);
+        } catch (URISyntaxException e) {
+            throw new XPathException(e.getMessage(), "FORG0002");
+        }
+        if (!resolved.toASCIIString().startsWith("file:////")) {
+            resolved = resolved.normalize();
+        }
+        String result = escaped ? unescapeSpaces(resolved.toString()) : resolved.toString();
+
+        // Test case XSLT3 resolve-uri-022. Java even after normalization can leave a URI with trailing "../" or ".." parts.
+        // Pragmatically, we just strip these off. This might not be enough if there are query or fragment parts, but it
+        // gets us through the test
+
+        while (result.endsWith("..")) {
+            result = result.substring(0, result.length() - 2);
+        }
+        while (result.endsWith("../")) {
+            result = result.substring(0, result.length() - 3);
+        }
+
+        return new AnyURIValue(result);
+
     }
 
     /**
@@ -133,9 +152,9 @@ public class ResolveURI extends SystemFunction  {
      *
      * @param systemId the supplied systemId. Null is treated as equivalent to ""
      * @return the systemId itself if it is a valid URL; otherwise the result of resolving
-     *         the systemId as a relative file name in the current working directory; or if the
-     *         current working directory is not available (e.g. in an applet) the supplied systemId
-     *         unchanged (except that null is treated as "").
+     * the systemId as a relative file name in the current working directory; or if the
+     * current working directory is not available (e.g. in an applet) the supplied systemId
+     * unchanged (except that null is treated as "").
      */
 
     /*@NotNull*/
