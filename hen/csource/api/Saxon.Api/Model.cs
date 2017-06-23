@@ -1053,10 +1053,10 @@ namespace Saxon.Api
         /// in the array as member zero</param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public XdmArray Put(int n, XdmValue value) {
+        public XdmArray Put(int n, XdmValue valuei) {
             try {
-                JSequence member = value.Unwrap();
-                return (XdmArray)XdmValue.Wrap(((JArrayItem)value).put(n, member));
+                JSequence member = valuei.Unwrap();
+                return (XdmArray)XdmValue.Wrap(((JArrayItem)this.value).put(n, member));
             } catch (Exception) {
                 throw new IndexOutOfRangeException();
             }
