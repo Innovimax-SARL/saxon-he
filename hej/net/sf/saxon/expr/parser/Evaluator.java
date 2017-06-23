@@ -34,12 +34,20 @@ public abstract class Evaluator {
 
     public abstract Sequence evaluate(Expression expr, XPathContext context) throws XPathException;
 
+    /**
+     * An evaluator for arguments supplied as a literal
+     */
+
     public final static Evaluator LITERAL = new Evaluator() {
         @Override
         public Sequence evaluate(Expression expr, XPathContext context) throws XPathException {
             return ((Literal)expr).getValue();
         }
     };
+
+    /**
+     * An evaluator for arguments supplied as a variable reference
+     */
 
     public final static Evaluator VARIABLE = new Evaluator() {
         @Override
@@ -54,12 +62,22 @@ public abstract class Evaluator {
         }
     };
 
+    /**
+     * A (default) evaluator for arguments supplied as an expression that will always return a
+     * singleton item
+     */
+
     public final static Evaluator SINGLE_ITEM = new Evaluator() {
         @Override
         public Item evaluate(Expression expr, XPathContext context) throws XPathException {
             return expr.evaluateItem(context);
         }
     };
+
+    /**
+     * A (default) evaluator for arguments supplied as an expression that will return either a
+     * singleton item, or an empty sequence
+     */
 
     public final static Evaluator OPTIONAL_ITEM = new Evaluator() {
         @Override
@@ -69,6 +87,14 @@ public abstract class Evaluator {
         }
     };
 
+    /**
+     * An evaluator for arguments that in general return a sequence, where the sequence is evaluated
+     * lazily on first use. This is appropriate when calling a function which might not use the value, or
+     * might not use all of it. It returns a {@code LazySequence}, which can only be read once, so
+     * this is only suitable for use when calling a function that can be trusted to read the argument
+     * once only.
+     */
+
     public final static Evaluator LAZY_SEQUENCE = new Evaluator() {
         @Override
         public Sequence evaluate(Expression expr, XPathContext context) throws XPathException {
@@ -76,6 +102,12 @@ public abstract class Evaluator {
             return new LazySequence(iter);
         }
     };
+
+    /**
+     * An evaluator for arguments that in general return a sequence, where the sequence is evaluated
+     * eagerly. This is appropriate when it is known that the function will always use the entire value,
+     * or when it will use it more than once.
+     */
 
     public final static Evaluator EAGER_SEQUENCE = new Evaluator() {
         @Override
