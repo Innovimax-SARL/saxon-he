@@ -12,6 +12,7 @@ import net.sf.saxon.expr.instruct.Block;
 import net.sf.saxon.expr.parser.*;
 import net.sf.saxon.expr.sort.DocumentSorter;
 import net.sf.saxon.expr.sort.GlobalOrderComparer;
+import net.sf.saxon.functions.CurrentGroupCall;
 import net.sf.saxon.functions.SystemFunction;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.om.SequenceIterator;
@@ -341,32 +342,49 @@ public class VennExpression extends BinaryExpression {
         // after reduction with constructs of the form //a[condition] | //b[not(condition)],
         // common in XPath 1.0 because there were no conditional expressions.
 
+        Expression lhs = getLhsExpression();
+        Expression rhs = getRhsExpression();
         switch (operator) {
             case Token.UNION:
-                if (Literal.isEmptySequence(getLhsExpression()) &&
-                        (getRhsExpression().getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
-                    return getRhsExpression();
+                if (Literal.isEmptySequence(lhs) &&
+                        (rhs.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
+                    return rhs;
                 }
-                if (Literal.isEmptySequence(getRhsExpression()) &&
-                        (getLhsExpression().getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
-                    return getLhsExpression();
+                if (Literal.isEmptySequence(rhs) &&
+                        (lhs.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
+                    return lhs;
+                }
+                if (lhs instanceof CurrentGroupCall && rhs instanceof ContextItemExpression) {
+                    return lhs;
                 }
                 break;
             case Token.INTERSECT:
-                if (Literal.isEmptySequence(getLhsExpression())) {
-                    return getLhsExpression();
+                if (Literal.isEmptySequence(lhs)) {
+                    return lhs;
                 }
-                if (Literal.isEmptySequence(getRhsExpression())) {
-                    return getRhsExpression();
+                if (Literal.isEmptySequence(rhs)) {
+                    return rhs;
+                }
+                if (lhs instanceof CurrentGroupCall && rhs instanceof ContextItemExpression) {
+                    return rhs;
                 }
                 break;
             case Token.EXCEPT:
-                if (Literal.isEmptySequence(getLhsExpression())) {
-                    return getLhsExpression();
+                if (Literal.isEmptySequence(lhs)) {
+                    return lhs;
                 }
-                if (Literal.isEmptySequence(getRhsExpression()) &&
-                        (getLhsExpression().getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
-                    return getLhsExpression();
+                if (Literal.isEmptySequence(rhs) &&
+                        (lhs.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
+                    return lhs;
+                }
+                if (lhs instanceof CurrentGroupCall && rhs instanceof ContextItemExpression) {
+                    // Test case si-group-055.
+                    // The streaming code has problems with (current-group() except .) so we
+                    // optimize it away. This is a bit of a hack, because the difficulty may
+                    // affect other expressions as well. The problem arises because part of the
+                    // pattern needs to be evaluated with each node in the group as anchor node,
+                    // and part with only the first node in the group as anchor node.
+                    return new TailExpression(lhs, 2);
                 }
                 break;
         }
@@ -374,9 +392,9 @@ public class VennExpression extends BinaryExpression {
         // If both are axis expressions on the same axis, merge them
         // ie. rewrite (axis::test1 | axis::test2) as axis::(test1 | test2)
 
-        if (getLhsExpression() instanceof AxisExpression && getRhsExpression() instanceof AxisExpression) {
-            final AxisExpression a1 = (AxisExpression) getLhsExpression();
-            final AxisExpression a2 = (AxisExpression) getRhsExpression();
+        if (lhs instanceof AxisExpression && rhs instanceof AxisExpression) {
+            final AxisExpression a1 = (AxisExpression) lhs;
+            final AxisExpression a2 = (AxisExpression) rhs;
             if (a1.getAxis() == a2.getAxis()) {
                 AxisExpression ax = new AxisExpression(a1.getAxis(),
                         new CombinedNodeTest(a1.getNodeTest(),
@@ -398,9 +416,9 @@ public class VennExpression extends BinaryExpression {
 
         // TODO: generalize this code to handle all distributive operators
 
-        if (getLhsExpression() instanceof SlashExpression && getRhsExpression() instanceof SlashExpression && operator == Token.UNION) {
-            final SlashExpression path1 = (SlashExpression) getLhsExpression();
-            final SlashExpression path2 = (SlashExpression) getRhsExpression();
+        if (lhs instanceof SlashExpression && rhs instanceof SlashExpression && operator == Token.UNION) {
+            final SlashExpression path1 = (SlashExpression) lhs;
+            final SlashExpression path2 = (SlashExpression) rhs;
 
             if (path1.getFirstStep().equals(path2.getFirstStep())) {
                 final VennExpression venn = new VennExpression(
@@ -417,9 +435,9 @@ public class VennExpression extends BinaryExpression {
         // Try merging two non-positional filter expressions:
         // A[exp0] | A[exp1] becomes A[exp0 or exp1]
 
-        if (getLhsExpression() instanceof FilterExpression && getRhsExpression() instanceof FilterExpression) {
-            final FilterExpression exp0 = (FilterExpression) getLhsExpression();
-            final FilterExpression exp1 = (FilterExpression) getRhsExpression();
+        if (lhs instanceof FilterExpression && rhs instanceof FilterExpression) {
+            final FilterExpression exp0 = (FilterExpression) lhs;
+            final FilterExpression exp1 = (FilterExpression) rhs;
 
             if (!exp0.isPositional(th) &&
                     !exp1.isPositional(th) &&
@@ -451,22 +469,22 @@ public class VennExpression extends BinaryExpression {
         // Convert @*|node() into @*,node() to eliminate the sorted merge operation
         // Avoid doing this when streaming because xsl:value-of select="@*,node()" is not currently streamable
         if (!visitor.isOptimizeForStreaming() && operator == Token.UNION &&
-                getLhsExpression() instanceof AxisExpression && getRhsExpression() instanceof AxisExpression) {
-            AxisExpression a0 = (AxisExpression) getLhsExpression();
-            AxisExpression a1 = (AxisExpression) getRhsExpression();
+                lhs instanceof AxisExpression && rhs instanceof AxisExpression) {
+            AxisExpression a0 = (AxisExpression) lhs;
+            AxisExpression a1 = (AxisExpression) rhs;
             if (a0.getAxis() == AxisInfo.ATTRIBUTE && a1.getAxis() == AxisInfo.CHILD) {
-                return new Block(new Expression[]{getLhsExpression(), getRhsExpression()});
+                return new Block(new Expression[]{lhs, rhs});
             } else if (a1.getAxis() == AxisInfo.ATTRIBUTE && a0.getAxis() == AxisInfo.CHILD) {
-                return new Block(new Expression[]{getRhsExpression(), getLhsExpression()});
+                return new Block(new Expression[]{rhs, lhs});
             }
         }
 
         // Convert (A intersect B) to use a serial search where one operand is a singleton
-        if (operator == Token.INTERSECT && !Cardinality.allowsMany(getLhsExpression().getCardinality())) {
-            return new SingletonIntersectExpression(getLhsExpression(), operator, getRhsExpression().unordered(false, false));
+        if (operator == Token.INTERSECT && !Cardinality.allowsMany(lhs.getCardinality())) {
+            return new SingletonIntersectExpression(lhs, operator, rhs.unordered(false, false));
         }
-        if (operator == Token.INTERSECT && !Cardinality.allowsMany(getRhsExpression().getCardinality())) {
-            return new SingletonIntersectExpression(getRhsExpression(), operator, getLhsExpression().unordered(false, false));
+        if (operator == Token.INTERSECT && !Cardinality.allowsMany(rhs.getCardinality())) {
+            return new SingletonIntersectExpression(rhs, operator, lhs.unordered(false, false));
         }
 
         // If the types of the operands are disjoint, simplify "intersect" and "except"
@@ -474,10 +492,10 @@ public class VennExpression extends BinaryExpression {
             if (operator == Token.INTERSECT) {
                 return Literal.makeEmptySequence();
             } else if (operator == Token.EXCEPT) {
-                if ((getLhsExpression().getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
-                    return getLhsExpression();
+                if ((lhs.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
+                    return lhs;
                 } else {
-                    return new DocumentSorter(getLhsExpression());
+                    return new DocumentSorter(lhs);
                 }
             }
         }

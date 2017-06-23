@@ -193,6 +193,18 @@ public abstract class VennPattern extends Pattern {
         return p2;
     }
 
+    /**
+     * Ask whether the pattern is anchored on a call on current-group()
+     *
+     * @return true if calls on matchesBeneathAnchor should test with all nodes in the
+     * current group as anchor nodes. If false, only the first node in a group is
+     * treated as the anchor node
+     */
+    @Override
+    public boolean matchesCurrentGroup() {
+        return p1.matchesCurrentGroup() || p2.matchesCurrentGroup();
+    }
+
 
     /**
      * Determine whether this pattern is the same as another pattern

@@ -31,6 +31,7 @@ public class CurrentGroupPattern extends AnchorPattern {
     }
 
     protected CurrentGroupPattern() {
+        setOriginalText("current-group()");
     }
 
     /**
@@ -51,6 +52,8 @@ public class CurrentGroupPattern extends AnchorPattern {
         presenter.startElement("p.currentGroup");
         presenter.endElement();
     }
+
+
 
 }
 
