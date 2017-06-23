@@ -204,7 +204,7 @@ public final class AncestorQualifiedPattern extends Pattern {
         if (testUpperPatternFirst) {
             return matchesUpperPattern(node, anchor, context) && basePattern.matches(node, context);
         } else {
-            return basePattern.matches(node, context) && matchesUpperPattern(node, anchor, context);
+            return basePattern.matchesBeneathAnchor(node, anchor, context) && matchesUpperPattern(node, anchor, context);
         }
     }
 

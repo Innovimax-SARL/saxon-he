@@ -61,6 +61,18 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
     }
 
     /**
+     * Ask whether the pattern is anchored on a call on current-group()
+     *
+     * @return true if calls on matchesBeneathAnchor should test with all nodes in the
+     * current group as anchor nodes. If false, only the first node in a group is
+     * treated as the anchor node
+     */
+
+    public boolean matchesCurrentGroup() {
+        return basePattern.matchesCurrentGroup();
+    }
+
+    /**
      * Get the immediate sub-expressions of this expression, with information about the relationship
      * of each expression to its parent expression. Default implementation
      * works off the results of iterateSubExpressions()

@@ -106,6 +106,17 @@ public abstract class Pattern extends PseudoExpression {
     }
 
     /**
+     * Ask whether the pattern is anchored on a call on current-group()
+     * @return true if calls on matchesBeneathAnchor should test with all nodes in the
+     * current group as anchor nodes. If false, only the first node in a group is
+     * treated as the anchor node
+     */
+
+    public boolean matchesCurrentGroup() {
+        return false;
+    }
+
+    /**
      * Set the original text of the pattern for use in diagnostics
      *
      * @param text the original text of the pattern

@@ -10,7 +10,7 @@ package net.sf.saxon.pattern;
 import net.sf.saxon.expr.Expression;
 
 /**
- * Represents a pattern with a predictate, for example item[@value=3] or .[. instance of map(*)]
+ * Represents a pattern with a predicate, for example item[@value=3] or .[. instance of map(*)]
  */
 public interface PatternWithPredicate {
 

@@ -19,9 +19,16 @@ import net.sf.saxon.type.ItemType;
 import net.sf.saxon.type.UType;
 
 /**
- * This is a special pattern that matches the "anchor node"; it corresponds to the
- * pattern match=".". It is used for the selectors that arise when evaluating XPath expressions in streaming mode; the anchor
+ * This is a special pattern that matches the "anchor node". It is used for the selectors
+ * that arise when evaluating XPath expressions in streaming mode; the anchor
  * node is the context node for the streamed XPath evaluation.
+ *
+ * Given a streamed evaluation of an expression such as ./BOOKS/BOOK/PRICE, the way we evaluate
+ * this is to turn it into a pattern, which is then tested against all descendant nodes.
+ * Conceptually the pattern is $A/BOOKS/BOOK/PRICE, where $A is referred to as the anchor
+ * node. When we evaluate the pattern against (say) a PRICE element, the match will only succeed
+ * if the name of the element is "PRICE" and its ancestors are, in order, a BOOK element, a
+ * BOOKS element, and the anchor node $A.
  */
 public class AnchorPattern extends Pattern {
 
@@ -83,8 +90,8 @@ public class AnchorPattern extends Pattern {
      */
 
     public boolean matches(Item item, XPathContext context) throws XPathException {
-        // return false;
-        return true;
+        throw new AssertionError();
+        //return true;
     }
 
     /**
