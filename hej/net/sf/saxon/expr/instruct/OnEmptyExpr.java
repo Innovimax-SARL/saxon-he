@@ -65,6 +65,19 @@ public class OnEmptyExpr extends UnaryExpression {
     }
 
     /**
+     * Ask whether common subexpressions found in the operands of this expression can
+     * be extracted and evaluated outside the expression itself. The result is irrelevant
+     * in the case of operands evaluated with a different focus, which will never be
+     * extracted in this way, even if they have no focus dependency.
+     *
+     * @return false for this kind of expression
+     */
+    @Override
+    public boolean allowExtractingCommonSubexpressions() {
+        return false;
+    }
+
+    /**
      * Type-check the expression. Default implementation for unary operators that accept
      * any kind of operand
      */

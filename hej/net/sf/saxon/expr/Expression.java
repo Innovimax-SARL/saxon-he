@@ -333,6 +333,18 @@ public abstract class Expression implements IdentityComparable {
     }
 
     /**
+     * Ask whether common subexpressions found in the operands of this expression can
+     * be extracted and evaluated outside the expression itself. The result is irrelevant
+     * in the case of operands evaluated with a different focus, which will never be
+     * extracted in this way, even if they have no focus dependency.
+     * @return true by default, unless overridden in a subclass
+     */
+
+    public boolean allowExtractingCommonSubexpressions() {
+        return true;
+    }
+
+    /**
      * Simplify an expression. This performs any static optimization (by rewriting the expression
      * as a different expression). The default implementation simplifies its operands.
      * @return the simplified expression (or the original if unchanged, or if modified in-situ)
