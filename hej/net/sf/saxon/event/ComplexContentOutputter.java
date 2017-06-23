@@ -10,6 +10,7 @@ package net.sf.saxon.event;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.parser.ExplicitLocation;
 import net.sf.saxon.expr.parser.Location;
+import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.lib.ParseOptions;
 import net.sf.saxon.lib.Validation;
 import net.sf.saxon.ma.arrays.ArrayItem;
@@ -551,6 +552,9 @@ public final class ComplexContentOutputter extends SequenceReceiver {
      */
 
     private String getSubstitutePrefix(NamespaceBinding nscode, int seq) {
+        if (nscode.getURI().equals(NamespaceConstant.XML)) {
+            return "xml";
+        }
         return nscode.getPrefix() + '_' + seq;
     }
 
