@@ -10,9 +10,11 @@ package net.sf.saxon.expr.oper;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.Operand;
 import net.sf.saxon.expr.OperandRole;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -21,7 +23,7 @@ import java.util.List;
  * same operand roles, or have different operand roles.
  */
 
-public class OperandArray {
+public class OperandArray implements Iterable<Operand> {
 
     private Operand[] operandArray;
 
@@ -50,6 +52,17 @@ public class OperandArray {
 
     private OperandArray(Operand[] operands) {
         this.operandArray = operands;
+    }
+
+    /**
+     * Returns an iterator over elements of type {@code T}.
+     *
+     * @return an Iterator.
+     */
+    @NotNull
+    @Override
+    public Iterator<Operand> iterator() {
+        return Arrays.asList(operandArray).iterator();
     }
 
     public Operand[] copy() {
