@@ -155,5 +155,9 @@ public class OperandRole {
         return new OperandRole(newProp, usage, requiredType);
     }
 
+    public int getProperties() {
+        return properties;
+    }
+
 }
 
