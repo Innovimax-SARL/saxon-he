@@ -679,14 +679,13 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
     }
 
     private Expression refineTemplateBody(Expression body, ContextItemStaticInfo cisi) throws XPathException {
-        Expression result = null;
         try {
-            result = body.simplify();
+            body = body.simplify();
         } catch (XPathException e) {
             if (e.isReportableStatically()) {
                 compileError(e);
             } else {
-                result = new ErrorExpression(e);
+                body = new ErrorExpression(e);
             }
         }
 
@@ -698,34 +697,34 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
                             new RoleDiagnostic(RoleDiagnostic.TEMPLATE_RESULT, diagnosticId, 0);
                     //role.setSourceLocator(new ExpressionLocation(this));
                     role.setErrorCode("XTTE0505");
-                    result = config.getTypeChecker(false).staticTypeCheck(body, requiredType, role, makeExpressionVisitor());
+                    body = config.getTypeChecker(false).staticTypeCheck(body, requiredType, role, makeExpressionVisitor());
                 }
             } catch (XPathException err) {
                 if (err.isReportableStatically()) {
                     compileError(err);
                 } else {
-                    result = new ErrorExpression(err);
+                    body = new ErrorExpression(err);
                 }
             }
         }
 
         if (config.isCompileWithTracing()) {
             // Add trace wrapper code if required
-            result = makeTraceInstruction(this, result);
-            if (result instanceof TraceExpression) {
-                ((TraceExpression) result).setProperty("match", matchAtt);
-                ((TraceExpression) result).setProperty("mode", modeAtt);
+            body = makeTraceInstruction(this, body);
+            if (body instanceof TraceExpression) {
+                ((TraceExpression) body).setProperty("match", matchAtt);
+                ((TraceExpression) body).setProperty("mode", modeAtt);
             }
         }
 
         try {
             ExpressionVisitor visitor = makeExpressionVisitor();
-            result = result.typeCheck(visitor, cisi);
+            body = body.typeCheck(visitor, cisi);
         } catch (XPathException e) {
             compileError(e);
         }
 
-        return result;
+        return body;
     }
 
     public void compileTemplateRule(Compilation compilation, Expression body, ComponentDeclaration decl) throws XPathException {
