@@ -175,9 +175,11 @@ public class XSLFunction extends StyleElement implements StylesheetComponent {
         } else {
             check30attribute("streamability");
             streamability = getStreamabilityValue(streamabilityAtt);
-            if (streamability.isStreaming() && !getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-                issueWarning("Request for streaming ignored: this Saxon configuration does not support streaming", this);
-                streamability = FunctionStreamability.UNCLASSIFIED;
+            if (streamability.isStreaming()) {
+                boolean streamable = processStreamableAtt("yes");
+                if (!streamable) {
+                    streamability = FunctionStreamability.UNCLASSIFIED;
+                }
             }
         }
 
