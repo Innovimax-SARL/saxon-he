@@ -7,7 +7,6 @@
 
 package net.sf.saxon.style;
 
-import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.accum.Accumulator;
 import net.sf.saxon.expr.accum.AccumulatorRegistry;
@@ -198,7 +197,7 @@ public class XSLMergeSource extends StyleElement {
             } else if (f.equals("type")) {
                 typeAtt = Whitespace.trim(atts.getValue(a));
             } else if (f.equals("streamable")) {
-                streamableAtt = Whitespace.trim(atts.getValue(a));
+                streamableAtt = atts.getValue(a);
             } else if (f.equals("use-accumulators")) {
                 useAccumulatorsAtt = Whitespace.trim(atts.getValue(a));
             } else {
@@ -242,16 +241,9 @@ public class XSLMergeSource extends StyleElement {
         }
 
         if (streamableAtt != null) {
-            streamable = processBooleanAttribute("streamable", streamableAtt);
+            streamable = processStreamableAtt(streamableAtt);
             if (streamable && forEachSource == null) {
                 compileError("Streaming on xsl:merge-source is possible only when @for-each-source is used", "XTSE3195");
-            }
-//            if (!streamable && forEachSource != null) {
-//                compileError("When @for-each-source is used, the value of @streamable must be 'yes'", "XTSE3195");
-//            }
-            if (streamable && !getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-                issueWarning("Request for streaming ignored: this Saxon configuration does not support streaming", this);
-                streamable = false;
             }
         } else if (forEachSource != null) {
             streamable = true;

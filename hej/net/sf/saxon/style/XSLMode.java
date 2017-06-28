@@ -127,12 +127,7 @@ public class XSLMode extends StyleElement {
         for (int a = 0; a < atts.getLength(); a++) {
             String f = atts.getQName(a);
             if (f.equals("streamable")) {
-                String streamableAtt = Whitespace.trim(atts.getValue(a));
-                streamable = processBooleanAttribute("streamable", streamableAtt);
-                if (streamable && !getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-                    issueWarning("Request for streaming ignored: this Saxon configuration does not support streaming", this);
-                    streamable = false;
-                }
+                streamable = processStreamableAtt(atts.getValue(a));
             } else if (f.equals("name")) {
                 nameAtt = Whitespace.trim(atts.getValue(a));
                 if (!nameAtt.equals("#default")) {

@@ -7,7 +7,6 @@
 
 package net.sf.saxon.style;
 
-import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Component;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.instruct.AttributeSet;
@@ -130,7 +129,7 @@ public class XSLAttributeSet extends StyleElement implements StylesheetComponent
             } else if (f.equals("use-attribute-sets")) {
                 useAtt = atts.getValue(a);
             } else if (f.equals("streamable")) {
-                streamableAtt = Whitespace.trim(atts.getValue(a));
+                streamableAtt = atts.getValue(a);
             } else if (f.equals("visibility")) {
                 visibilityAtt = Whitespace.trim(atts.getValue(a));
             } else {
@@ -152,11 +151,7 @@ public class XSLAttributeSet extends StyleElement implements StylesheetComponent
         }
 
         if (streamableAtt != null) {
-            streamable = processBooleanAttribute("streamable", streamableAtt);
-            if (streamable && !getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-                issueWarning("Request for streaming ignored: this Saxon configuration does not support streaming", this);
-                streamable = false;
-            }
+            streamable = processStreamableAtt(streamableAtt);
         }
 
         try {

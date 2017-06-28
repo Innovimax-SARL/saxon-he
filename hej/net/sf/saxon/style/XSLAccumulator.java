@@ -106,7 +106,7 @@ public class XSLAccumulator extends StyleElement implements StylesheetComponent 
 
             } else if (f.equals("streamable")) {
                 accumulator.setDeclaredStreamable(false);
-                streamable = processBooleanAttribute("streamable", atts.getValue(a));
+                streamable = processStreamableAtt(atts.getValue(a));
                 accumulator.setDeclaredStreamable(streamable);
             } else if (atts.getURI(a).equals(NamespaceConstant.SAXON) && atts.getLocalName(a).equals("trace")) {
                 accumulator.setTracing(processBooleanAttribute("saxon:trace", atts.getValue(a)));
@@ -356,26 +356,20 @@ public class XSLAccumulator extends StyleElement implements StylesheetComponent 
         // Check streamability constraints
         //#ifdefined STREAM
         if (accumulator.isDeclaredStreamable()) {
-            if (!getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-                compileWarning("Streaming is not available without a Saxon EE-T license: request ignored", SaxonErrorCode.SXST0068);
-                streamable = false;
-                accumulator.setDeclaredStreamable(false);
-            } else {
-                if (!pattern.isMotionless()) {
-                    rule.compileError("The patterns for the accumulator rules in a streaming accumulator must be motionless", "XTSE3430");
+            if (!pattern.isMotionless()) {
+                rule.compileError("The patterns for the accumulator rules in a streaming accumulator must be motionless", "XTSE3430");
+            }
+            ContextItemStaticInfo csi = getConfiguration().makeContextItemStaticInfo(pattern.getItemType(), false);
+            csi.setContextPostureStriding();
+            List<String> reasons = new ArrayList<String>(4);
+            PostureAndSweep ps = Streamability.getStreamability(newValueExp, csi, reasons);
+            if (ps.getSweep() != Sweep.MOTIONLESS) {
+                String message = "The xsl:accumulator-rule/@select expression (or contained sequence constructor) " +
+                        "for a streaming accumulator must be motionless";
+                for (String reason : reasons) {
+                    message += ". " + reason;
                 }
-                ContextItemStaticInfo csi = getConfiguration().makeContextItemStaticInfo(pattern.getItemType(), false);
-                csi.setContextPostureStriding();
-                List<String> reasons = new ArrayList<String>(4);
-                PostureAndSweep ps = Streamability.getStreamability(newValueExp, csi, reasons);
-                if (ps.getSweep() != Sweep.MOTIONLESS) {
-                    String message = "The xsl:accumulator-rule/@select expression (or contained sequence constructor) " +
-                            "for a streaming accumulator must be motionless";
-                    for (String reason : reasons) {
-                        message += ". " + reason;
-                    }
-                    rule.compileError(message, "XTSE3430");
-                }
+                rule.compileError(message, "XTSE3430");
             }
         }
         //#endif

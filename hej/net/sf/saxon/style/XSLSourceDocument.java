@@ -96,7 +96,7 @@ public class XSLSourceDocument extends StyleElement {
             } else if (f.equals("use-accumulators")) {
                 useAccumulatorsAtt = Whitespace.trim(atts.getValue(a));
             } else if (f.equals("streamable")) {
-                streamableAtt = Whitespace.trim(atts.getValue(a));
+                streamableAtt = atts.getValue(a);
             } else if (NamespaceConstant.SAXON.equals(atts.getURI(a))) {
                 String local = atts.getLocalName(a);
                 if (local.equals("dtd-validation")) {
@@ -152,8 +152,11 @@ public class XSLSourceDocument extends StyleElement {
             compileError("The @validation and @type attributes are mutually exclusive", "XTSE1505");
         }
 
+        if (getLocalPart().equals("stream")) {
+           streamableAtt = "yes";   // retained for compatibility with XSLT 3.0 draft spec)
+        }
         if (streamableAtt != null) {
-            streaming = processBooleanAttribute("streamable", streamableAtt);
+            streaming = processStreamableAtt(streamableAtt);
         } else {
             streaming = getLocalPart().equals("stream"); // retained for compatibility with XSLT 3.0 draft spec
         }

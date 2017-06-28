@@ -876,14 +876,28 @@ public abstract class StyleElement extends ElementImpl {
 
     }
 
-    public static boolean isYes(String s) {
+    static boolean isYes(String s) {
         return "yes".equals(s) || "true".equals(s) || "1".equals(s);
     }
 
-    public static boolean isNo(String s) {
+    static boolean isNo(String s) {
         return "no".equals(s) || "false".equals(s) || "0".equals(s);
     }
 
+    boolean processStreamableAtt(String streamableAtt) throws XPathException {
+        boolean streamable = processBooleanAttribute("streamable", streamableAtt);
+        if (streamable) {
+            if (!getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
+                issueWarning("Request for streaming ignored: this Saxon configuration does not support streaming", this);
+                return false;
+            }
+            if ("off".equals(getConfiguration().getConfigurationProperty(FeatureKeys.STREAMABILITY))) {
+                issueWarning("Request for streaming ignored: streaming is disabled in this Saxon configuration", this);
+                return false;
+            }
+        }
+        return streamable;
+    }
     /**
      * Process an attribute whose value is a SequenceType
      *
@@ -1941,14 +1955,14 @@ public abstract class StyleElement extends ElementImpl {
     }
 
     protected boolean isWithinDeclaredStreamableConstruct() {
-        String streamable = getAttributeValue("streamable");
-        if (streamable != null) {
-            streamable = Whitespace.trim(streamable);
-            if ("yes".equals(streamable) || "1".equals(streamable) || "true".equals(streamable)) {
-                return true;
+        String streamableAtt = getAttributeValue("streamable");
+        if (streamableAtt != null) {
+            try {
+                return processStreamableAtt(streamableAtt);
+            } catch (XPathException e) {
+                return false; // Error will already have been reported
             }
         }
-        ;
         NodeInfo parent = getParent();
         return parent instanceof StyleElement && ((StyleElement) parent).isWithinDeclaredStreamableConstruct();
     }
