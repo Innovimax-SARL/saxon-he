@@ -257,7 +257,26 @@ namespace Saxon.Api
 
         private static XdmValue MakeSequence(IEnumerable o)
         {
-            throw new NotImplementedException();
+            JArrayList list = new JArrayList();
+
+            if (o is string)
+            {
+                return XdmAtomicValue.MakeAtomicValue((object)o);
+            }
+            foreach (object oi in o)
+            {
+                XdmValue v = XdmValue.MakeValue(oi);
+                if (v is XdmItem)
+                {
+                    list.add((JItem)v.Unwrap());
+                }
+                else {
+                    list.add(new XdmArray(v).Unwrap());
+                }
+
+            }
+            JSequence value =  new JSequenceExtent(list);
+            return XdmValue.Wrap(value);
         }
 
 
@@ -651,7 +670,10 @@ namespace Saxon.Api
                 return new XdmAtomicValue((Uri)value);
             } else if (value is QName) {
                 return new XdmAtomicValue((QName)value);
-            } else {
+            } if (value is XdmAtomicValue) {
+                return (XdmAtomicValue)value;
+            } else
+            {
                 throw new ArgumentException(value.ToString());
             }
         }
@@ -776,8 +798,7 @@ namespace Saxon.Api
         public override Boolean Equals(object other)
         {
             if (other is XdmAtomicValue) {
-                return ((JAtomicValue)value).asMapKey().Equals(((JAtomicValue)other).asMapKey());
-
+                return ((JAtomicValue)value).asMapKey().Equals(((JAtomicValue)((XdmAtomicValue)other).value).asMapKey());
 
             } else {
                 return false;
@@ -977,6 +998,16 @@ namespace Saxon.Api
 	///<summary> Constructor to create an empty XdmArray</summary>
         public XdmArray() {
             this.value = JSimpleArrayItem.EMPTY_ARRAY;
+        }
+
+        public XdmArray(XdmValue value) {
+            int length = value.Count;
+            JArrayList list = new JArrayList(length);
+            foreach (XdmItem item in value.GetList())
+            {
+                list.add(item.Unwrap());
+            }
+            this.value = new JSimpleArrayItem(list);
         }
 
 
@@ -2364,7 +2395,9 @@ namespace Saxon.Api
 
         public object Current
         {
-			get { return XdmValue.Wrap(current); }
+			get {
+                if (current == null) return null;
+                return XdmValue.Wrap(current); }
         }
 
         /// <summary>Move to the next item in the sequence</summary>
