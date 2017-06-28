@@ -73,7 +73,7 @@ public class SequenceInstr extends UnaryExpression {
     /*@NotNull*/
     public Expression typeCheck(ExpressionVisitor visitor, ContextItemStaticInfo contextInfo) throws XPathException {
         typeCheckChildren(visitor, contextInfo);
-        return getBaseExpression();
+        return this;
     }
 
     /**
@@ -172,6 +172,7 @@ public class SequenceInstr extends UnaryExpression {
      */
     @Override
     public String getStreamerName() {
+
         return "SequenceInstr";
     }
 }
