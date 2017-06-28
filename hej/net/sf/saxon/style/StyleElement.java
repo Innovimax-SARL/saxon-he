@@ -888,11 +888,11 @@ public abstract class StyleElement extends ElementImpl {
         boolean streamable = processBooleanAttribute("streamable", streamableAtt);
         if (streamable) {
             if (!getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-                issueWarning("Request for streaming ignored: this Saxon configuration does not support streaming", this);
+                compileWarning("Request for streaming ignored: this Saxon configuration does not support streaming", SaxonErrorCode.SXST0068);
                 return false;
             }
             if ("off".equals(getConfiguration().getConfigurationProperty(FeatureKeys.STREAMABILITY))) {
-                issueWarning("Request for streaming ignored: streaming is disabled in this Saxon configuration", this);
+                compileWarning("Request for streaming ignored: streaming is disabled in this Saxon configuration", SaxonErrorCode.SXST0068);
                 return false;
             }
         }
