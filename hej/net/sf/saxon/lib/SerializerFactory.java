@@ -1120,7 +1120,7 @@ public class SerializerFactory {
     }
 
     private static boolean isValidClarkName(/*@NotNull*/ String value) {
-        if (value.charAt(0) != '{') {
+        if (value.isEmpty() || value.charAt(0) != '{') {
             return false;
         }
         int closer = value.indexOf('}');
