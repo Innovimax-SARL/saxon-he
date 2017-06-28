@@ -1883,9 +1883,10 @@
 
     /**
     *            <p>This property determines the version of XML Schema used by the
-    *                    <code>Configuration</code>. The default is XSD 1.0. If XSD 1.0 is selected, XSD
-    *                1.1 features will be rejected, with the exception of the version control attributes
-    *                that allow sections of the schema to be marked as requiring XSD 1.0 or XSD 1.1.</p>
+    *                <code>Configuration</code>. From Saxon 9.8, the default is XSD 1.1. If XSD 1.0 is
+    *                selected, XSD 1.1 features will be rejected, with the exception of the version
+    *                control attributes that allow sections of the schema to be marked as requiring XSD
+    *                1.0 or XSD 1.1.</p>
     *        
     **/
 
