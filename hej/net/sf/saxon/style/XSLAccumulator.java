@@ -356,20 +356,26 @@ public class XSLAccumulator extends StyleElement implements StylesheetComponent 
         // Check streamability constraints
         //#ifdefined STREAM
         if (accumulator.isDeclaredStreamable()) {
-            if (!pattern.isMotionless()) {
-                rule.compileError("The patterns for the accumulator rules in a streaming accumulator must be motionless", "XTSE3430");
-            }
-            ContextItemStaticInfo csi = getConfiguration().makeContextItemStaticInfo(pattern.getItemType(), false);
-            csi.setContextPostureStriding();
-            List<String> reasons = new ArrayList<String>(4);
-            PostureAndSweep ps = Streamability.getStreamability(newValueExp, csi, reasons);
-            if (ps.getSweep() != Sweep.MOTIONLESS) {
-                String message = "The xsl:accumulator-rule/@select expression (or contained sequence constructor) " +
-                        "for a streaming accumulator must be motionless";
-                for (String reason : reasons) {
-                    message += ". " + reason;
+            if (!getConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
+                compileWarning("Streaming is not available without a Saxon EE-T license: request ignored", SaxonErrorCode.SXST0068);
+                streamable = false;
+                accumulator.setDeclaredStreamable(false);
+            } else {
+                if (!pattern.isMotionless()) {
+                    rule.compileError("The patterns for the accumulator rules in a streaming accumulator must be motionless", "XTSE3430");
                 }
-                rule.compileError(message, "XTSE3430");
+                ContextItemStaticInfo csi = getConfiguration().makeContextItemStaticInfo(pattern.getItemType(), false);
+                csi.setContextPostureStriding();
+                List<String> reasons = new ArrayList<String>(4);
+                PostureAndSweep ps = Streamability.getStreamability(newValueExp, csi, reasons);
+                if (ps.getSweep() != Sweep.MOTIONLESS) {
+                    String message = "The xsl:accumulator-rule/@select expression (or contained sequence constructor) " +
+                            "for a streaming accumulator must be motionless";
+                    for (String reason : reasons) {
+                        message += ". " + reason;
+                    }
+                    rule.compileError(message, "XTSE3430");
+                }
             }
         }
         //#endif

@@ -224,6 +224,13 @@ public class SaxonErrorCode {
     public static final String SXST0067 = "SXST0067";
 
     /**
+     * SXST0067: This configuration does not allow streaming
+     */
+
+    public static final String SXST0068 = "SXST0068";
+
+
+    /**
      * SXTA0001: unresolved type alias
      */
     public static final String SXTA0001 = "SXTA0001";
