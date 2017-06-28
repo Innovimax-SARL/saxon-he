@@ -43,7 +43,7 @@ public class CopyOfFn extends SystemFunction {
             } else {
                 VirtualCopy vc = VirtualCopy.makeVirtualCopy((NodeInfo) item);
                 vc.getTreeInfo().setCopyAccumulators(true);
-                AccumulatorManager manager = (AccumulatorManager)context.getController().getAccumulatorManager();
+                AccumulatorManager manager = context.getController().getAccumulatorManager();
                 manager.copyAccumulatorData((NodeInfo) item, vc);
                 // TODO: set the base URI
                 return vc;
