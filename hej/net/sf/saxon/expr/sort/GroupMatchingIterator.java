@@ -71,7 +71,7 @@ public abstract class GroupMatchingIterator implements LookaheadIterator, LastPo
     }
 
     public int getProperties() {
-        return LOOKAHEAD;
+        return LOOKAHEAD | LAST_POSITION_FINDER;
     }
 
 //#if EE==true
