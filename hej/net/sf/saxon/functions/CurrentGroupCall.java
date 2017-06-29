@@ -56,10 +56,17 @@ public class CurrentGroupCall extends Expression implements Callable {
      */
 
     public void setControllingInstruction(ForEachGroup instruction, ItemType itemType, boolean isInLoop) {
+        resetLocalStaticProperties();
         this.controllingInstruction = instruction;
         this.isInLoop = isInLoop;
         this.itemType = itemType;
-        resetLocalStaticProperties();
+    }
+
+    @Override
+    public void resetLocalStaticProperties() {
+        super.resetLocalStaticProperties();
+        this.controllingInstruction = null;
+        this.itemType = AnyItemType.getInstance();
     }
 
     /**

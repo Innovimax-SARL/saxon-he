@@ -409,6 +409,7 @@ public class ForEachGroup extends Instruction
                 newKeyDef == null ? null : new SortKeyDefinitionList(newKeyDef));
         ExpressionTool.copyLocationInfo(this, feg);
         feg.setComposite(isComposite());
+        fixupGroupReferences(feg, feg, getSelectExpression().getItemType(), false);
         return feg;
     }
 
