@@ -193,7 +193,7 @@ public final class LocalNameTest extends NodeTest implements QNameTest {
      * uri and local.
      */
     public String generateJavaScriptNameTest() {
-        return "q.local == '" + localName + "'";
+        return "q.local==='" + localName + "'";
     }
 
     /**

@@ -329,7 +329,7 @@ public class NameTest extends NodeTest implements QNameTest {
      */
     public String generateJavaScriptNameTest() {
         computeUriAndLocal();
-        return "q.uri=='" + ExpressionPresenter.jsEscape(uri) + "'&&q.local=='" + localName + "'";
+        return "q.uri==='" + ExpressionPresenter.jsEscape(uri) + "'&&q.local==='" + localName + "'";
     }
 
     /**

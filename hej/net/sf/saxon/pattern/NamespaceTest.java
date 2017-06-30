@@ -196,7 +196,7 @@ public final class NamespaceTest extends NodeTest implements QNameTest {
      */
 
     public String generateJavaScriptNameTest() {
-        return "q.uri == '" + ExpressionPresenter.jsEscape(uri) + "'";
+        return "q.uri==='" + ExpressionPresenter.jsEscape(uri) + "'";
     }
 
     /**
