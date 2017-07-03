@@ -417,33 +417,11 @@ public class Executable {
      * recursive imports are permitted
      *
      * @param main           the main query module
-     * @param checkForCycles if a check for cyclicity among modules is to be performed. This is a check for
-     *                       cycles at the level of a module (error XQST0093)
      * @throws net.sf.saxon.trans.XPathException
      *          if an error occurs
      */
 
-    public void fixupQueryModules(QueryModule main, boolean checkForCycles) throws XPathException {
-
-        // If there is no pseudo-variable representing the context item, then create one now
-        //StructuredQName contextItemVarName = getInitialContextItemVariableName();
-//        GlobalVariable contextItemVar;
-//        if (initialContextItemVariable == null) {
-//            GlobalParam var = new GlobalParam();
-//            var.setPackageData(main.getPackageData());
-//            var.setRequiredParam(false);
-//            ErrorExpression ee = new ErrorExpression(new XPathException("Context item is absent", "XPDY0002"));
-//            var.setSelectExpression(ee);
-//            StructuredQName varQName = new StructuredQName();
-//            var.setVariableQName(varQName);
-//            var.setRequiredType(SequenceType.SINGLE_ITEM);
-//            setInitialContextItemVariable(var);
-////            registerGlobalVariable(var);
-////            getGlobalVariableMap().allocateSlotNumber(varQName);
-//            contextItemVar = var;
-//        } else {
-//            contextItemVar = initialContextItemVariable;
-//        }
+    public void fixupQueryModules(QueryModule main) throws XPathException {
 
         // Bind any previously unbound variables (forwards references)
 
@@ -476,13 +454,13 @@ public class Executable {
         main.checkForCircularities(varDefinitions, main.getGlobalFunctionLibrary());
         main.fixupGlobalFunctions();
 
-        if (checkForCycles) {
-            Iterator miter = getQueryLibraryModules();
-            while (miter.hasNext()) {
-                QueryModule module = (QueryModule) miter.next();
-                module.lookForModuleCycles(new Stack<QueryModule>(), 1);
-            }
-        }
+//        if (checkForCycles) {
+//            Iterator miter = getQueryLibraryModules();
+//            while (miter.hasNext()) {
+//                QueryModule module = (QueryModule) miter.next();
+//                module.lookForModuleCycles(new Stack<QueryModule>(), 1);
+//            }
+//        }
 
         main.typeCheckGlobalVariables(varDefinitions);
         main.optimizeGlobalFunctions();

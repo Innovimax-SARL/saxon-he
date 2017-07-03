@@ -63,7 +63,7 @@ public class XQueryParser extends XPathParser {
     private boolean memoFunction = false;
     private boolean disableCycleChecks = false;
     private boolean streaming = false;
-    /*@Nullable*/ protected String queryVersion = null;
+    //protected String queryVersion = null;
     private int errorCount = 0;
     /*@Nullable*/ private XPathException firstError = null;
 
@@ -95,7 +95,7 @@ public class XQueryParser extends XPathParser {
      */
 
     public XQueryParser() {
-        queryVersion = XQUERY31;
+        //queryVersion = XQUERY31;
         setLanguage(XQUERY, 31);
     }
 
@@ -165,7 +165,7 @@ public class XQueryParser extends XPathParser {
                 env.getConfiguration().checkLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XQUERY, "streaming", -1);
             }
 
-            exec.fixupQueryModules(mainModule, !disableCycleChecks);
+            exec.fixupQueryModules(mainModule);
 
             // Check for cyclic dependencies among the modules
 
@@ -317,6 +317,8 @@ public class XQueryParser extends XPathParser {
      *
      * @param disable true if checks for import cycles are to be suppressed, that is,
      *                if cycles should be allowed
+     * @deprecated in 9.8, the XQUery 3.0+ rules for cycles are always used, and the
+     * old 1.0 cycle checks never happen.
      */
 
     public void setDisableCycleChecks(boolean disable) {
@@ -504,25 +506,28 @@ public class XQueryParser extends XPathParser {
         if (t.currentToken == Token.XQUERY_VERSION) {
             nextToken();
             expect(Token.STRING_LITERAL);
-            queryVersion = unescape(t.currentTokenValue).toString();
-            if (XQUERY10.equals(queryVersion)) {
-                // no action
-            } else if (XQUERY30.equals(queryVersion) || "1.1".equals(queryVersion)) {
-                queryVersion = XQUERY30;
-                if (((QueryModule) env).getLanguageVersion() != 30 && ((QueryModule) env).getLanguageVersion() != 31) {
-                    grumble("XQuery 3.0 was not enabled when invoking Saxon", "XQST0031");
-                    queryVersion = XQUERY10;
-                }
-            } else if(XQUERY31.equals(queryVersion)) {
-                queryVersion = XQUERY31;
-                if (((QueryModule) env).getLanguageVersion() != 31) {
-                    grumble("XQuery 3.1 was not enabled when invoking Saxon", "XQST0031");
-                    queryVersion = XQUERY30;
-                }
-            } else {
-                grumble("Unsupported XQuery version " + queryVersion, "XQST0031");
-                queryVersion = XQUERY10;
+            String queryVersion = unescape(t.currentTokenValue).toString();
+            if (!queryVersion.trim().matches("[0-9]+\\.[0-9]+")) {
+                grumble("Invalid XQuery version " + queryVersion, "XQST0031");
             }
+//            if (XQUERY10.equals(queryVersion)) {
+//                // no action
+//            } else if (XQUERY30.equals(queryVersion) || "1.1".equals(queryVersion)) {
+//                queryVersion = XQUERY30;
+//                if (((QueryModule) env).getLanguageVersion() != 30 && ((QueryModule) env).getLanguageVersion() != 31) {
+//                    grumble("XQuery 3.0 was not enabled when invoking Saxon", "XQST0031");
+//                    queryVersion = XQUERY10;
+//                }
+//            } else if(XQUERY31.equals(queryVersion)) {
+//                queryVersion = XQUERY31;
+//                if (((QueryModule) env).getLanguageVersion() != 31) {
+//                    grumble("XQuery 3.1 was not enabled when invoking Saxon", "XQST0031");
+//                    queryVersion = XQUERY30;
+//                }
+//            } else {
+//                grumble("Unsupported XQuery version " + queryVersion, "XQST0031");
+//                queryVersion = XQUERY10;
+//            }
             nextToken();
             if ("encoding".equals(t.currentTokenValue)) {
                 nextToken();
@@ -536,13 +541,13 @@ public class XQueryParser extends XPathParser {
             expect(Token.SEMICOLON);
             nextToken();
         } else {
-            if (((QueryModule) env).getLanguageVersion()== 30) {
-                queryVersion = XQUERY30;
-            } else if (((QueryModule) env).getLanguageVersion() == 31) {
-                queryVersion = XQUERY31;
-            } else {
-                queryVersion = XQUERY10;
-            }
+//            if (((QueryModule) env).getLanguageVersion()== 30) {
+//                queryVersion = XQUERY30;
+//            } else if (((QueryModule) env).getLanguageVersion() == 31) {
+//                queryVersion = XQUERY31;
+//            } else {
+//                queryVersion = XQUERY10;
+//            }
             if (t.currentToken == Token.XQUERY_ENCODING) {
                 nextToken();
                 expect(Token.STRING_LITERAL);
@@ -1468,8 +1473,8 @@ public class XQueryParser extends XPathParser {
                     throw new XPathException("Failure while closing file for imported query module");
                 }
                 QueryModule.makeQueryModule(
-                        baseURI, executable, (QueryModule) env, queryText, mImport.namespaceURI,
-                        disableCycleChecks);
+                        baseURI, executable, (QueryModule) env, queryText, mImport.namespaceURI
+                );
             } catch (XPathException err) {
                 err.maybeSetLocation(makeLocation());
                 reportError(err);
@@ -2108,14 +2113,7 @@ public class XQueryParser extends XPathParser {
                     warning("Value of saxon:memo-function must be 'true' or 'false'");
                 }
             } else if (localName.equals("allow-cycles")) {
-                value = value.trim();
-                if (value.equals("true")) {
-                    disableCycleChecks = true;
-                } else if (value.equals("false")) {
-                    disableCycleChecks = false;
-                } else {
-                    warning("Value of saxon:allow-cycles must be 'true' or 'false'");
-                }
+                warning("Value of saxon:allow-cycles is ignored");
             } else {
                 warning("Unknown Saxon option declaration: " + varName.getDisplayName());
             }
@@ -3216,9 +3214,9 @@ public class XQueryParser extends XPathParser {
                 nextToken();
                 break;
             case Token.VALIDATE_TYPE:
-                if (XQUERY10.equals(queryVersion)) {
-                    grumble("validate-as-type requires XQuery 3.0");
-                }
+//                if (XQUERY10.equals(queryVersion)) {
+//                    grumble("validate-as-type requires XQuery 3.0");
+//                }
                 mode = Validation.BY_TYPE;
                 nextToken();
                 expect(Token.KEYWORD_CURLY);

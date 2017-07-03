@@ -4564,7 +4564,6 @@ public class Configuration implements SourceResolver, NotationSet {
                 if (!"3.1".equals(value)) {
                     getErrorListener().warning(new XPathException("XQuery version ignored: only \"3.1\" is recognized"));
                 }
-                getDefaultStaticQueryContext().setLanguageVersion(31);
             }
 
         } else if (name.equals(FeatureKeys.XML_VERSION)) {

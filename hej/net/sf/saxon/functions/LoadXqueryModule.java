@@ -119,7 +119,6 @@ public class LoadXqueryModule extends SystemFunction implements Callable {
             moduleURIResolver = new StandardModuleURIResolver(config);
         }
         staticQueryContext.setModuleURIResolver(moduleURIResolver);
-        staticQueryContext.setLanguageVersion(qv);
         String baseURI = getRetainedStaticContext().getStaticBaseUriString();
         staticQueryContext.setBaseURI(baseURI);
         StreamSource[] streamSources;

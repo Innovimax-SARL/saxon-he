@@ -183,7 +183,6 @@ public class StaticQueryContext {
         errorListener = c.errorListener;
         codeInjector = c.codeInjector;
         isUpdating = c.isUpdating;
-        languageVersion = c.languageVersion;
         //collationMap = new CollationMap(c.collationMap);
         //locationMap = new LocationMap();
         //schemaAware = c.schemaAware;
@@ -220,7 +219,6 @@ public class StaticQueryContext {
         moduleURIResolver = null;
         clearNamespaces();
         isUpdating = false;
-        languageVersion = 30;
 
     }
 
@@ -365,12 +363,13 @@ public class StaticQueryContext {
      *
      * @param version The XQuery language version. Must be 10 (="1.0") or 30 (="3.0") or 31 (="3.1").
      * @since 9.2; changed in 9.3 to expect a DecimalValue rather than a string. Changed in 9.7 to
-     * accept an int (30 = "3.0") and to allow "3.1".
+     * accept an int (30 = "3.0") and to allow "3.1".  From 9.8.0.3 the supplied value is ignored
+     * and the language version is always set to "3.1".
      */
 
     public void setLanguageVersion(int version) {
         if (version==10 || version==30 || version==31) {
-            languageVersion = version;
+            // value is ignored
         } else {
             throw new IllegalArgumentException("languageVersion = " + version);
         }
@@ -381,11 +380,12 @@ public class StaticQueryContext {
      *
      * @return the language version. Either "1.0" or "1.1". Default is "1.0".
      * @since 9.2; changed in 9.3 to return a DecimalValue rather than a string;
-     * changed in 9.7 to return an int (30 = "3.0" and so on)
+     * changed in 9.7 to return an int (30 = "3.0" and so on). Changed in 9.8.0.3 to
+     * always return 31.
      */
 
     public int getLanguageVersion() {
-        return languageVersion;
+        return 31;
     }
 
     /**
@@ -583,10 +583,7 @@ public class StaticQueryContext {
         }
         qp.setStreaming(isStreaming());
         QueryModule mainModule = new QueryModule(this);
-        if (languageVersion >= 30) {
-            // TODO: can elimate old code here
-            qp.setDisableCycleChecks(true);
-        }
+        qp.setDisableCycleChecks(true);
         return qp.makeXQueryExpression(query, mainModule, config);
     }
 

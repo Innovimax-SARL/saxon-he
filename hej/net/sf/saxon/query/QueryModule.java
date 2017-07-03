@@ -80,7 +80,6 @@ public class QueryModule implements StaticContext {
     private String defaultCollationName;
     private int revalidationMode = Validation.SKIP;
     private boolean isUpdating = false;
-    private int languageVersion = 10;       // The decimal version times ten
     private ItemType requiredContextItemType = AnyItemType.getInstance(); // must be the same for all modules
     private DecimalFormatManager decimalFormatManager = null;   // used only in XQuery 3.0
     private CodeInjector codeInjector;
@@ -198,9 +197,7 @@ public class QueryModule implements StaticContext {
             }
             requiredContextItemType = sqc.getRequiredContextItemType();
             isUpdating = sqc.isUpdatingEnabled();
-            languageVersion = sqc.getLanguageVersion();
             codeInjector = sqc.getCodeInjector();
-            //allowTypedNodes = sqc.isAllowTypedNodes();
         }
         initializeFunctionLibraries(sqc);
     }
@@ -217,7 +214,6 @@ public class QueryModule implements StaticContext {
      *                     when loading a query module from XSLT.
      * @param query        The text of the query, after decoding and normalizing line endings
      * @param namespaceURI namespace of the query module to be loaded
-     * @param allowCycles  True if cycles of module imports (disallowed by the spec) are to be permitted
      * @return The StaticQueryContext representing the loaded query module
      * @throws XPathException if an error occurs
      */
@@ -225,7 +221,7 @@ public class QueryModule implements StaticContext {
     /*@NotNull*/
     public static QueryModule makeQueryModule(
             String baseURI, /*@NotNull*/ Executable executable, /*@NotNull*/ QueryModule importer,
-            String query, String namespaceURI, boolean allowCycles) throws XPathException {
+            String query, String namespaceURI) throws XPathException {
         Configuration config = executable.getConfiguration();
         QueryModule module = new QueryModule(config, importer);
         try {
@@ -245,7 +241,6 @@ public class QueryModule implements StaticContext {
         } else if (config.isCompileWithTracing()) {
             qp.setCodeInjector(new TraceCodeInjector());
         }
-        qp.setDisableCycleChecks(allowCycles);
         QNameParser qnp = new QNameParser(module.getLiveNamespaceResolver());
         qnp.setAcceptEQName(importer.getXPathVersion() >= 30);
         qnp.setUnescaper(new XQueryParser.Unescaper(config.getValidCharacterChecker()));
@@ -1045,7 +1040,7 @@ public class QueryModule implements StaticContext {
                     // If the namespace has been imported there's the possibility that
                     // the variable declaration hasn't yet been read, because of the limited provision
                     // for cyclic imports. In XQuery 3.0 forwards references are more generally allowed.
-                    if (getLanguageVersion() >= 30) {
+                    //if (getLanguageVersion() >= 30) {
                         UndeclaredVariable uvar = undeclaredVariables.get(qName);
                         if (uvar != null) {
                             // second or subsequent reference to the as-yet-undeclared variable
@@ -1062,12 +1057,12 @@ public class QueryModule implements StaticContext {
                             undeclaredVariables.put(qName, uvar);
                             return ref;
                         }
-                    } else {
-                        XPathException err = new XPathException("Variable $" + qName.getDisplayName() + " has not been declared");
-                        err.setErrorCode("XPST0008");
-                        err.setIsStaticError(true);
-                        throw err;
-                    }
+//                    } else {
+//                        XPathException err = new XPathException("Variable $" + qName.getDisplayName() + " has not been declared");
+//                        err.setErrorCode("XPST0008");
+//                        err.setIsStaticError(true);
+//                        throw err;
+//                    }
                 } else {
                     if (var.isPrivate()) {
                         XPathException err = new XPathException("Variable $" + qName.getDisplayName() + " is private");
@@ -1781,7 +1776,7 @@ public class QueryModule implements StaticContext {
     /*@Nullable*/
     public DecimalFormatManager getDecimalFormatManager() {
         if (decimalFormatManager == null) {
-            decimalFormatManager = new DecimalFormatManager(Configuration.XQUERY, languageVersion);
+            decimalFormatManager = new DecimalFormatManager(Configuration.XQUERY, getLanguageVersion());
         }
         return decimalFormatManager;
     }
@@ -1830,21 +1825,22 @@ public class QueryModule implements StaticContext {
      *
      * @return the language version (currently "1.0" or "3.0" or "3.1")
      * @since 9.2; changed in 9.3 to return a DecimalValue instead of a String; changed in 9.7 to return an
-     * int (30 means "3.0", and so on)
+     * int (30 means "3.0", and so on); changed in 9.8.0.3 to always return 31 (meaning "3.1")
      */
 
     public int getLanguageVersion() {
-        return languageVersion;
+        return 31;
     }
 
     /**
      * Get the XPath language level supported
      *
-     * @return 20 (=2.0) if XQuery 1.0 is enabled, otherwise the XQuery version
+     * @return the language level times 10 (for example 31 represents XPath 3.1).
+     * @since 9.2; changed in 9.8.0.3 to always return 31.
      */
 
     public int getXPathVersion() {
-        return languageVersion == 10 ? 20 : languageVersion;
+        return 31;
     }
 
     /**

@@ -315,7 +315,6 @@ public class XQueryCompiler {
         if (!"3.1".equals(value)) {
             env.getErrorListener().warning(new XPathException("XQuery version ignored: only \"3.1\" is recognized"));
         }
-        env.setLanguageVersion(31);
     }
 
     /**
