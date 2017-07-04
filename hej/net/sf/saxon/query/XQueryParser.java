@@ -507,7 +507,9 @@ public class XQueryParser extends XPathParser {
             nextToken();
             expect(Token.STRING_LITERAL);
             String queryVersion = unescape(t.currentTokenValue).toString();
-            if (!queryVersion.trim().matches("[0-9]+\\.[0-9]+")) {
+            String[] allowedVersions = new String[]{"1.0", "3.0", "3.1"};
+            if (Arrays.binarySearch(allowedVersions, queryVersion) < 0) {
+//            if (!queryVersion.trim().matches("[0-9]+\\.[0-9]+")) {
                 grumble("Invalid XQuery version " + queryVersion, "XQST0031");
             }
 //            if (XQUERY10.equals(queryVersion)) {
