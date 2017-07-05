@@ -772,6 +772,8 @@ public class Transform {
                         traceDestination.close();
                     }
                 }
+                // Following call has no effect unless internal switch set in ByteCodeCandidate
+                config.createByteCodeReport("byteCodeReport.xml");
             }
         } catch (TerminationException err) {
             quit(err.getMessage(), 1);

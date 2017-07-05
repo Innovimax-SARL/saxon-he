@@ -7,7 +7,6 @@
 
 package net.sf.saxon;
 
-import net.sf.saxon.functions.registry.UseWhen30FunctionSet;
 import net.sf.saxon.event.*;
 import net.sf.saxon.expr.*;
 import net.sf.saxon.expr.accum.AccumulatorRegistry;
@@ -5147,6 +5146,14 @@ public class Configuration implements SourceResolver, NotationSet {
      */
     public ICompilerService makeCompilerService(int hostLanguage) {
         return null;
+    }
+
+    /**
+     * Generate a report on byte code instrumentation to a specified file
+     */
+
+    public void createByteCodeReport(String fileName) {
+        // no action in Saxon-HE
     }
 
     /**
