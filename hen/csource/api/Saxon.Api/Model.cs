@@ -445,6 +445,19 @@ namespace Saxon.Api
 
         public abstract bool IsAtomic();
 
+
+        /// <summary>
+        /// Get the string value of the item. For a node, this gets the string
+        /// value of the node. For an atomic value, it has the same effect as casting the value to a string.
+        /// In all cases the result is the same as applying  the XPath string() function.
+        /// For atomc values, the result is the same as the result of calling toString. This
+        /// is not the case for nodes, where toString returns an XML serialization of the node.
+        /// </summary>
+        /// <returns>The result of converting the item to a string</returns>
+        public String GetStringValue() {
+            return ((JItem)value).getStringValue();
+        }
+
     }
 
     /// <summary inherits="XdmItem">
