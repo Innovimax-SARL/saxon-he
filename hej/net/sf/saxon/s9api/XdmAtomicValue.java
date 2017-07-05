@@ -213,7 +213,9 @@ public class XdmAtomicValue extends XdmItem {
             return new XdmAtomicValue((URI) value);
         } else if (value instanceof QName) {
             return new XdmAtomicValue((QName) value);
-        } else {
+        } if(value instanceof XdmAtomicValue){
+            return (XdmAtomicValue)value;
+        }else {
             throw new IllegalArgumentException(value.toString());
         }
     }
