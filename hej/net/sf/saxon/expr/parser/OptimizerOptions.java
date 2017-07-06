@@ -23,8 +23,9 @@ public class OptimizerOptions {
     public static final int MISCELLANEOUS = 256;
     public static final int SWITCH = 512;
     public static final int JIT = 1024;
+    public static final int RULE_SET = 2048;
 
-    int options;
+    private int options;
 
     public final static OptimizerOptions FULL_HE_OPTIMIZATION = new OptimizerOptions("lvm");
     public final static OptimizerOptions FULL_EE_OPTIMIZATION = new OptimizerOptions(-1);
@@ -66,6 +67,8 @@ public class OptimizerOptions {
                 return LOOP_LIFTING;
             case 'm':
                 return MISCELLANEOUS;
+            case 'r':
+                return RULE_SET;
             case 's':
                 return COMMON_SUBEXPRESSIONS;
             case 'v':
@@ -105,6 +108,9 @@ public class OptimizerOptions {
         }
         if (isSet(MISCELLANEOUS)) {
             result += "m";
+        }
+        if (isSet(RULE_SET)) {
+            result += "r";
         }
         if (isSet(COMMON_SUBEXPRESSIONS)) {
             result += "s";

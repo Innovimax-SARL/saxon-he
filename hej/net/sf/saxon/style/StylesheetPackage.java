@@ -13,6 +13,7 @@ import net.sf.saxon.expr.Component;
 import net.sf.saxon.expr.ComponentBinding;
 import net.sf.saxon.expr.PackageData;
 import net.sf.saxon.expr.instruct.*;
+import net.sf.saxon.expr.parser.OptimizerOptions;
 import net.sf.saxon.functions.ExecutableFunctionLibrary;
 import net.sf.saxon.functions.FunctionLibrary;
 import net.sf.saxon.functions.FunctionLibraryList;
@@ -870,7 +871,9 @@ public class StylesheetPackage extends PackageData {
         ruleManager.checkConsistency();
         ruleManager.computeRankings();
         ruleManager.invertStreamableTemplates();
-        ruleManager.optimizeRules();
+        if (config.obtainOptimizer().isOptionSet(OptimizerOptions.RULE_SET)) {
+            ruleManager.optimizeRules();
+        }
         pss.setRuleManager(ruleManager);
 
 

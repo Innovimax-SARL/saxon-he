@@ -712,7 +712,7 @@ public class SimpleMode extends Mode {
         }
 
         // Get the rule search state object
-        RuleSearchState ruleSearchState = null; // TODO
+        RuleSearchState ruleSearchState;
 
         // search the specific list for this node type / node name
 
@@ -736,6 +736,7 @@ public class SimpleMode extends Mode {
                     } else {
                         namedNodeChain = getNamedRuleChain(context, Type.ELEMENT, node.getURI(), node.getLocalPart());
                     }
+                    ruleSearchState = makeRuleSearchState(namedNodeChain, context);
                     bestRule = searchRuleChain(item, context, null, namedNodeChain, ruleSearchState, filter);
                     break;
                 }
@@ -747,6 +748,7 @@ public class SimpleMode extends Mode {
                     } else {
                         namedNodeChain = getNamedRuleChain(context, Type.ATTRIBUTE, node.getURI(), node.getLocalPart());
                     }
+                    ruleSearchState = makeRuleSearchState(namedNodeChain, context);
                     bestRule = searchRuleChain(item, context, null, namedNodeChain, ruleSearchState, filter);
                     break;
                 }
@@ -766,26 +768,32 @@ public class SimpleMode extends Mode {
                     throw new AssertionError("Unknown node kind");
             }
 
+            ruleSearchState = makeRuleSearchState(unnamedNodeChain, context);
             bestRule = searchRuleChain(item, context, bestRule, unnamedNodeChain, ruleSearchState, filter);
 
             // Search the list for rules for nodes of unknown node kind
 
+            ruleSearchState = makeRuleSearchState(genericRuleChain, context);
             return searchRuleChain(item, context, bestRule, genericRuleChain, ruleSearchState, filter);
 
         } else if (item instanceof AtomicValue) {
             if (atomicValueRuleChain != null) {
+                ruleSearchState = makeRuleSearchState(atomicValueRuleChain, context);
                 bestRule = searchRuleChain(item, context, bestRule, atomicValueRuleChain, ruleSearchState, filter);
             }
             if (genericRuleChain != null) {
+                ruleSearchState = makeRuleSearchState(genericRuleChain, context);
                 bestRule = searchRuleChain(item, context, bestRule, genericRuleChain, ruleSearchState, filter);
             }
             return bestRule;
 
         } else if (item instanceof Function) {
             if (functionItemRuleChain != null) {
+                ruleSearchState = makeRuleSearchState(functionItemRuleChain, context);
                 bestRule = searchRuleChain(item, context, bestRule, functionItemRuleChain, ruleSearchState, filter);
             }
             if (genericRuleChain != null) {
+                ruleSearchState = makeRuleSearchState(genericRuleChain, context);
                 bestRule = searchRuleChain(item, context, bestRule, genericRuleChain, ruleSearchState, filter);
             }
             return bestRule;
