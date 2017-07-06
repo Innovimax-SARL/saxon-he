@@ -7,6 +7,9 @@
 
 package net.sf.saxon.pattern;
 
+import com.saxonica.ee.stream.ManualGroupIterator;
+import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.XPathException;
 
@@ -46,6 +49,10 @@ public class CurrentGroupPattern extends AnchorPattern {
         return true;
     }
 
+    @Override
+    public boolean matchesBeneathAnchor(NodeInfo node, NodeInfo anchor, XPathContext context) throws XPathException {
+        return ((ManualGroupIterator)context.getCurrentGroupIterator()).currentGroupContains(node);
+    }
 
     @Override
     public void export(ExpressionPresenter presenter) throws XPathException {

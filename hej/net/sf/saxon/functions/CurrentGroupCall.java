@@ -111,6 +111,9 @@ public class CurrentGroupCall extends Expression implements Callable {
 
     @Override
     public ItemType getItemType() {
+        if (itemType == AnyItemType.getInstance() && controllingInstruction != null) {
+            itemType = controllingInstruction.getSelectExpression().getItemType();
+        }
         return itemType;
     }
 
