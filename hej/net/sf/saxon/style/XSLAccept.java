@@ -19,7 +19,7 @@ import net.sf.saxon.trans.XPathException;
 /**
  * Represents an xsl:accept element in an XSLT 3.0 package manifest.
  */
-public class XSLAccept extends XSLAcceptExpose implements ComponentAcceptor {
+public class XSLAccept extends XSLAcceptExpose {
     @Override
     protected void prepareAttributes() throws XPathException {
         super.prepareAttributes();
@@ -77,6 +77,7 @@ public class XSLAccept extends XSLAcceptExpose implements ComponentAcceptor {
             }
         }
     }
+
 
     /**
      * Accept a component from a used package, modifying its visibility if necessary

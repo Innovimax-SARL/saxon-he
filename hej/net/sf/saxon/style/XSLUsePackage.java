@@ -30,7 +30,7 @@ public class XSLUsePackage extends StyleElement {
     private String nameAtt = null;
     private PackageVersionRanges versionRanges = null;
     private StylesheetPackage usedPackage;
-    private List<ComponentAcceptor> acceptors = null;
+    private List<XSLAccept> acceptors = null;
 
     /**
      * Bind to the package to which this xsl:use-package element refers.
@@ -118,12 +118,28 @@ public class XSLUsePackage extends StyleElement {
             if (child.getNodeKind() == Type.TEXT) {
                 compileError("Character content is not allowed as a child of xsl:use-package");
             } else if (child instanceof XSLAccept || child instanceof XSLOverride) {
-                //ok
+                // no action
             } else {
                 compileError("Child element " + Err.wrap(child.getDisplayName(), Err.ELEMENT) +
                         " is not allowed as a child of xsl:use-package", "XTSE0010");
             }
         }
+    }
+
+    public Set<SymbolicName> getExplicitAcceptedComponentNames() throws XPathException {
+        Set<SymbolicName> explicitAccepts = new HashSet<SymbolicName>();
+        AxisIterator kids = iterateAxis(AxisInfo.CHILD);
+        NodeInfo child;
+        while ((child = kids.next()) != null) {
+            if (child instanceof XSLAccept) {
+                Set<ComponentTest> explicitComponentTests = ((XSLAccept) child).getExplicitComponentTests();
+                for (ComponentTest test : explicitComponentTests) {
+                    SymbolicName name = test.getSymbolicNameIfExplicit();
+                    explicitAccepts.add(name);
+                }
+            }
+        }
+        return explicitAccepts;
     }
 
     @Override
@@ -135,6 +151,22 @@ public class XSLUsePackage extends StyleElement {
                 ((StyleElement) curr).postValidate();
             }
         }
+        Set<SymbolicName> accepts = getExplicitAcceptedComponentNames();
+        Set<SymbolicName> overrides = getNamedOverrides();
+        accepts.retainAll(overrides);
+        if (!accepts.isEmpty()) {
+            StringBuilder duplicates = new StringBuilder();
+            boolean first = true;
+            for (SymbolicName name : accepts) {
+                if (first) {
+                    first = false;
+                } else {
+                    duplicates.append(", ");
+                }
+                duplicates.append(name.toString());
+            }
+            compileError("Cannot accept and override the same component (" + duplicates + ")", "XTSE3051");
+        }
     }
 
     /**
@@ -142,14 +174,14 @@ public class XSLUsePackage extends StyleElement {
      * @return the list of child xsl:accept elements
      */
 
-    public List<ComponentAcceptor> getAcceptors() {
+    public List<XSLAccept> getAcceptors() {
         if (this.acceptors == null) {
-            acceptors = new ArrayList<ComponentAcceptor>();
+            acceptors = new ArrayList<XSLAccept>();
             AxisIterator useKids = iterateAxis(AxisInfo.CHILD);
             NodeInfo decl;
             while ((decl = useKids.next()) != null) {
-                if (decl instanceof ComponentAcceptor) {
-                    acceptors.add((ComponentAcceptor) decl);
+                if (decl instanceof XSLAccept) {
+                    acceptors.add((XSLAccept) decl);
                 }
             }
         }
@@ -193,6 +225,29 @@ public class XSLUsePackage extends StyleElement {
         }
     }
 
+    public Set<SymbolicName> getNamedOverrides()
+            throws XPathException {
+        Set<SymbolicName> overrides = new HashSet<SymbolicName>();
+        AxisIterator kids = iterateAxis(AxisInfo.CHILD, NodeKindTest.ELEMENT);
+        NodeInfo override;
+        while ((override = kids.next()) != null) {
+            if (override instanceof XSLOverride) {
+                AxisIterator overridings = override.iterateAxis(AxisInfo.CHILD, NodeKindTest.ELEMENT);
+                NodeInfo overridingDeclaration;
+                while ((overridingDeclaration = overridings.next()) != null) {
+                    if (overridingDeclaration instanceof StylesheetComponent) {
+                        SymbolicName name = ((StylesheetComponent) overridingDeclaration).getSymbolicName();
+                        if (name != null) {
+                            overrides.add(name);
+                        }
+                    }
+                }
+            }
+        }
+        return overrides;
+    }
+
+
     /**
      * Process all the xsl:override declarations in the xsl:use-package, adding the overriding template rules
      * to the list of top-level declarations
@@ -206,7 +261,7 @@ public class XSLUsePackage extends StyleElement {
      */
 
     public void gatherRuleOverrides(PrincipalStylesheetModule module,
-                                    List<ComponentAcceptor> acceptors, Set<SymbolicName> overrides)
+                                    List<XSLAccept> acceptors, Set<SymbolicName> overrides)
             throws XPathException {
         StylesheetPackage thisPackage = module.getStylesheetPackage();
         RuleManager ruleManager = module.getRuleManager();
@@ -247,7 +302,7 @@ public class XSLUsePackage extends StyleElement {
                                     ruleManager.registerMode(newCompoundMode);
                                     Component newModeComponent =
                                         newCompoundMode.makeDeclaringComponent(Visibility.PUBLIC, thisPackage);
-                                    for (ComponentAcceptor acceptor : acceptors) {
+                                    for (XSLAccept acceptor : acceptors) {
                                         acceptor.acceptComponent(newModeComponent);
                                     }
                                     if (newModeComponent.getVisibility() != Visibility.PUBLIC) {

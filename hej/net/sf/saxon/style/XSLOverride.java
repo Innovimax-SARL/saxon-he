@@ -10,7 +10,10 @@ package net.sf.saxon.style;
 import net.sf.saxon.expr.Component;
 import net.sf.saxon.functions.FunctionLibraryList;
 import net.sf.saxon.om.*;
-import net.sf.saxon.trans.*;
+import net.sf.saxon.trans.Mode;
+import net.sf.saxon.trans.SymbolicName;
+import net.sf.saxon.trans.Visibility;
+import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.AxisIterator;
 import net.sf.saxon.type.Type;
 
@@ -53,6 +56,7 @@ public class XSLOverride extends StyleElement {
     @Override
     public void postValidate() throws XPathException {
         XSLUsePackage parent = (XSLUsePackage)getParent();
+        assert parent != null;
         if (parent.getUsedPackage() != null) {
             AxisIterator kids = iterateAxis(AxisInfo.CHILD);
             NodeInfo curr;
@@ -86,6 +90,7 @@ public class XSLOverride extends StyleElement {
                             return;
                         }
                     } else {
+
                         Component overridden = parent.getUsedPackage().getComponent(name);
                         if (overridden == null) {
                             ((StyleElement) curr).compileError("There is no " + StandardNames.getLocalName(name.getComponentKind()) +

@@ -31,6 +31,8 @@ import net.sf.saxon.type.TypeHierarchy;
 
 import java.util.*;
 
+import static net.sf.saxon.trans.Visibility.PRIVATE;
+
 /**
  * A (compiled) stylesheet package. This may be created either by compiling a source XSLT package,
  * or by loading a saved package from disk. It therefore has no references to source XSLT documents.
@@ -513,7 +515,7 @@ public class StylesheetPackage extends PackageData {
         if (componentIndex.get(name) == null) {
             Component comp = variable.getDeclaringComponent();
             if (comp == null) {
-                comp = variable.makeDeclaringComponent(Visibility.PRIVATE, this);
+                comp = variable.makeDeclaringComponent(PRIVATE, this);
             }
             addComponent(comp);
         }
@@ -582,7 +584,7 @@ public class StylesheetPackage extends PackageData {
      */
 
     public void addComponentsFromUsedPackage(StylesheetPackage usedPackage,
-                                             List<ComponentAcceptor> acceptors,
+                                             List<XSLAccept> acceptors,
                                              final Set<SymbolicName> overrides) throws XPathException {
         usedPackages.add(usedPackage);
 
@@ -607,10 +609,48 @@ public class StylesheetPackage extends PackageData {
             SymbolicName name = namedComponentEntry.getKey();
             Component oldC = namedComponentEntry.getValue();
 
-            // Spec section 3.6.2.4: The visibility of C(P) will be the same as the visibility of C(Q),
-            // except that where the visibility of C(Q) is private, the visibility of C(P) will be hidden.
             Visibility oldV = oldC.getVisibility();
+
             Visibility newV = oldV == Visibility.PRIVATE ? Visibility.HIDDEN : oldV;
+
+            // Bug 3341 - TODO
+            //Visibility newV = null;
+
+//            if (overrides.contains(name)) {
+//                newV = Visibility.HIDDEN;
+//            } else if (oldV == PRIVATE) {
+//                newV = Visibility.HIDDEN;
+//            } else {
+//                for (XSLAccept acceptor : acceptors) {
+//                    acceptor.acceptComponent(newC);
+//                }
+//                if (newV != Visibility.HIDDEN) {
+//                    for (XSLAccept acceptor : acceptors) {
+//                        acceptor.acceptComponent(newC);
+//                    }
+//                }
+//                if (oldV == Visibility.ABSTRACT) {
+//                    for (XSLAccept acceptor : acceptors) {
+//                        acceptor.acceptComponent(newC);
+//                    }
+//                    if (newC.getVisibility() == Visibility.ABSTRACT) {
+//                        abstractComponents.put(name, newC);
+//                    }
+//                }
+//            }
+
+
+//            switch (oldV) {
+//                case PUBLIC:
+//                case FINAL:
+//                    newV = PRIVATE;
+//                    break;
+//                case ABSTRACT:
+//                case HIDDEN:
+//                case ABSENT:
+//                default:
+//                    newV = Visibility.HIDDEN;
+//            }
 
             final Component newC = Component.makeComponent(oldC.getActor(), newV, this, oldC.getDeclaringPackage());
             correspondence.put(oldC, newC);
@@ -624,12 +664,12 @@ public class StylesheetPackage extends PackageData {
                 }
             } else {
                 if (newV != Visibility.HIDDEN) {
-                    for (ComponentAcceptor acceptor : acceptors) {
+                    for (XSLAccept acceptor : acceptors) {
                         acceptor.acceptComponent(newC);
                     }
                 }
                 if (oldV == Visibility.ABSTRACT) {
-                    for (ComponentAcceptor acceptor : acceptors) {
+                    for (XSLAccept acceptor : acceptors) {
                         acceptor.acceptComponent(newC);
                     }
                     if (newC.getVisibility() == Visibility.ABSTRACT) {

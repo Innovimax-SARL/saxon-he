@@ -12,6 +12,7 @@ import net.sf.saxon.expr.instruct.Actor;
 import net.sf.saxon.expr.instruct.UserFunction;
 import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.pattern.LocalNameTest;
+import net.sf.saxon.pattern.NameTest;
 import net.sf.saxon.pattern.NamespaceTest;
 import net.sf.saxon.pattern.QNameTest;
 
@@ -47,6 +48,18 @@ public class ComponentTest {
         return (componentKind == -1 || component.getComponentKind() == componentKind) &&
                 nameTest.matches(component.getObjectName()) &&
                 !((componentKind == StandardNames.XSL_FUNCTION) && arity != -1 && arity != ((UserFunction) component).getArity());
+    }
+
+    public SymbolicName getSymbolicNameIfExplicit() {
+        if (nameTest instanceof NameTest) {
+            if (componentKind == StandardNames.XSL_FUNCTION) {
+                return new SymbolicName.F(((NameTest)nameTest).getMatchingNodeName(), arity);
+            } else {
+                return new SymbolicName(componentKind, ((NameTest) nameTest).getMatchingNodeName());
+            }
+        } else {
+            return null;
+        }
     }
 
     public boolean equals(Object other) {

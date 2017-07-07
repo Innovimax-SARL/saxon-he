@@ -504,13 +504,13 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
         // Second pass: make modified copies of the named components in the used packages
         StylesheetPackage thisPackage = getStylesheetPackage();
         for (XSLUsePackage use : useDeclarations) {
-            List<ComponentAcceptor> acceptors = use.getAcceptors();
+            List<XSLAccept> acceptors = use.getAcceptors();
             thisPackage.addComponentsFromUsedPackage(use.getUsedPackage(), acceptors, overrides);
         }
 
         // Third pass: process the overriding template rules, creating new mode objects
         for (XSLUsePackage use : useDeclarations) {
-            List<ComponentAcceptor> acceptors = use.getAcceptors();
+            List<XSLAccept> acceptors = use.getAcceptors();
             use.gatherRuleOverrides(this, acceptors, overrides);
         }
 
