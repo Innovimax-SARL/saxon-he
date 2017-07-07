@@ -168,6 +168,8 @@ public class Transform {
         options.setPermittedValues("target", new String[]{"EE", "PE", "HE", "JS"}, null);
         options.addRecognizedOption("T", CommandLineOptions.TYPE_CLASSNAME,
                                     "Use named TraceListener class, or standard TraceListener");
+        options.addRecognizedOption("TB", CommandLineOptions.TYPE_FILENAME,
+                                    "Trace hotspot bytecode generation to specified XML file");
         options.addRecognizedOption("TJ", CommandLineOptions.TYPE_BOOLEAN,
                                     "Debug binding and execution of extension functions");
         options.setPermittedValues("TJ", new String[]{"on", "off"}, "on");
@@ -476,6 +478,12 @@ public class Transform {
                 }
             }
 
+            value = options.getOptionValue("TB");
+            if (value != null) {
+                // Trace hotspot byte code generation and produce a report.
+                config.setBooleanProperty(FeatureKeys.MONITOR_HOT_SPOT_BYTE_CODE, true);
+            }
+
             value = options.getOptionValue("TP");
             if (value != null) {
                 traceListener = new TimingTraceListener();
@@ -772,8 +780,10 @@ public class Transform {
                         traceDestination.close();
                     }
                 }
-                // Following call has no effect unless internal switch set in ByteCodeCandidate
-                config.createByteCodeReport("byteCodeReport.xml");
+                if (options.getOptionValue("TB")!=null) {
+                    // report on hotspot bytecode generation
+                    config.createByteCodeReport(options.getOptionValue("TB"));
+                }
             }
         } catch (TerminationException err) {
             quit(err.getMessage(), 1);

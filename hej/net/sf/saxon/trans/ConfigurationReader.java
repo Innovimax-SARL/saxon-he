@@ -297,6 +297,7 @@ public class ConfigurationReader implements ContentHandler, NamespaceResolver {
         applyProperty(props, "lineNumbering", FeatureKeys.LINE_NUMBERING);
         applyProperty(props, "markDefaultedAttributes", FeatureKeys.MARK_DEFAULTED_ATTRIBUTES);
         applyProperty(props, "maxCompiledClasses", FeatureKeys.MAX_COMPILED_CLASSES);
+        applyProperty(props, "monitorHotSpotByteCode", FeatureKeys.MONITOR_HOT_SPOT_BYTE_CODE);
         applyProperty(props, "optimizationLevel", FeatureKeys.OPTIMIZATION_LEVEL);
         applyProperty(props, "parser", FeatureKeys.SOURCE_PARSER_CLASS);
         applyProperty(props, "preEvaluateDoc", FeatureKeys.PRE_EVALUATE_DOC_FUNCTION);

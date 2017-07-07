@@ -4747,6 +4747,7 @@ public class Configuration implements SourceResolver, NotationSet {
         booleanPropertyNames.add(FeatureKeys.IGNORE_SAX_SOURCE_PARSER);
         booleanPropertyNames.add(FeatureKeys.IMPLICIT_SCHEMA_IMPORTS);
         booleanPropertyNames.add(FeatureKeys.MARK_DEFAULTED_ATTRIBUTES);
+        booleanPropertyNames.add(FeatureKeys.MONITOR_HOT_SPOT_BYTE_CODE);
         booleanPropertyNames.add(FeatureKeys.MULTIPLE_SCHEMA_IMPORTS);
         booleanPropertyNames.add(FeatureKeys.PRE_EVALUATE_DOC_FUNCTION);
         booleanPropertyNames.add(FeatureKeys.PREFER_JAXP_PARSER);

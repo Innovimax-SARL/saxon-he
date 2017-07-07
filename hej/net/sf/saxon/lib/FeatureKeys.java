@@ -22,6 +22,11 @@
  
  public abstract class FeatureKeys {
 
+     // TO BE INTEGRATED:
+
+    // boolean controlling whether generation and execution of hotspot bytecode should be monitored
+    public final static String MONITOR_HOT_SPOT_BYTE_CODE =
+             "http://saxon.sf.net/feature/monitorHotSpotByteCode";
         
     /**
     *            <p>ALLOW_EXTERNAL_FUNCTIONS determines whether calls to reflexive external functions are
