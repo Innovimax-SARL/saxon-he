@@ -9,7 +9,6 @@ package net.sf.saxon.trans;
 
 
 import net.sf.saxon.expr.instruct.Actor;
-import net.sf.saxon.expr.instruct.UserFunction;
 import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.pattern.LocalNameTest;
 import net.sf.saxon.pattern.NameTest;
@@ -45,9 +44,13 @@ public class ComponentTest {
     }
 
     public boolean matches(Actor component) {
-        return (componentKind == -1 || component.getComponentKind() == componentKind) &&
-                nameTest.matches(component.getObjectName()) &&
-                !((componentKind == StandardNames.XSL_FUNCTION) && arity != -1 && arity != ((UserFunction) component).getArity());
+        return matches(component.getSymbolicName());
+    }
+
+    public boolean matches(SymbolicName sn) {
+        return (componentKind == -1 || sn.getComponentKind() == componentKind) &&
+                nameTest.matches(sn.getComponentName()) &&
+                !((componentKind == StandardNames.XSL_FUNCTION) && arity != -1 && arity != ((SymbolicName.F) sn).getArity());
     }
 
     public SymbolicName getSymbolicNameIfExplicit() {

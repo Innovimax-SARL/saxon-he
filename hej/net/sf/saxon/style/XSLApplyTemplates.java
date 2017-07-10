@@ -17,11 +17,14 @@ import net.sf.saxon.pattern.AnyNodeTest;
 import net.sf.saxon.pattern.NameTest;
 import net.sf.saxon.trans.Err;
 import net.sf.saxon.trans.Mode;
+import net.sf.saxon.trans.SymbolicName;
 import net.sf.saxon.trans.rules.RuleManager;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.AxisIterator;
 import net.sf.saxon.type.Type;
 import net.sf.saxon.value.Whitespace;
+
+import java.util.HashMap;
 
 
 /**
@@ -114,7 +117,20 @@ public class XSLApplyTemplates extends StyleElement {
             if (psm.isDeclaredModes() && psm.getRuleManager().obtainMode(modeName, false) == null) {
                 compileError("Mode name " + modeName.getDisplayName() + " must be explicitly declared in an xsl:mode declaration", "XTSE3085");
             }
-            mode = psm.getRuleManager().obtainMode(modeName, true);
+            SymbolicName sName = new SymbolicName(StandardNames.XSL_MODE, modeName);
+            StylesheetPackage containingPackage = decl.getSourceElement().getContainingPackage();
+            HashMap<SymbolicName, Component> componentIndex = containingPackage.getComponentIndex();
+            // see if there is a mode with this name in a used package
+            if (!modeName.equals(Mode.UNNAMED_MODE_NAME)) {
+                Component existing = componentIndex.get(sName);
+                if (existing != null && existing.getDeclaringPackage() != containingPackage) {
+                    mode = (Mode)existing.getActor();
+
+                }
+            }
+            if (mode == null) {
+                mode = psm.getRuleManager().obtainMode(modeName, true);
+            }
         }
 
         // handle sorting if requested

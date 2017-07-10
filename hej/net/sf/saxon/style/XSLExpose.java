@@ -24,6 +24,24 @@ import java.util.List;
  */
 public class XSLExpose extends XSLAcceptExpose {
 
+    public static boolean isCompatible(Visibility declared, Visibility exposed) {
+        if (declared == null || declared == exposed) {
+            return true;
+        }
+        switch (declared) {
+            case PUBLIC:
+                return exposed == Visibility.PUBLIC || exposed == Visibility.PRIVATE ||
+                        exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
+            case ABSTRACT:
+                return exposed == Visibility.ABSTRACT || exposed == Visibility.ABSENT;
+            case FINAL:
+                return exposed == Visibility.PRIVATE ||
+                        exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
+            default:
+                return false;
+        }
+    }
+
     /**
      * Check that the stylesheet element is valid. This is called once for each element, after
      * the entire tree has been built. As well as validation, it can perform first-time

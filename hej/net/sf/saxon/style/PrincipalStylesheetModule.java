@@ -1424,7 +1424,20 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
                     if (!s.startsWith("#")) {
                         try {
                             StructuredQName modeName = element.makeQName(s);
-                            manager.obtainMode(modeName, true);
+                            SymbolicName sName = new SymbolicName(StandardNames.XSL_MODE, modeName);
+                            HashMap<SymbolicName, Component> componentIndex = getStylesheetPackage().getComponentIndex();
+                            Component existing = componentIndex.get(sName);
+                            if (existing != null && existing.getDeclaringPackage() != getStylesheetPackage()) {
+                                if (element instanceof XSLTemplate) {
+                                    element.compileError("A template rule cannot be added to a mode declared in a used package " +
+                                                                  "unless the xsl:template declaration appears within an xsl:override child of the appropriate xsl:use-package element",
+                                                          "XTSE3050");
+                                } else { // apply-templates
+                                    // no action at this point
+                                }
+                            } else {
+                                manager.obtainMode(modeName, true);
+                            }
                         } catch (XPathException e) {
                             // skip invalid names
                         } catch (NamespaceException e) {

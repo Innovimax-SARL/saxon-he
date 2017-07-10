@@ -14,6 +14,7 @@ import net.sf.saxon.pattern.NameTest;
 import net.sf.saxon.pattern.QNameTest;
 import net.sf.saxon.trans.ComponentTest;
 import net.sf.saxon.trans.SymbolicName;
+import net.sf.saxon.trans.Visibility;
 import net.sf.saxon.trans.XPathException;
 
 /**
@@ -97,12 +98,30 @@ public class XSLAccept extends XSLAcceptExpose {
         }
         for (ComponentTest test : getWildcardComponentTests()) {
             if (test.matches(component.getActor())) {
-                if (isCompatible(component.getVisibility(), getVisibility())) {
+                if (XSLExpose.isCompatible(component.getVisibility(), getVisibility())) {
                     // set the visibility if it is compatible
                     component.setVisibility(getVisibility(), false);
                     return;
                 }
             }
+        }
+    }
+
+    public static boolean isCompatible(Visibility declared, Visibility exposed) {
+//        if (declared == null || declared == exposed) {
+//            return true;
+//        }
+        switch (declared) {
+            case PUBLIC:
+                return exposed == Visibility.PUBLIC || exposed == Visibility.PRIVATE ||
+                        exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
+            case ABSTRACT:
+                return exposed == Visibility.ABSTRACT || exposed == Visibility.ABSENT;
+            case FINAL:
+                return exposed == Visibility.PRIVATE ||
+                        exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
+            default:
+                return false;
         }
     }
 }

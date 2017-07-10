@@ -736,8 +736,10 @@ public class SimpleMode extends Mode {
                     } else {
                         namedNodeChain = getNamedRuleChain(context, Type.ELEMENT, node.getURI(), node.getLocalPart());
                     }
-                    ruleSearchState = makeRuleSearchState(namedNodeChain, context);
-                    bestRule = searchRuleChain(item, context, null, namedNodeChain, ruleSearchState, filter);
+                    if (namedNodeChain != null) {
+                        ruleSearchState = makeRuleSearchState(namedNodeChain, context);
+                        bestRule = searchRuleChain(item, context, null, namedNodeChain, ruleSearchState, filter);
+                    }
                     break;
                 }
                 case Type.ATTRIBUTE: {
@@ -748,8 +750,10 @@ public class SimpleMode extends Mode {
                     } else {
                         namedNodeChain = getNamedRuleChain(context, Type.ATTRIBUTE, node.getURI(), node.getLocalPart());
                     }
-                    ruleSearchState = makeRuleSearchState(namedNodeChain, context);
-                    bestRule = searchRuleChain(item, context, null, namedNodeChain, ruleSearchState, filter);
+                    if (namedNodeChain != null) {
+                        ruleSearchState = makeRuleSearchState(namedNodeChain, context);
+                        bestRule = searchRuleChain(item, context, null, namedNodeChain, ruleSearchState, filter);
+                    }
                     break;
                 }
                 case Type.TEXT:

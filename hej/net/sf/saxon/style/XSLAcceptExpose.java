@@ -187,26 +187,8 @@ public abstract class XSLAcceptExpose extends StyleElement {
         }
     }
 
-    public static boolean isCompatible(Visibility declared, Visibility exposed) {
-        if (declared == null || declared == exposed) {
-            return true;
-        }
-        switch (declared) {
-            case PUBLIC:
-                return exposed == Visibility.PUBLIC || exposed == Visibility.PRIVATE ||
-                        exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
-            case ABSTRACT:
-                return exposed == Visibility.ABSTRACT || exposed == Visibility.ABSENT;
-            case FINAL:
-                return exposed == Visibility.PRIVATE ||
-                        exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
-            default:
-                return false;
-        }
-    }
-
     protected void checkCompatibility(SymbolicName name, Visibility declared, Visibility exposed) throws XPathException {
-        if (!isCompatible(declared, exposed)) {
+        if (!XSLExpose.isCompatible(declared, exposed)) {
             String code = this instanceof XSLExpose ? "XTSE3010" : "XTSE3040";
             String action = this instanceof XSLExpose ? "exposed" : "accepted";
             compileError("The " + name + " is declared as " + declared + " and cannot be " + action + " as " + exposed, code);

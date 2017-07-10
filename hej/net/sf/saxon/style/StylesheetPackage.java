@@ -20,6 +20,7 @@ import net.sf.saxon.functions.FunctionLibraryList;
 import net.sf.saxon.functions.registry.ConstructorFunctionLibrary;
 import net.sf.saxon.om.SpaceStrippingRule;
 import net.sf.saxon.om.StructuredQName;
+import net.sf.saxon.pattern.NodeTest;
 import net.sf.saxon.query.XQueryFunctionLibrary;
 import net.sf.saxon.serialize.CharacterMap;
 import net.sf.saxon.serialize.CharacterMapIndex;
@@ -611,19 +612,48 @@ public class StylesheetPackage extends PackageData {
 
             Visibility oldV = oldC.getVisibility();
 
-            Visibility newV = oldV == Visibility.PRIVATE ? Visibility.HIDDEN : oldV;
+            Visibility newV = null;
 
-            // Bug 3341 - TODO
-            //Visibility newV = null;
+            if (overrides.contains(name)) {
+                newV = Visibility.HIDDEN;
+            } else {
+                Visibility acceptedVisibility = explicitAcceptedVisibility(name, acceptors);
+                if (acceptedVisibility != null) {
+                    if (!XSLAccept.isCompatible(oldV, acceptedVisibility)) {
+                        throw new XPathException("Cannot accept a " + oldV.toString() +
+                            " component with visibility " + acceptedVisibility.toString() +
+                        " (" + name + ")", "XTSE3040");
+                    }
+                    newV = acceptedVisibility;
+                } else {
+                    acceptedVisibility = wildcardAcceptedVisibility(name, acceptors);
+                    if (acceptedVisibility != null) {
+                        if (XSLAccept.isCompatible(oldV, acceptedVisibility)) {
+                            newV = acceptedVisibility;
+                        }
+                    }
+                }
 
-//            if (overrides.contains(name)) {
-//                newV = Visibility.HIDDEN;
-//            } else if (oldV == PRIVATE) {
-//                newV = Visibility.HIDDEN;
-//            } else {
-//                for (XSLAccept acceptor : acceptors) {
-//                    acceptor.acceptComponent(newC);
-//                }
+                if (newV == null) {
+                    if (oldV == Visibility.PUBLIC || oldV == Visibility.FINAL) {
+                        newV = Visibility.PRIVATE;
+                    } else {
+                        newV = Visibility.HIDDEN;
+                    }
+                }
+            }
+
+            final Component newC = Component.makeComponent(oldC.getActor(), newV, this, oldC.getDeclaringPackage());
+            correspondence.put(oldC, newC);
+            newC.setBaseComponent(oldC);
+
+            if (overrides.contains(name)) {
+                // TODO: overrides is all the overrides, not only those for this xsl:use-package
+                overriddenComponents.put(name, newC);
+                if (newV != Visibility.ABSTRACT) {
+                    abstractComponents.remove(name);
+                }
+            } else {
 //                if (newV != Visibility.HIDDEN) {
 //                    for (XSLAccept acceptor : acceptors) {
 //                        acceptor.acceptComponent(newC);
@@ -637,45 +667,6 @@ public class StylesheetPackage extends PackageData {
 //                        abstractComponents.put(name, newC);
 //                    }
 //                }
-//            }
-
-
-//            switch (oldV) {
-//                case PUBLIC:
-//                case FINAL:
-//                    newV = PRIVATE;
-//                    break;
-//                case ABSTRACT:
-//                case HIDDEN:
-//                case ABSENT:
-//                default:
-//                    newV = Visibility.HIDDEN;
-//            }
-
-            final Component newC = Component.makeComponent(oldC.getActor(), newV, this, oldC.getDeclaringPackage());
-            correspondence.put(oldC, newC);
-            newC.setBaseComponent(oldC);
-
-            if (overrides.contains(name)) {
-                // TODO: overrides is all the overrides, not only those for this xsl:use-package
-                overriddenComponents.put(name, newC);
-                if (newV != Visibility.ABSTRACT) {
-                    abstractComponents.remove(name);
-                }
-            } else {
-                if (newV != Visibility.HIDDEN) {
-                    for (XSLAccept acceptor : acceptors) {
-                        acceptor.acceptComponent(newC);
-                    }
-                }
-                if (oldV == Visibility.ABSTRACT) {
-                    for (XSLAccept acceptor : acceptors) {
-                        acceptor.acceptComponent(newC);
-                    }
-                    if (newC.getVisibility() == Visibility.ABSTRACT) {
-                        abstractComponents.put(name, newC);
-                    }
-                }
             }
 
             if (newC.getVisibility() == Visibility.HIDDEN) {
@@ -730,6 +721,37 @@ public class StylesheetPackage extends PackageData {
             setCreatesSecondaryResultDocuments(true);
         }
     }
+
+    private Visibility explicitAcceptedVisibility(SymbolicName name, List<XSLAccept> acceptors) throws XPathException {
+        for (XSLAccept acceptor : acceptors) {
+            for (ComponentTest test : acceptor.getExplicitComponentTests()) {
+                if (test.matches(name)) {
+                    return acceptor.getVisibility();
+                }
+            }
+        }
+        return null;
+    }
+
+    private Visibility wildcardAcceptedVisibility(SymbolicName name, List<XSLAccept> acceptors) throws XPathException {
+        // TODO: last one wins
+        for (XSLAccept acceptor : acceptors) {
+            for (ComponentTest test : acceptor.getWildcardComponentTests()) {
+                if (((NodeTest) test.getQNameTest()).getDefaultPriority() == -0.25 && test.matches(name)) {
+                    return acceptor.getVisibility();
+                }
+            }
+        }
+        for (XSLAccept acceptor : acceptors) {
+            for (ComponentTest test : acceptor.getWildcardComponentTests()) {
+                if (test.matches(name)) {
+                    return acceptor.getVisibility();
+                }
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Create the function library containing stylesheet functions declared in this package

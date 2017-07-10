@@ -13,12 +13,14 @@ import net.sf.saxon.expr.accum.Accumulator;
 import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.om.AttributeCollection;
 import net.sf.saxon.om.NamespaceException;
+import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trans.*;
 import net.sf.saxon.trans.rules.*;
 import net.sf.saxon.value.Whitespace;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -103,9 +105,23 @@ public class XSLMode extends StyleElement {
     @Override
     public void index(ComponentDeclaration decl, PrincipalStylesheetModule top) throws XPathException {
         StructuredQName name = getObjectName();
+        SymbolicName sName = new SymbolicName(StandardNames.XSL_MODE, name);
+        HashMap<SymbolicName, Component> componentIndex = top.getStylesheetPackage().getComponentIndex();
+        // see if there is already a named template with this precedence
+        if (!name.equals(Mode.UNNAMED_MODE_NAME)) {
+            Component other = componentIndex.get(sName);
+            if (other != null && other.getDeclaringPackage() != top.getStylesheetPackage()) {
+                compileError("Mode " + name.getDisplayName() +
+                                     " conflicts with a public named mode in package " +
+                                     other.getDeclaringPackage().getPackageName(), "XTSE3050");
+
+            }
+        }
         mode = (SimpleMode)top.getRuleManager().obtainMode(name, true);
         if (name.equals(Mode.UNNAMED_MODE_NAME)) {
             top.getRuleManager().setUnnamedModeExplicit(true);
+        } else if (mode.getDeclaringComponent().getDeclaringPackage() != getContainingPackage()) {
+            compileError("Mode name conflicts with a mode in a used package", "XTSE3050");
         } else {
             top.indexMode(decl);
         }

@@ -231,12 +231,12 @@ public abstract class Expression implements IdentityComparable {
     }
 
     public void verifyParentPointers(String message) {
-        System.err.println("Verify: " + message);
+        //System.err.println("Verify: " + message);
         try {
             verifyParentPointers();
-        } catch (IllegalArgumentException err) {
+        } catch (IllegalStateException err) {
             System.err.println("Verify failed at: " + message + "(" + err.getMessage() + ")");
-            throw err;
+            //throw err;
         }
     }
 

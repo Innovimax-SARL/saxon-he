@@ -16,7 +16,10 @@ import net.sf.saxon.om.SequenceIterator;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trace.LocationKind;
-import net.sf.saxon.trans.*;
+import net.sf.saxon.trans.SaxonErrorCode;
+import net.sf.saxon.trans.SymbolicName;
+import net.sf.saxon.trans.Visibility;
+import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.type.AnyItemType;
 import net.sf.saxon.type.ItemType;
@@ -27,7 +30,9 @@ import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.Whitespace;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -503,6 +508,16 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
         function.callUpdating(actualArgs, c2, pul);
     }
 
+    // KILROY
+    public static Map<String, Integer> counters = new HashMap<String, Integer>();
+    public static void showCounters() {
+        for (Map.Entry<String, Integer> entry : counters.entrySet()) {
+            if (entry.getValue() > 100) {
+                System.err.println(entry.getKey() + " :  " + entry.getValue());
+            }
+        }
+    }
+
     /**
      * This is the method that actually does the function call (in pull mode)
      *
@@ -532,6 +547,16 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
             targetFunction = function;
             c2 = targetFunction.makeNewContext(context);
             c2.setOrigin(this);
+        }
+
+        // KILROY
+        String key = context.getCurrentComponent().getActor().getSymbolicName() + " -> " +
+                targetFunction.getSymbolicName();
+        Integer count = counters.get(key);
+        if (count == null) {
+            counters.put(key, 1);
+        } else {
+            counters.put(key, count+1);
         }
 
         try {
