@@ -84,7 +84,7 @@ public class Err {
             }
         }
         String s;
-        if ((valueType == ELEMENT || valueType == ATTRIBUTE) && sb.charAt(0) == '{') {
+        if ((valueType == ELEMENT || valueType == ATTRIBUTE) && sb.length() > 0 && sb.charAt(0) == '{') {
             try {
                 StructuredQName qn = StructuredQName.fromClarkName(sb.toString());
                 String uri = abbreviateURI(qn.getURI());
