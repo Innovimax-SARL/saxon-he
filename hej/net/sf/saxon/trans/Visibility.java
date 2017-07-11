@@ -16,8 +16,7 @@ public enum Visibility {
     PRIVATE("private"),
     FINAL("final"),
     ABSTRACT("abstract"),
-    HIDDEN("hidden"),
-    ABSENT("absent");
+    HIDDEN("hidden");
 
     public String visibilityStr;
 

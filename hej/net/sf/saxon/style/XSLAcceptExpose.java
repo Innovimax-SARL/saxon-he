@@ -10,7 +10,6 @@ package net.sf.saxon.style;
 import net.sf.saxon.om.*;
 import net.sf.saxon.pattern.*;
 import net.sf.saxon.trans.ComponentTest;
-import net.sf.saxon.trans.SymbolicName;
 import net.sf.saxon.trans.Visibility;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.Type;
@@ -73,6 +72,9 @@ public abstract class XSLAcceptExpose extends StyleElement {
             visibility = Visibility.PRIVATE;
         } else {
             visibility = interpretVisibilityValue(visibilityAtt, this instanceof XSLAccept ? "ha" : "");
+            if (visibility == null) {
+                visibility = Visibility.PRIVATE; // fall back in case of errors
+            }
         }
 
 
@@ -187,13 +189,7 @@ public abstract class XSLAcceptExpose extends StyleElement {
         }
     }
 
-    protected void checkCompatibility(SymbolicName name, Visibility declared, Visibility exposed) throws XPathException {
-        if (!XSLExpose.isCompatible(declared, exposed)) {
-            String code = this instanceof XSLExpose ? "XTSE3010" : "XTSE3040";
-            String action = this instanceof XSLExpose ? "exposed" : "accepted";
-            compileError("The " + name + " is declared as " + declared + " and cannot be " + action + " as " + exposed, code);
-        }
-    }
+
 
 
 }

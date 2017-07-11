@@ -324,8 +324,8 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
             target = getFixedTarget();
         } else {
             target = context.getTargetComponent(bindingSlot);
-            if (target.getVisibility() == Visibility.ABSENT) {
-                XPathException err = new XPathException("Cannot expand an attribute set declared with visibility=absent", "XTDE3052");
+            if (target.getVisibility() == Visibility.HIDDEN) {
+                XPathException err = new XPathException("Cannot expand an abstract attribute set with no implementation", "XTDE3052");
                 err.setLocation(getLocation());
                 throw err;
             }

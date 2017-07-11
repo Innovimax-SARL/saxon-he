@@ -321,8 +321,8 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
         Component target = getFixedTarget();
         if (bindingSlot >= 0) {
             target = context.getTargetComponent(bindingSlot);
-            if (target.getVisibility() == Visibility.ABSENT) {
-                XPathException err = new XPathException("Cannot call a template declared with visibility='ABSENT'", "XTDE3052");
+            if (target.getVisibility() == Visibility.HIDDEN) {
+                XPathException err = new XPathException("Cannot call an abstract template with no implementation", "XTDE3052");
                 err.setLocation(getLocation());
                 throw err;
             }
@@ -372,8 +372,8 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
             if (targetComponent == null) {
                 throw new XPathException("Internal Saxon error: No binding available for call-template instruction", SaxonErrorCode.SXPK0001, this.getLocation());
             }
-            if (targetComponent.getVisibility() == Visibility.ABSENT) {
-                throw new XPathException("Cannot call a template declared with visibility=absent", "XTDE3052", this.getLocation());
+            if (targetComponent.getVisibility() == Visibility.HIDDEN) {
+                throw new XPathException("Cannot call an abstract template with no implementation", "XTDE3052", this.getLocation());
             }
 
             // handle parameters if any

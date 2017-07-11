@@ -536,10 +536,10 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
 
         if (bindingSlot >= 0) {
             Component target = getTargetComponent(context);
-            targetFunction = (UserFunction)target.getActor();
-            if (target.getVisibility() == Visibility.ABSENT) {
-                throw new XPathException("Cannot call a function defined with visibility=absent", "XTDE3052");
+            if (target.getVisibility() == Visibility.HIDDEN) {
+                throw new XPathException("Cannot call an abstract function with no implementation", "XTDE3052");
             }
+            targetFunction = (UserFunction)target.getActor();             
             c2 = targetFunction.makeNewContext(context);
             c2.setCurrentComponent(target);
             c2.setOrigin(this);
@@ -547,16 +547,6 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
             targetFunction = function;
             c2 = targetFunction.makeNewContext(context);
             c2.setOrigin(this);
-        }
-
-        // KILROY
-        String key = context.getCurrentComponent().getActor().getSymbolicName() + " -> " +
-                targetFunction.getSymbolicName();
-        Integer count = counters.get(key);
-        if (count == null) {
-            counters.put(key, 1);
-        } else {
-            counters.put(key, count+1);
         }
 
         try {
@@ -603,8 +593,8 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
         if (bindingSlot >= 0) {
             Component target = getTargetComponent(context);
             UserFunction targetFunction = (UserFunction) target.getActor();
-            if (target.getVisibility() == Visibility.ABSENT) {
-                throw new XPathException("Cannot call a function defined with visibility=absent", "XTDE3052");
+            if (target.getVisibility() == Visibility.ABSTRACT) {
+                throw new XPathException("Cannot call a function defined with visibility=abstract", "XTDE3052");
             }
             XPathContextMajor c2 = targetFunction.makeNewContext(context);
             c2.setCurrentComponent(target);

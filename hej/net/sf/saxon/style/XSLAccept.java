@@ -98,12 +98,19 @@ public class XSLAccept extends XSLAcceptExpose {
         }
         for (ComponentTest test : getWildcardComponentTests()) {
             if (test.matches(component.getActor())) {
-                if (XSLExpose.isCompatible(component.getVisibility(), getVisibility())) {
+                if (isCompatible(component.getVisibility(), getVisibility())) {
                     // set the visibility if it is compatible
                     component.setVisibility(getVisibility(), false);
                     return;
                 }
             }
+        }
+    }
+
+    protected void checkCompatibility(SymbolicName name, Visibility declared, Visibility exposed) throws XPathException {
+        if (!isCompatible(declared, exposed)) {
+            String code = "XTSE3040";
+            compileError("The " + name + " is declared as " + declared + " and cannot be accepted as " + exposed, code);
         }
     }
 
@@ -116,7 +123,7 @@ public class XSLAccept extends XSLAcceptExpose {
                 return exposed == Visibility.PUBLIC || exposed == Visibility.PRIVATE ||
                         exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
             case ABSTRACT:
-                return exposed == Visibility.ABSTRACT || exposed == Visibility.ABSENT;
+                return exposed == Visibility.ABSTRACT || exposed == Visibility.HIDDEN;
             case FINAL:
                 return exposed == Visibility.PRIVATE ||
                         exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;

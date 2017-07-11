@@ -504,7 +504,7 @@ public class StylesheetPackage extends PackageData {
     public void addComponent(Component component) {
         SymbolicName name = component.getActor().getSymbolicName();
         componentIndex.put(name, component);
-        if (component.getVisibility() == Visibility.ABSTRACT) {
+        if (component.getVisibility() == Visibility.ABSTRACT && component.getContainingPackage() == this) {
             abstractComponents.put(component.getActor().getSymbolicName(), component);
         }
     }
@@ -588,16 +588,6 @@ public class StylesheetPackage extends PackageData {
                                              List<XSLAccept> acceptors,
                                              final Set<SymbolicName> overrides) throws XPathException {
         usedPackages.add(usedPackage);
-
-//        if (usedPackage == this || usedPackage.transitiveContents.contains(this)) {
-//            throw new XPathException("A package cannot use itself, directly or indirectly", "XTSE3005");
-//        }
-//        transitiveContents.add(usedPackage);
-//        transitiveContents.addAll(usedPackage.transitiveContents);
-//        if (usedPackage.getPackageName().equals(getPackageName()) ||
-//                usedPackage.transitivePackageNames.contains(packageName)) {
-//            throw new XPathException("A package cannot use another package with the same name, directly or indirectly", "XTSE3005");
-//        }
         
         // Create copies of the components in the used package, with suitably adjusted visibility
 
@@ -734,22 +724,26 @@ public class StylesheetPackage extends PackageData {
     }
 
     private Visibility wildcardAcceptedVisibility(SymbolicName name, List<XSLAccept> acceptors) throws XPathException {
-        // TODO: last one wins
+        // Note: last one wins
+        Visibility vis = null;
         for (XSLAccept acceptor : acceptors) {
             for (ComponentTest test : acceptor.getWildcardComponentTests()) {
                 if (((NodeTest) test.getQNameTest()).getDefaultPriority() == -0.25 && test.matches(name)) {
-                    return acceptor.getVisibility();
+                    vis = acceptor.getVisibility();
                 }
             }
+        }
+        if (vis != null) {
+            return vis;
         }
         for (XSLAccept acceptor : acceptors) {
             for (ComponentTest test : acceptor.getWildcardComponentTests()) {
                 if (test.matches(name)) {
-                    return acceptor.getVisibility();
+                    vis = acceptor.getVisibility();
                 }
             }
         }
-        return null;
+        return vis;
     }
 
 
@@ -985,7 +979,7 @@ public class StylesheetPackage extends PackageData {
 
     public void checkForAbstractComponents() throws XPathException {
         for (Map.Entry<SymbolicName, Component> entry : componentIndex.entrySet()) {
-            if (entry.getValue().getVisibility() == Visibility.ABSTRACT) {
+            if (entry.getValue().getVisibility() == Visibility.ABSTRACT && entry.getValue().getContainingPackage() == this) {
                 abstractComponents.put(entry.getKey(), entry.getValue());
             }
         }

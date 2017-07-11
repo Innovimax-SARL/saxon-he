@@ -24,6 +24,13 @@ import java.util.List;
  */
 public class XSLExpose extends XSLAcceptExpose {
 
+    protected void checkCompatibility(SymbolicName name, Visibility declared, Visibility exposed) throws XPathException {
+        if (!isCompatible(declared, exposed)) {
+            String code =  "XTSE3010";
+            compileError("The " + name + " is declared as " + declared + " and cannot be exposed as " + exposed, code);
+        }
+    }
+
     public static boolean isCompatible(Visibility declared, Visibility exposed) {
         if (declared == null || declared == exposed) {
             return true;
@@ -33,7 +40,7 @@ public class XSLExpose extends XSLAcceptExpose {
                 return exposed == Visibility.PUBLIC || exposed == Visibility.PRIVATE ||
                         exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;
             case ABSTRACT:
-                return exposed == Visibility.ABSTRACT || exposed == Visibility.ABSENT;
+                return exposed == Visibility.ABSTRACT || exposed == Visibility.HIDDEN;
             case FINAL:
                 return exposed == Visibility.PRIVATE ||
                         exposed == Visibility.FINAL || exposed == Visibility.HIDDEN;

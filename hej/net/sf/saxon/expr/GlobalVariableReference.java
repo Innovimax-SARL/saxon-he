@@ -115,8 +115,8 @@ public class GlobalVariableReference extends VariableReference implements Compon
                 throw new AssertionError("No current component");
             }
             Component target = c.getTargetComponent(bindingSlot);
-            if (target.getVisibility() == Visibility.ABSENT) {
-                XPathException err = new XPathException("Cannot evaluate a variable declared with visibility=absent", "XTDE3052");
+            if (target.getVisibility() == Visibility.HIDDEN) {
+                XPathException err = new XPathException("Cannot evaluate an abstract variable with no overriding declaration", "XTDE3052");
                 err.setLocation(getLocation());
                 throw err;
             }
