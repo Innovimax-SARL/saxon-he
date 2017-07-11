@@ -120,6 +120,17 @@ public class Component {
     }
 
     /**
+     * Ask whether this is a hidden component derived from an abstract component with no
+     * implementation
+     * @return true if this component is hidden, and its base component is abstract
+     */
+
+    public boolean isHiddenAbstractComponent() {
+        return visibility == Visibility.HIDDEN && baseComponent != null &&
+                baseComponent.getVisibility() == Visibility.ABSTRACT;
+    }
+
+    /**
      * Get the actor (for example a compiled template, function, or variable) that is executed
      * when this component is called
      *

@@ -337,12 +337,12 @@ public class TypeChecker {
             if (Cardinality.allowsZero(suppliedCard) &&
                     Cardinality.allowsZero(reqCard)) {
                 if (suppliedCard != StaticProperty.EMPTY) {
-                    String msg = role.composeErrorMessage(reqItemType, suppliedItemType);
+                    String msg = role.composeErrorMessage(reqItemType, supplied, suppliedItemType);
                     msg += ". The expression can succeed only if the supplied value is an empty sequence.";
                     visitor.issueWarning(msg, supplied.getLocation());
                 }
             } else {
-                String msg = role.composeErrorMessage(reqItemType, suppliedItemType);
+                String msg = role.composeErrorMessage(reqItemType, supplied, suppliedItemType);
                 XPathException err = new XPathException(msg, role.getErrorCode(), supplied.getLocation());
                 err.setIsTypeError(role.isTypeError());
                 throw err;
@@ -359,7 +359,7 @@ public class TypeChecker {
                 if (req.matches(((Literal) exp).getValue(), th)) {
                     return exp;
                 }
-                String msg = role.composeErrorMessage(reqItemType, suppliedItemType);
+                String msg = role.composeErrorMessage(reqItemType, supplied, suppliedItemType);
                 XPathException err = new XPathException(msg, role.getErrorCode(), supplied.getLocation());
                 err.setIsTypeError(role.isTypeError());
                 throw err;
@@ -507,13 +507,13 @@ public class TypeChecker {
                 if (suppliedCard != StaticProperty.EMPTY) {
                     String msg = "Required item type of " + role.getMessage() +
                             " is " + reqItemType.toString() +
-                            "; supplied value has item type " +
+                            "; supplied value (" + supplied.toShortString() + ") has item type " +
                             suppliedItemType.toString() +
                             ". The expression can succeed only if the supplied value is an empty sequence.";
                     env.issueWarning(msg, supplied.getLocation());
                 }
             } else {
-                String msg = role.composeErrorMessage(reqItemType, suppliedItemType);
+                String msg = role.composeErrorMessage(reqItemType, supplied, suppliedItemType);
                 XPathException err = new XPathException(msg, role.getErrorCode(), supplied.getLocation());
                 err.setIsTypeError(role.isTypeError());
                 throw err;

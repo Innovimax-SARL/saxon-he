@@ -18,7 +18,6 @@ import net.sf.saxon.pattern.NodeKindTest;
 import net.sf.saxon.style.StyleElement;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.SymbolicName;
-import net.sf.saxon.trans.Visibility;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.ItemType;
 
@@ -41,6 +40,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
 
     /**
      * Create a use-attribute-set expression
+     *
      * @param name the name of the target attribute set
      */
 
@@ -57,7 +57,8 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
     /**
      * Make an expression whose effect is to expand the attribute sets named in an [xsl]use-attribute-sets
      * attribute, for example on a literal result element
-     * @param targets the QNames contained in the use-attribute-sets attribute
+     *
+     * @param targets     the QNames contained in the use-attribute-sets attribute
      * @param instruction the instruction on which the use-attribute-sets attribute appears
      * @return the required expression
      * @throws XPathException if an error occurs, for example no attribute set found with the required name
@@ -91,6 +92,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
 
     /**
      * Given a list of UseAttributeSet expressions, combine them into a single expression
+     *
      * @param targets the list of expressions
      * @return the combined expression
      */
@@ -107,7 +109,8 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
 
     /**
      * Make a UseAttributeSet expression corresponding to a single attribute-set name
-     * @param name the name of the attribute-set to be expanded
+     *
+     * @param name        the name of the attribute-set to be expanded
      * @param instruction the containing instruction
      * @return a UseAttributeSet expression whose effect is to expand this attribute-set
      * @throws XPathException
@@ -116,7 +119,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
     private static UseAttributeSet makeUseAttributeSet(StructuredQName name, StyleElement instruction) throws XPathException {
         AttributeSet target;
         if (name.hasURI(NamespaceConstant.XSLT) && name.getLocalPart().equals("original")) {
-            target = (AttributeSet)instruction.getXslOriginal(StandardNames.XSL_ATTRIBUTE_SET);
+            target = (AttributeSet) instruction.getXslOriginal(StandardNames.XSL_ATTRIBUTE_SET);
         } else {
             Component invokee = instruction.getContainingPackage().getComponent(new SymbolicName(StandardNames.XSL_ATTRIBUTE_SET, name));
             instruction.getPrincipalStylesheetModule().getAttributeSetDeclarations(name);
@@ -139,6 +142,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
 
     /**
      * Set the attribute set to be used.
+     *
      * @param target the attribute set to be used
      */
 
@@ -183,6 +187,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
 
     /**
      * Get the target attribute set to which this instruction is provisionally bound
+     *
      * @return the provisional attribute set (which might be overridden in another package)
      */
 
@@ -228,8 +233,8 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
     /**
      * Copy an expression. This makes a deep copy.
      *
-     * @return the copy of the original expression
      * @param rebindings
+     * @return the copy of the original expression
      */
 
     /*@NotNull*/
@@ -252,12 +257,11 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
      * to the declaration of the function or variable. However, the types of such functions and
      * variables may not be accurately known if they have not been explicitly declared.</p>
      *
-     *
-     * @param visitor         an expression visitor
+     * @param visitor     an expression visitor
      * @param contextInfo
      * @return the original expression, rewritten to perform necessary
-     *         run-time type checks, and to perform other type-related
-     *         optimizations
+     * run-time type checks, and to perform other type-related
+     * optimizations
      * @throws XPathException if an error is discovered during this phase
      *                        (typically a type error)
      */
@@ -286,7 +290,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
      * of the method returns 0, indicating "no dependencies".
      *
      * @return a set of bit-significant flags identifying the "intrinsic"
-     *         dependencies. The flags are documented in class net.sf.saxon.value.StaticProperty
+     * dependencies. The flags are documented in class net.sf.saxon.value.StaticProperty
      */
 
     public int getIntrinsicDependencies() {
@@ -312,8 +316,8 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
      * @param context The dynamic context of the transformation, giving access to the current node,
      *                the current variables, etc.
      * @return null if the instruction has completed execution; or a TailCall indicating
-     *         a function call or template call that is delegated to the caller, to be made after the stack has
-     *         been unwound so as to save stack space.
+     * a function call or template call that is delegated to the caller, to be made after the stack has
+     * been unwound so as to save stack space.
      */
 
     /*@Nullable*/
@@ -324,8 +328,10 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
             target = getFixedTarget();
         } else {
             target = context.getTargetComponent(bindingSlot);
-            if (target.getVisibility() == Visibility.HIDDEN) {
-                XPathException err = new XPathException("Cannot expand an abstract attribute set with no implementation", "XTDE3052");
+            if (target.isHiddenAbstractComponent()) {
+                XPathException err = new XPathException("Cannot expand an abstract attribute set ("
+                                                                + targetName.getDisplayName()
+                                                                + ") with no implementation", "XTDE3052");
                 err.setLocation(getLocation());
                 throw err;
             }
@@ -383,7 +389,7 @@ public class UseAttributeSet extends Instruction implements ComponentInvocation,
         if (!(obj instanceof UseAttributeSet)) {
             return false;
         }
-        return targetName.equals(((UseAttributeSet)obj).targetName);
+        return targetName.equals(((UseAttributeSet) obj).targetName);
     }
 
     /**

@@ -83,7 +83,6 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
     }
 
 
-
     /**
      * Set the static type
      *
@@ -119,18 +118,16 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
     }
 
     /**
-      * Get the binding slot to be used. This is the offset within the binding vector of the containing
-      * component where the actual target template is to be found.
-      *
-      * @return the offset in the binding vector of the containing package where the target template
-      *         can be found.
-      */
+     * Get the binding slot to be used. This is the offset within the binding vector of the containing
+     * component where the actual target template is to be found.
+     *
+     * @return the offset in the binding vector of the containing package where the target template
+     * can be found.
+     */
 
-     public int getBindingSlot() {
-         return bindingSlot;
-     }
-
-
+    public int getBindingSlot() {
+        return bindingSlot;
+    }
 
 
     /**
@@ -201,6 +198,7 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
 
     /**
      * Set the argument evaluation modes
+     *
      * @param evalModes the argument evaluation modes to be used
      */
 
@@ -310,8 +308,8 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
     /**
      * Copy an expression. This makes a deep copy.
      *
-     * @return the copy of the original expression
      * @param rebindings
+     * @return the copy of the original expression
      */
 
     /*@NotNull*/
@@ -442,9 +440,9 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
      * @param pathMap        the PathMap to which the expression should be added
      * @param pathMapNodeSet the PathMapNodeSet to which the paths embodied in this expression should be added
      * @return the pathMapNode representing the focus established by this expression, in the case where this
-     *         expression is the first operand of a path expression or filter expression. For an expression that does
-     *         navigation, it represents the end of the arc in the path map that describes the navigation route. For other
-     *         expressions, it is the same as the input pathMapNode.
+     * expression is the first operand of a path expression or filter expression. For an expression that does
+     * navigation, it represents the end of the arc in the path map that describes the navigation route. For other
+     * expressions, it is the same as the input pathMapNode.
      */
 
     public PathMap.PathMapNodeSet addToPathMap(PathMap pathMap, PathMap.PathMapNodeSet pathMapNodeSet) {
@@ -510,6 +508,7 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
 
     // KILROY
     public static Map<String, Integer> counters = new HashMap<String, Integer>();
+
     public static void showCounters() {
         for (Map.Entry<String, Integer> entry : counters.entrySet()) {
             if (entry.getValue() > 100) {
@@ -536,10 +535,12 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
 
         if (bindingSlot >= 0) {
             Component target = getTargetComponent(context);
-            if (target.getVisibility() == Visibility.HIDDEN) {
-                throw new XPathException("Cannot call an abstract function with no implementation", "XTDE3052");
+            if (target.isHiddenAbstractComponent()) {
+                throw new XPathException("Cannot call an abstract function (" +
+                                                 name.getDisplayName() +
+                                                 ") with no implementation", "XTDE3052");
             }
-            targetFunction = (UserFunction)target.getActor();             
+            targetFunction = (UserFunction) target.getActor();
             c2 = targetFunction.makeNewContext(context);
             c2.setCurrentComponent(target);
             c2.setOrigin(this);
@@ -554,7 +555,7 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
             return s;
         } catch (StackOverflowError err) {
             throw new XPathException("Too many nested function calls. May be due to infinite recursion",
-                SaxonErrorCode.SXLM0001, getLocation());
+                                     SaxonErrorCode.SXLM0001, getLocation());
         }
     }
 
@@ -615,7 +616,7 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
     }
 
     public UserFunction getTargetFunction(XPathContext context) {
-        return (UserFunction)getTargetComponent(context).getActor();
+        return (UserFunction) getTargetComponent(context).getActor();
     }
 
     public Sequence[] evaluateArguments(XPathContext c) throws XPathException {
@@ -663,14 +664,14 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
         if (getFunctionName() != null) {
             out.emitAttribute("name", getFunctionName().getEQName());
             out.emitAttribute("tailCall",
-                    tailCall == NOT_TAIL_CALL ? "false" : tailCall == SELF_TAIL_CALL ? "self" : "foreign");
+                              tailCall == NOT_TAIL_CALL ? "false" : tailCall == SELF_TAIL_CALL ? "self" : "foreign");
         }
         out.emitAttribute("bSlot", "" + getBindingSlot());
         if (getArgumentEvaluationModes() != null && getArity() > 0) {
             FastStringBuffer fsb = new FastStringBuffer(FastStringBuffer.C64);
             int[] e = getArgumentEvaluationModes();
             for (int i : e) {
-                fsb.append(i+" ");
+                fsb.append(i + " ");
             }
             out.emitAttribute("eval", Whitespace.trim(fsb));
         }
@@ -711,7 +712,6 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
     public StructuredQName getObjectName() {
         return getFunctionName();
     }
-
 
 
 }

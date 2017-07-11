@@ -321,8 +321,10 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
         Component target = getFixedTarget();
         if (bindingSlot >= 0) {
             target = context.getTargetComponent(bindingSlot);
-            if (target.getVisibility() == Visibility.HIDDEN) {
-                XPathException err = new XPathException("Cannot call an abstract template with no implementation", "XTDE3052");
+            if (target.isHiddenAbstractComponent()) {
+                XPathException err = new XPathException("Cannot call an abstract template (" +
+                                                                calledTemplateName.getDisplayName() +
+                                                                ") with no implementation", "XTDE3052");
                 err.setLocation(getLocation());
                 throw err;
             }

@@ -7,6 +7,7 @@
 
 package net.sf.saxon.expr.parser;
 
+import net.sf.saxon.expr.Expression;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.type.ItemType;
@@ -108,7 +109,7 @@ public class RoleDiagnostic {
 
         switch (kind) {
             case FUNCTION:
-                if (name.equals("saxon:call")) {
+                if (name.equals("saxon:call") || name.equals("saxon:apply")) {
                     if (operand == 0) {
                         return "target of dynamic function call";
                     } else {
@@ -197,6 +198,22 @@ public class RoleDiagnostic {
         return "Required item type of " + getMessage() +
                 " is " + requiredItemType.toString() +
                 "; supplied value has item type " +
+                suppliedItemType.toString();
+    }
+
+    /**
+     * Construct a full error message
+     *
+     * @param requiredItemType the item type required by the context of a particular expression
+     * @param supplied the supplied expression
+     * @param suppliedItemType the item type inferred by static analysis of an expression
+     * @return a message of the form "Required item type of A is R; supplied value has item type S"
+     */
+
+    public String composeErrorMessage(ItemType requiredItemType, Expression supplied, ItemType suppliedItemType) {
+        return "Required item type of " + getMessage() +
+                " is " + requiredItemType.toString() +
+                "; supplied value (" + supplied.toShortString() + ") has item type " +
                 suppliedItemType.toString();
     }
 

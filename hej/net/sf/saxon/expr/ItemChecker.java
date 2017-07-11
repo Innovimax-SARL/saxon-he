@@ -131,13 +131,13 @@ public final class ItemChecker extends UnaryExpression {
             } else if (Cardinality.allowsZero(card)) {
                 if (!(operand instanceof Literal)) {
                     String message = role.composeErrorMessage(
-                            requiredItemType, operand.getItemType());
+                            requiredItemType, operand, operand.getItemType());
                     visitor.getStaticContext().issueWarning(
                             "The only value that can pass type-checking is an empty sequence. " +
                                                                     message, getLocation());
                 }
             } else {
-                String message = role.composeErrorMessage(requiredItemType, operand.getItemType());
+                String message = role.composeErrorMessage(requiredItemType, operand, operand.getItemType());
                 XPathException err = new XPathException(message);
                 err.setErrorCode(role.getErrorCode());
                 err.setLocation(this.getLocation());
@@ -256,7 +256,7 @@ public final class ItemChecker extends UnaryExpression {
         } else if (requiredItemType.getUType().subsumes(UType.STRING) && BuiltInAtomicType.ANY_URI.matches(item, th)) {
             return item;
         } else {
-            String message = role.composeErrorMessage(requiredItemType, Type.getItemType(item, th));
+            String message = role.composeErrorMessage(requiredItemType, getBaseExpression(), Type.getItemType(item, th));
             String errorCode = role.getErrorCode();
             if ("XPDY0050".equals(errorCode)) {
                 // error in "treat as" assertion
