@@ -8,6 +8,7 @@
 package net.sf.saxon.ma.json;
 
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.om.NameChecker;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.trans.Err;
 import net.sf.saxon.trans.XPathException;
@@ -192,7 +193,7 @@ public class JsonParser {
         handler.startMap();
         int tok = tokenizer.next();
         while (tok != JsonTokenizer.RCURLY) {
-            if (tok != JsonTokenizer.STRING_LITERAL) {
+            if (tok != JsonTokenizer.STRING_LITERAL && !(tok == JsonTokenizer.UNQUOTED_STRING && liberal)) {
                 invalidJSON("Property name must be a string literal", ERR_GRAMMAR);
             }
             String key = tokenizer.currentTokenValue.toString();
@@ -375,7 +376,7 @@ public class JsonParser {
                         break;
                     default:
                         if (liberal) {
-                            buffer.append(c);
+                            buffer.append(literal.charAt(i));
                         } else {
                             throw new XPathException("Unknown escape sequence \\" + literal.charAt(i), errorCode);
                         }
@@ -436,6 +437,7 @@ public class JsonParser {
         public static final int NULL = 9;
         public static final int COLON = 10;
         public static final int COMMA = 11;
+        public static final int UNQUOTED_STRING = 12; // for "liberal" parsing only
         public static final int EOF = 999;
 
         public JsonTokenizer(String input) {
@@ -504,6 +506,8 @@ public class JsonParser {
                 case ',':
                     return COMMA;
                 case '-':
+                case '+': // for liberal parsing
+                case '.': // for liberal parsing
                 case '0':
                 case '1':
                 case '2':
@@ -530,37 +534,36 @@ public class JsonParser {
                         }
                     }
                     return NUMERIC_LITERAL;
-                case 't':
-                case 'f':
-                case 'n':
-                    currentTokenValue.setLength(0);
-                    currentTokenValue.append(ch);
-                    while (true) {
-                        char c = input.charAt(position);
-                        if (c >= 'a' && c <= 'z') {
-                            currentTokenValue.append(c);
-                            if (++position >= input.length()) {
+                default:
+                    // Allow unquoted strings in liberal mode
+                    if (NameChecker.isNCNameChar(ch)) {
+                        currentTokenValue.setLength(0);
+                        currentTokenValue.append(ch);
+                        while (position < input.length()) {
+                            char c = input.charAt(position);
+                            if (NameChecker.isNCNameChar(c)) {
+                                currentTokenValue.append(c);
+                                position++;
+                            } else {
                                 break;
                             }
-                        } else {
-                            break;
                         }
-                    }
-                    String val = currentTokenValue.toString();
-                    if (val.equals("true")) {
-                        return TRUE;
-                    } else if (val.equals("false")) {
-                        return FALSE;
-                    } else if (val.equals("null")) {
-                        return NULL;
+                        String val = currentTokenValue.toString();
+                        if (val.equals("true")) {
+                            return TRUE;
+                        } else if (val.equals("false")) {
+                            return FALSE;
+                        } else if (val.equals("null")) {
+                            return NULL;
+                        } else {
+                            return UNQUOTED_STRING;
+                        }
                     } else {
-                        error("Unknown constant " + currentTokenValue, ERR_GRAMMAR);
+                        char c = input.charAt(--position);
+                        invalidJSON("Unexpected character '" + c + "' (\\u" +
+                                            Integer.toHexString(c) + ") at position " + position, ERR_GRAMMAR);
+                        return -1;
                     }
-                default:
-                    char c = input.charAt(--position);
-                    invalidJSON("Unexpected character '" + c + "' (\\u" +
-                            Integer.toHexString(c) + ") at position " + position, ERR_GRAMMAR);
-                    return -1;
             }
         }
     }
