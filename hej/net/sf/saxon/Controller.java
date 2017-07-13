@@ -119,7 +119,7 @@ public class Controller implements ContextOriginator {
     private HashMap<String, Object> userDataTable;
     private DateTimeValue currentDateTime;
     private boolean dateTimePreset = false;
-    private Mode initialMode = null;
+    private Component.M initialMode = null;
     private Function initialFunction = null;
     private NodeInfo lastRememberedNode = null;
     private int lastRememberedNumber = -1;
@@ -289,20 +289,26 @@ public class Controller implements ContextOriginator {
 
     public void setInitialMode(StructuredQName expandedModeName) throws XPathException {
         if (expandedModeName == null || expandedModeName.equals(Mode.UNNAMED_MODE_NAME)) {
-            initialMode = ((PreparedStylesheet) executable).getRuleManager().obtainMode(Mode.UNNAMED_MODE_NAME, true);
+            Mode initial = ((PreparedStylesheet) executable).getRuleManager().obtainMode(Mode.UNNAMED_MODE_NAME, true);
+            initialMode = initial.getDeclaringComponent();
         } else if (expandedModeName.equals(Mode.DEFAULT_MODE_NAME)) {
             StructuredQName defaultModeName = ((StylesheetPackage) executable.getTopLevelPackage()).getDefaultMode();
             if (!expandedModeName.equals(defaultModeName)) {
                 setInitialMode(defaultModeName);
             }
         } else {
-            initialMode = ((PreparedStylesheet) executable).getRuleManager().obtainMode(expandedModeName, false);
+            //initialMode = ((PreparedStylesheet) executable).getRuleManager().obtainMode(expandedModeName, false);
             boolean declaredModes = ((StylesheetPackage) executable.getTopLevelPackage()).isDeclaredModes();
-            if (initialMode == null) {
+            SymbolicName sn = new SymbolicName(StandardNames.XSL_MODE, expandedModeName);
+            Component c = ((StylesheetPackage) executable.getTopLevelPackage()).getComponent(sn);
+            if (c == null) {
                 throw new XPathException("Requested initial mode " + expandedModeName + " is not defined in the stylesheet", "XTDE0045");
-            } else if (declaredModes && initialMode.getDeclaringComponent().getVisibility() == Visibility.PRIVATE) {
-                throw new XPathException("Requested initial mode " + expandedModeName + " is private", "XTDE0045");
-            } else if (!declaredModes && initialMode.isEmpty()) {
+            }
+            if (declaredModes && c.getVisibility() == Visibility.PRIVATE) {
+                throw new XPathException("Requested initial mode " + expandedModeName + " is private in the top-level package", "XTDE0045");
+            }
+            initialMode = (Component.M)c;
+            if (!declaredModes && initialMode.getActor().isEmpty()) {
                 throw new XPathException("Requested initial mode " + expandedModeName + " contains no template rules", "XTDE0045");
             }
         }
@@ -316,7 +322,7 @@ public class Controller implements ContextOriginator {
      */
 
     public StructuredQName getInitialModeName() {
-        return initialMode == null ? null : initialMode.getModeName();
+        return initialMode == null ? null : initialMode.getActor().getModeName();
     }
 
     /**
@@ -329,12 +335,19 @@ public class Controller implements ContextOriginator {
     /*@NotNull*/
     public Mode getInitialMode() {
         if (initialMode == null) {
-            StructuredQName defaultMode = ((StylesheetPackage) executable.getTopLevelPackage()).getDefaultMode();
-            if (defaultMode != null) {
-                initialMode = ((PreparedStylesheet) executable).getRuleManager().obtainMode(defaultMode, false);
+            StylesheetPackage top = (StylesheetPackage)executable.getTopLevelPackage();
+            StructuredQName defaultMode = top.getDefaultMode();
+            if (defaultMode == null) {
+                defaultMode = Mode.UNNAMED_MODE_NAME;
             }
+            Component.M c = (Component.M)top.getComponent(new SymbolicName(StandardNames.XSL_MODE, defaultMode));
+            initialMode = c;
+            return c.getActor();
+
+            //return ((PreparedStylesheet) executable).getRuleManager().getUnnamedMode();
+        } else {
+            return initialMode.getActor();
         }
-        return initialMode;
     }
 
     /**
@@ -1929,17 +1942,15 @@ public class Controller implements ContextOriginator {
             } else {
                 Mode mode = getInitialMode();
                 if (mode == null) {// || (initialMode != null && mode.isEmpty())) {
-                    throw new XPathException("Requested initial mode " +
-                                                     (initialMode == null ? "" : initialMode.getModeName().getDisplayName()) +
-                                                     " does not exist", "XTDE0045");
+                    throw new XPathException("Requested initial mode does not exist", "XTDE0045");
                 }
                 if (mode.isDeclaredStreamable()) {
                     if (source instanceof StreamSource || source instanceof SAXSource) {
                         streaming = true;
-                        transformStream(source, mode, receiver);
+                        transformStream(source, initialMode, receiver);
                     } else {
                         throw new XPathException("Requested initial mode " +
-                                                         (initialMode == null ? "" : initialMode.getModeName().getDisplayName()) +
+                                                         (initialMode == null ? "" : initialMode.getActor().getSymbolicName().getComponentName().getDisplayName()) +
                                                          " is streamable: must supply a SAXSource or StreamSource", "SXST0061");
                     }
                 } else {
@@ -2048,15 +2059,8 @@ public class Controller implements ContextOriginator {
         boolean close = false;
 
         try {
-            Mode mode = initialMode;
-            if (mode == null) {
-                mode = ((PreparedStylesheet) executable).getRuleManager().getUnnamedMode();
-            }
-            if (mode == null) {
-                throw new XPathException("Requested initial mode " +
-                                                 (initialMode == null ? "#unnamed" : initialMode.getModeName().getDisplayName()) +
-                                                 " does not exist", "XTDE0045");
-            }
+            Mode mode = getInitialMode();
+
 
             warningIfStreamable(mode);
 
@@ -2148,8 +2152,8 @@ public class Controller implements ContextOriginator {
 
             iter = new MappingIterator(iter, preprocessor);
             initialContext.setCurrentIterator(new FocusTrackingIterator(iter));
-            initialContext.setCurrentMode(mode.getDeclaringComponent());  // TODO: it should be the top-level override of the mode
-            initialContext.setCurrentComponent(mode.getDeclaringComponent());
+            initialContext.setCurrentMode(initialMode);
+            initialContext.setCurrentComponent(initialMode);
 
             outputDestination = openResult(outputDestination, initialContext);
 
@@ -2323,7 +2327,7 @@ public class Controller implements ContextOriginator {
             }
 
             if (initialTemplate == null) {
-                Mode mode = initialMode;
+                Mode mode = getInitialMode();
                 if (mode == null) {
                     mode = ((PreparedStylesheet) executable).getRuleManager().getUnnamedMode();
                 }
@@ -2332,13 +2336,13 @@ public class Controller implements ContextOriginator {
 //                            (initialMode == null ? "" : initialMode.getModeName().getDisplayName()) +
 //                            " does not exist", "XTDE0045");
 //                }
-                Component modeComponent = mode.getDeclaringComponent();
-                if (modeComponent.getVisibility() == Visibility.PRIVATE &&
-                        ((StylesheetPackage) executable.getTopLevelPackage()).isDeclaredModes() &&
-                        !mode.isUnnamedMode()) {
-                    throw new XPathException((initialMode == null ? "" : initialMode.getModeTitle()) +
-                            " has private visibility", "XTDE0045");
-                }
+//                Component modeComponent = mode.getDeclaringComponent();
+//                if (modeComponent.getVisibility() == Visibility.PRIVATE &&
+//                        ((StylesheetPackage) executable.getTopLevelPackage()).isDeclaredModes() &&
+//                        !mode.isUnnamedMode()) {
+//                    throw new XPathException((initialMode == null ? "" : getInitialMode().getModeTitle()) +
+//                            " has private visibility", "XTDE0045");
+//                }
 
                 if (getAccumulatorManager() != null) {
                     getAccumulatorManager().setApplicableAccumulators(startNode.getTreeInfo(), mode.getAccumulators());
@@ -2383,9 +2387,12 @@ public class Controller implements ContextOriginator {
                         }
                     }
                 }
-                // TODO: should start with the top-level override of the mode
-                initialContext.setCurrentMode(mode.getDeclaringComponent());
-                initialContext.setCurrentComponent(mode.getDeclaringComponent());
+                Component.M initial = initialMode;
+                if (initial == null) {
+                    initial = mode.getDeclaringComponent();
+                }
+                initialContext.setCurrentMode(initial);
+                initialContext.setCurrentComponent(initial);
                 TailCall tc = mode.applyTemplates(ordinaryParams, tunnelParams, initialContext, ExplicitLocation.UNKNOWN_LOCATION);
                 while (tc != null) {
                     tc = tc.processLeavingTail();
@@ -2420,7 +2427,7 @@ public class Controller implements ContextOriginator {
 
     private void warningIfStreamable(Mode mode) {
         if (mode.isDeclaredStreamable()) {
-            warning((initialMode == null ? "" : initialMode.getModeTitle()) +
+            warning((initialMode == null ? "" : getInitialMode().getModeTitle()) +
                             " is streamable, but the input is not supplied as a stream", null, null);
         }
     }
@@ -2441,7 +2448,7 @@ public class Controller implements ContextOriginator {
     public void callTemplate(StructuredQName initialTemplateName, Receiver outputDestination)
             throws XPathException {
         checkReadiness();
-        if (initialMode != null && !initialMode.getModeName().equals(
+        if (initialMode != null && !initialMode.getActor().getSymbolicName().getComponentName().equals(
                 ((StylesheetPackage)getExecutable().getTopLevelPackage()).getDefaultMode())) {
             throw new XPathException("Initial mode and template cannot both be defined", "XTDE0047");
         }
@@ -2555,7 +2562,7 @@ public class Controller implements ContextOriginator {
      * @throws XPathException if any dynamic error occurs
      */
 
-    private void transformStream(Source source, Mode mode, Receiver result)
+    private void transformStream(Source source, Component.M mode, Receiver result)
             throws XPathException {
         openMessageEmitter();
 
@@ -2581,18 +2588,18 @@ public class Controller implements ContextOriginator {
 
             // Process the source document by applying template rules to the initial context node
 
-            if (!mode.isDeclaredStreamable()) {
+            if (!mode.getActor().isDeclaredStreamable()) {
                 if (config.getBooleanProperty(FeatureKeys.STREAMING_FALLBACK)) {
                     warning("Mode is not streamable; attempting fallback to non-streamed evaluation", "", null);
                     TreeInfo doc = config.buildDocumentTree(source);
-                    initialMode = mode;
+                    //initialMode = mode;
                     transformDocument(doc.getRootNode(), result);
                     return;
                 } else {
                     throw new XPathException("mode supplied to transformStream() must be streamable");
                 }
             }
-            Receiver despatcher = config.makeStreamingTransformer(initialContext, mode);
+            Receiver despatcher = config.makeStreamingTransformer(initialContext, mode.getActor());
             if (despatcher == null) {
                 throw new XPathException("Streaming requires Saxon-EE");
             }
