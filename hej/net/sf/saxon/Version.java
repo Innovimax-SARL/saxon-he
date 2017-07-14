@@ -158,10 +158,17 @@ public final class Version {
         //#endif
 //#else
             platform = new net.sf.saxon.java.JavaPlatform();
-        //#if PE==true
+
+        //#if PE==true && DOTNET != true && SAXONC == true
+                platform = new com.saxonica.config.JavaPlatformC();
+        //#endif
+        //#if EE==true && DOTNET != true && SAXONC==true
+                platform = new com.saxonica.config.JavaPlatformC();
+        //#endif
+        //#if PE==true && SAXONC != true
             platform = new com.saxonica.config.JavaPlatformPE();
         //#endif
-        //#if EE==true
+        //#if EE==true  && SAXONC != true
             platform = new com.saxonica.config.JavaPlatformEE();
         //#endif
 //#endif

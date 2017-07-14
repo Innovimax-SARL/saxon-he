@@ -282,6 +282,11 @@ public class NamespaceConstant {
     public static final String GLOBAL_JS = "http://saxonica.com/ns/globalJS";
 
     /**
+      * URI for the user extension calls in Saxon/C for C++ and PHP
+      */
+     public static final String NATIVE = "http://saxonica.com/ns/native";
+
+    /**
      * URI for interactive XSLT extensions in Saxon-CE and Saxon-JS
      */
     public static final String IXSL = "http://saxonica.com/ns/interactiveXSLT";
