@@ -45,6 +45,7 @@ public class RoleDiagnostic {
     public static final int CHARACTER_MAP_EXPANSION = 16;
     public static final int DOCUMENT_ORDER = 17;
     public static final int MAP_CONSTRUCTOR = 18;
+    public static final int MATCH_PATTERN = 19;
 
 
     /**
@@ -169,6 +170,8 @@ public class RoleDiagnostic {
                 return "document-order sorter";
             case MAP_CONSTRUCTOR:
                 return "xsl:map sequence constructor";
+            case MATCH_PATTERN:
+                return "match pattern";
             default:
                 return "";
         }

@@ -7,10 +7,10 @@
 
 package net.sf.saxon.pattern;
 
-import com.saxonica.ee.trans.ContextItemStaticInfoEE;
 import com.saxonica.ee.stream.Posture;
 import com.saxonica.ee.stream.Streamability;
 import com.saxonica.ee.stream.Sweep;
+import com.saxonica.ee.trans.ContextItemStaticInfoEE;
 import net.sf.saxon.expr.*;
 import net.sf.saxon.expr.instruct.SlotManager;
 import net.sf.saxon.expr.parser.*;
@@ -87,10 +87,17 @@ public class NodeSetPattern extends Pattern {
 
     public Pattern typeCheck(ExpressionVisitor visitor, ContextItemStaticInfo contextItemType) throws XPathException {
         selectionOp.setChildExpression(getSelectionExpression().typeCheck(visitor, contextItemType));
-        RoleDiagnostic role = new RoleDiagnostic(RoleDiagnostic.VARIABLE, getSelectionExpression().toString(), 0);
+        RoleDiagnostic role = new RoleDiagnostic(RoleDiagnostic.MATCH_PATTERN, getSelectionExpression().toString(), 0);
         TypeChecker tc = visitor.getConfiguration().getTypeChecker(false);
-        selectionOp.setChildExpression(tc.staticTypeCheck(
-                getSelectionExpression(), SequenceType.NODE_SEQUENCE, role, visitor));
+        Expression checked = null;
+        try {
+            checked = tc.staticTypeCheck(
+                    getSelectionExpression(), SequenceType.NODE_SEQUENCE, role, visitor);
+        } catch (XPathException e) {
+            visitor.issueWarning("Pattern will never match anything. " + e.getMessage(), getLocation());
+            checked = Literal.makeEmptySequence();
+        }
+        selectionOp.setChildExpression(checked);
         itemType = getSelectionExpression().getItemType();
         return this;
     }
