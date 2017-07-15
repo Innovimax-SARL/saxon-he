@@ -628,14 +628,12 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
         if (compiledNamedTemplate != null) {
             compiledNamedTemplate.resetLocalParams();
         }
+        isTailRecursive = markTailCalls();
         Expression body = compileSequenceConstructor(compilation, decl, true);
         body.restoreParentPointers();
         RetainedStaticContext rsc = makeRetainedStaticContext();
         if (body.getRetainedStaticContext() == null) {
             body.setRetainedStaticContext(rsc); // bug 2608
-        }
-        if (body == null) {
-            body = Literal.makeEmptySequence();
         }
         if (match != null && compilation.getConfiguration().getBooleanProperty(FeatureKeys.STRICT_STREAMABILITY) &&
                 isWithinDeclaredStreamableConstruct()) {
