@@ -1415,11 +1415,11 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
         }
     }
 
-    public void registerImplicitModes(StyleElement element, RuleManager manager) {
+    private void registerImplicitModes(StyleElement element, RuleManager manager) {
         if (element instanceof XSLTemplate || element instanceof XSLApplyTemplates) {
             String modeAtt = element.getAttributeValue("mode");
             if (modeAtt != null) {
-                String[] tokens = Whitespace.trim(modeAtt).split(" \t\n\r");
+                String[] tokens = Whitespace.trim(modeAtt).split("[ \t\n\r]+");
                 for (String s : tokens) {
                     if (!s.startsWith("#")) {
                         try {
@@ -1432,9 +1432,7 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
                                     element.compileError("A template rule cannot be added to a mode declared in a used package " +
                                                                   "unless the xsl:template declaration appears within an xsl:override child of the appropriate xsl:use-package element",
                                                           "XTSE3050");
-                                } else { // apply-templates
-                                    // no action at this point
-                                }
+                                } 
                             } else {
                                 manager.obtainMode(modeName, true);
                             }
