@@ -1416,6 +1416,7 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
     }
 
     private void registerImplicitModes(StyleElement element, RuleManager manager) {
+        // TODO: in the case of XSLTemplate, this code is probably redundant: see XSLTemplate.register()
         if (element instanceof XSLTemplate || element instanceof XSLApplyTemplates) {
             String modeAtt = element.getAttributeValue("mode");
             if (modeAtt != null) {

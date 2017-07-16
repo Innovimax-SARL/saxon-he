@@ -78,6 +78,15 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
     }
 
     /**
+     * Get the name (QName) of the template being called
+     * @return the name of the target template
+     */
+
+    public StructuredQName getCalledTemplateName() {
+        return calledTemplateName;
+    }
+
+    /**
      * Get the symbolic name of the template being called. This is essentially the component kind (template)
      * plus the QName of the target template
      *
@@ -374,8 +383,10 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
             if (targetComponent == null) {
                 throw new XPathException("Internal Saxon error: No binding available for call-template instruction", SaxonErrorCode.SXPK0001, this.getLocation());
             }
-            if (targetComponent.getVisibility() == Visibility.HIDDEN) {
-                throw new XPathException("Cannot call an abstract template with no implementation", "XTDE3052", this.getLocation());
+            if (targetComponent.isHiddenAbstractComponent()) {
+                throw new XPathException("Cannot call an abstract template (" +
+                                                 calledTemplateName.getDisplayName() +
+                                                 ") with no implementation", "XTDE3052", this.getLocation());
             }
 
             // handle parameters if any
