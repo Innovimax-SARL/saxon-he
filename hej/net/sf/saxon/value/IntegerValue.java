@@ -7,6 +7,7 @@
 
 package net.sf.saxon.value;
 
+import net.sf.saxon.expr.parser.Location;
 import net.sf.saxon.functions.FormatNumber;
 import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.trans.Err;
@@ -423,6 +424,24 @@ public abstract class IntegerValue extends DecimalValue {
     public abstract NumericValue div(IntegerValue other) throws XPathException;
 
     /**
+     * Divide by another integer, providing location information for any exception
+     *
+     * @param other the other integer
+     * @param locator the location of the expression, for use in diagnostics
+     * @return the result of the division
+     * @throws XPathException if the other integer is zero
+     */
+
+    public NumericValue div(IntegerValue other, Location locator) throws XPathException {
+        try {
+            return div(other);
+        } catch (XPathException err) {
+            err.maybeSetLocation(locator);
+            throw err;
+        }
+    };
+
+    /**
      * Take modulo another integer
      *
      * @param other the other integer
@@ -433,6 +452,24 @@ public abstract class IntegerValue extends DecimalValue {
     public abstract IntegerValue mod(IntegerValue other) throws XPathException;
 
     /**
+     * Take modulo another integer, providing location information for any exception
+     *
+     * @param other   the other integer
+     * @param locator the location of the expression, for use in diagnostics
+     * @return the result of the division
+     * @throws XPathException if the other integer is zero
+     */
+
+    public IntegerValue mod(IntegerValue other, Location locator) throws XPathException {
+        try {
+            return mod(other);
+        } catch (XPathException err) {
+            err.maybeSetLocation(locator);
+            throw err;
+        }
+    }
+
+    /**
      * Integer divide by another integer
      *
      * @param other the other integer
@@ -441,6 +478,24 @@ public abstract class IntegerValue extends DecimalValue {
      */
 
     public abstract IntegerValue idiv(IntegerValue other) throws XPathException;
+
+    /**
+     * Integer divide by another integer, providing location information for any exception
+     *
+     * @param other   the other integer
+     * @param locator the location of the expression, for use in diagnostics
+     * @return the result of the division
+     * @throws XPathException if the other integer is zero
+     */
+
+    public IntegerValue idiv(IntegerValue other, Location locator) throws XPathException {
+        try {
+            return idiv(other);
+        } catch (XPathException err) {
+            err.maybeSetLocation(locator);
+            throw err;
+        }
+    }
 
     /**
      * Get the value as a BigInteger
