@@ -413,12 +413,19 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
 
     public void export(ExpressionPresenter out) throws XPathException {
         out.startElement("callT", this);
+        String flags = "";
         if (template != null && template.getTemplateName() != null) {
             out.emitAttribute("name", template.getTemplateName());
         }
         out.emitAttribute("bSlot", ""+getBindingSlot());
         if (isWithinDeclaredStreamableConstruct) {
-            out.emitAttribute("flags", "d");
+            flags += "d";
+        }
+        if (useTailRecursion) {
+            flags += "t";
+        }
+        if (!flags.isEmpty()) {
+            out.emitAttribute("flags", flags);
         }
         if (actualParams.length > 0) {
             WithParam.exportParameters(actualParams, out, false);
