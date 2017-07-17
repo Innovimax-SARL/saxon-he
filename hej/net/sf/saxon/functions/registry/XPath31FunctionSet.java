@@ -61,21 +61,16 @@ public class XPath31FunctionSet extends BuiltInFunctionSet {
                 .arg(1, BuiltInAtomicType.STRING, ONE, null)
                 .arg(2, BuiltInAtomicType.STRING, ONE, null);
 
+        // The copy-of function is defined in XSLT 3.0, but we choose to make it available also in XPath/XQuery
+
+        register("copy-of", 0, CopyOfFn.class, AnyItemType.getInstance(),
+                 STAR, XPATH31, NEW);
+
+        register("copy-of", 1, CopyOfFn.class, AnyItemType.getInstance(),
+                 STAR, XPATH31, NEW)
+                .arg(0, AnyItemType.getInstance(), STAR | ABS, EMPTY);
+
         register("default-language", 0, DynamicContextAccessor.DefaultLanguage.class, BuiltInAtomicType.LANGUAGE, ONE, XPATH31, DLANG);
-
-
-        register("format-time", 2, FormatDate.class, BuiltInAtomicType.STRING,
-                 OPT, XSLT | XPATH30, 0)
-                .arg(0, BuiltInAtomicType.TIME, OPT, null)
-                .arg(1, BuiltInAtomicType.STRING, ONE, null);
-
-        register("format-time", 5, FormatDate.class, BuiltInAtomicType.STRING,
-                 OPT, XSLT | XPATH30, 0)
-                .arg(0, BuiltInAtomicType.TIME, OPT, null)
-                .arg(1, BuiltInAtomicType.STRING, ONE, null)
-                .arg(2, BuiltInAtomicType.STRING, OPT, null)
-                .arg(3, BuiltInAtomicType.STRING, OPT, null)
-                .arg(4, BuiltInAtomicType.STRING, OPT, null);
 
         register("generate-id", 0, ContextItemAccessorFunction.class, BuiltInAtomicType.STRING, ONE, XSLT | XPATH30, CITEM | LATE);
 
@@ -140,6 +135,14 @@ public class XPath31FunctionSet extends BuiltInFunctionSet {
                 .arg(0, AnyItemType.getInstance(), STAR, null)
                 .arg(1, Type.ITEM_TYPE, OPT, null)
                 .optionDetails(Serialize.makeOptionsParameter());
+
+        // The snapshot function is defined in XSLT 3.0, but we choose to make it available also in XPath/XQuery
+
+        register("snapshot", 0, ContextItemAccessorFunction.class, AnyItemType.getInstance(), STAR, XPATH30, CITEM | LATE | NEW);
+
+        register("snapshot", 1, SnapshotFn.class, AnyNodeTest.getInstance(),
+                 STAR, XPATH30, NEW)
+                .arg(0, AnyItemType.getInstance(), STAR | ABS, EMPTY);
 
         register("sort", 1, Sort_1.class, AnyItemType.getInstance(), STAR, XPATH31, 0)
                 .arg(0, AnyItemType.getInstance(), STAR, null);

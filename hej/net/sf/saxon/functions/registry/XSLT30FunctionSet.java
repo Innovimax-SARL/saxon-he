@@ -50,13 +50,6 @@ public class XSLT30FunctionSet extends BuiltInFunctionSet {
         register("available-system-properties", 0, AvailableSystemProperties.class, BuiltInAtomicType.QNAME,
                  STAR, XSLT30 | USE_WHEN, LATE);
 
-        register("copy-of", 0, CopyOfFn.class, AnyItemType.getInstance(),
-                 STAR, XPATH30, NEW);
-
-        register("copy-of", 1, CopyOfFn.class, AnyItemType.getInstance(),
-                 STAR, XPATH30, NEW)
-                .arg(0, AnyItemType.getInstance(), STAR | ABS, EMPTY);
-
         register("current-merge-group", 0, CurrentMergeGroup.class, AnyItemType.getInstance(),
                  STAR, XSLT30, LATE);
 
@@ -68,12 +61,6 @@ public class XSLT30FunctionSet extends BuiltInFunctionSet {
                  STAR, XSLT30, LATE);
 
         register("current-output-uri", 0, CurrentOutputUri.class, BuiltInAtomicType.ANY_URI, OPT, XSLT30, LATE);
-
-        register("snapshot", 0, ContextItemAccessorFunction.class, AnyItemType.getInstance(), STAR, XPATH30, CITEM | LATE | NEW);
-
-        register("snapshot", 1, SnapshotFn.class, AnyNodeTest.getInstance(),
-                 STAR, XPATH30, NEW)
-                .arg(0, AnyItemType.getInstance(), STAR | ABS, EMPTY);
 
         register("stream-available", 1, StreamAvailable.class, BuiltInAtomicType.BOOLEAN,
                  ONE, XSLT30, LATE)
