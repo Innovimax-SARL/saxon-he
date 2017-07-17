@@ -40,6 +40,8 @@ import static net.sf.saxon.trans.Visibility.PRIVATE;
  */
 public class StylesheetPackage extends PackageData {
 
+    private final static boolean TRACING = false;
+
     /**
      * A class that simply encapsulates a callback action of any kind
      */
@@ -74,13 +76,11 @@ public class StylesheetPackage extends PackageData {
     protected Set<String> schemaIndex = new HashSet<String>(10);
 
 
-    FunctionLibraryList functionLibrary;
-    XQueryFunctionLibrary queryFunctions;
-    ExecutableFunctionLibrary overriding;
-    ExecutableFunctionLibrary underriding;
+    private FunctionLibraryList functionLibrary;
+    private XQueryFunctionLibrary queryFunctions;
+    private ExecutableFunctionLibrary overriding;
+    private ExecutableFunctionLibrary underriding;
     private int maxFunctionArity = -1;
-    //private Set<StylesheetPackage> transitiveContents = new HashSet<StylesheetPackage>();
-    //private Set<String> transitivePackageNames = new HashSet<String>();
     private boolean retainUnusedFunctions = false;
 
 
@@ -91,7 +91,7 @@ public class StylesheetPackage extends PackageData {
     private HashMap<SymbolicName, Component> componentIndex =
         new HashMap<SymbolicName, Component>(20);
 
-    protected HashMap<SymbolicName, Component> hiddenComponents = new HashMap<SymbolicName, Component>();
+    protected List<Component> hiddenComponents = new ArrayList<Component>();
 
     protected HashMap<SymbolicName, Component> overriddenComponents = new HashMap<SymbolicName, Component>();
 
@@ -471,7 +471,7 @@ public class StylesheetPackage extends PackageData {
         for (Component c : componentIndex.values()) {
             registerGlobalVariable(c, slotManager);
         }
-        for (Component c : hiddenComponents.values()) {
+        for (Component c : hiddenComponents) {
             registerGlobalVariable(c, slotManager);
         }
         setGlobalSlotManager(slotManager);
@@ -492,7 +492,9 @@ public class StylesheetPackage extends PackageData {
             int slot = slotManager.allocateSlotNumber(var.getVariableQName());
             var.setPackageData(this);
             var.setBinderySlotNumber(slot);
-            addGlobalVariable(var);
+            if (c.getVisibility() != Visibility.HIDDEN) {
+                addGlobalVariable(var);
+            }
         }
     }
 
@@ -551,12 +553,12 @@ public class StylesheetPackage extends PackageData {
         return componentIndex.get(name);
     }
 
-    public Component getHiddenComponent(SymbolicName name) {
-        return hiddenComponents.get(name);
-    }
+//    public Component getHiddenComponent(SymbolicName name) {
+//        return hiddenComponents.get(name);
+//    }
 
     public void addHiddenComponent(Component component) {
-        hiddenComponents.put(component.getActor().getSymbolicName(), component);
+        hiddenComponents.add(component);
     }
 
     /**
@@ -588,7 +590,9 @@ public class StylesheetPackage extends PackageData {
                                              List<XSLAccept> acceptors,
                                              final Set<SymbolicName> overrides) throws XPathException {
         usedPackages.add(usedPackage);
-        
+
+        trace("=== Adding components from " + usedPackage.getPackageName() + " to " + getPackageName() + " ===");
+
         // Create copies of the components in the used package, with suitably adjusted visibility
 
         // Create a mapping from components in the used package to their corresponding components
@@ -633,6 +637,8 @@ public class StylesheetPackage extends PackageData {
                 }
             }
 
+            trace(oldC.getActor().getSymbolicName() + " (" + oldV + ") becomes " + newV);
+
             final Component newC = Component.makeComponent(oldC.getActor(), newV, this, oldC.getDeclaringPackage());
             correspondence.put(oldC, newC);
             newC.setBaseComponent(oldC);
@@ -660,7 +666,7 @@ public class StylesheetPackage extends PackageData {
             }
 
             if (newC.getVisibility() == Visibility.HIDDEN) {
-                hiddenComponents.put(namedComponentEntry.getKey(), newC);
+                hiddenComponents.add(newC);
             } else if (componentIndex.get(name) != null) {
                 if (!(oldC.getActor() instanceof Mode)) {
                     throw new XPathException("Duplicate " + namedComponentEntry.getKey(), "XTSE3050", oldC.getActor());
@@ -707,8 +713,56 @@ public class StylesheetPackage extends PackageData {
             });
 
         }
+
+        for (Component oldC : usedPackage.hiddenComponents) {
+
+            trace(oldC.getActor().getSymbolicName() + " (HIDDEN, declared in " + oldC.getDeclaringPackage().getPackageName() + ") becomes HIDDEN");
+
+            final Component newC = Component.makeComponent(oldC.getActor(), Visibility.HIDDEN, this, oldC.getDeclaringPackage());
+            correspondence.put(oldC, newC);
+            newC.setBaseComponent(oldC);
+
+            hiddenComponents.add(newC);
+
+            addCompletionAction(new Action() {
+                // TODO: common code with above
+                @Override
+                public void doAction() throws XPathException {
+                    List<ComponentBinding> oldBindings = newC.getBaseComponent().getComponentBindings();
+                    List<ComponentBinding> newBindings = new ArrayList<ComponentBinding>(oldBindings.size());
+                    for (ComponentBinding oldBinding : oldBindings) {
+                        SymbolicName name = oldBinding.getSymbolicName();
+                        Component target;
+                        if (overrides.contains(name)) {
+                            // if there is an override in this package, we bind to it
+                            target = getComponent(name);
+                            if (target == null) {
+                                throw new AssertionError("We know there's an override for " + name + ", but we can't find it");
+                            }
+                        } else {
+                            // otherwise we bind to the component in this package that corresponds to the component in the used package
+                            target = correspondence.get(oldBinding.getTarget());
+                            if (target == null) {
+                                throw new AssertionError("Saxon can't find the new component corresponding to " + name);
+                            }
+                        }
+                        ComponentBinding newBinding = new ComponentBinding(name, target);
+                        newBindings.add(newBinding);
+                    }
+                    newC.setComponentBindings(newBindings);
+                }
+            });
+
+        }
+
         if (usedPackage.isCreatesSecondaryResultDocuments()) {
             setCreatesSecondaryResultDocuments(true);
+        }
+    }
+
+    private void trace(String message) {
+        if (TRACING) {
+            System.err.println(message);
         }
     }
 

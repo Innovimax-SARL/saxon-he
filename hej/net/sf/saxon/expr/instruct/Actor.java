@@ -131,9 +131,9 @@ public abstract class Actor implements InstructionInfo, ExpressionOwner {
         }
 
         Component target = pack.getComponent(name);
-        if (target == null) {
-            target = pack.getHiddenComponent(name);
-        }
+//        if (target == null) {
+//            target = pack.getHiddenComponent(name);
+//        }
         if (target == null && name.getComponentName().hasURI(NamespaceConstant.XSLT) &&
                 name.getComponentName().getLocalPart().equals("original")) {
             target = pack.getOverriddenComponent(getSymbolicName());

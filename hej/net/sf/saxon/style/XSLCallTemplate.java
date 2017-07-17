@@ -183,7 +183,7 @@ public class XSLCallTemplate extends StyleElement {
                 // Handle xsl:original
                 return (NamedTemplate) getXslOriginal(StandardNames.XSL_TEMPLATE);
             }
-            compileError("No template exists named " + calledTemplateName, "XTSE0650");
+            compileError("Cannot find a template named " + calledTemplateName, "XTSE0650");
         }
         return template;
     }

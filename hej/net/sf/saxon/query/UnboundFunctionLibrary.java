@@ -156,7 +156,7 @@ public class UnboundFunctionLibrary implements FunctionLibrary {
                     // calling module
                     importingModule.checkImportedFunctionSignature(fd);
                 } else {
-                    String msg = "Cannot find a matching " + arity +
+                    String msg = "Cannot find a " + arity +
                             "-argument function named " + q.getClarkName() + "()";
                     if (!config.getBooleanProperty(FeatureKeys.ALLOW_EXTERNAL_FUNCTIONS)) {
                         msg += ". Note: external function calls have been disabled";
@@ -183,7 +183,7 @@ public class UnboundFunctionLibrary implements FunctionLibrary {
                     // calling module
                     //importingModule.checkImportedFunctionSignature(fd);
                 } else {
-                    String msg = "Cannot find a matching " + arity +
+                    String msg = "Cannot find a " + arity +
                             "-argument function named " + q.getClarkName() + "()";
                     if (!config.getBooleanProperty(FeatureKeys.ALLOW_EXTERNAL_FUNCTIONS)) {
                         msg += ". Note: external function calls have been disabled";

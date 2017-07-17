@@ -3245,7 +3245,7 @@ public class XPathParser {
 
     /*@NotNull*/
     public Expression reportMissingFunction(int offset, StructuredQName functionName, Expression[] arguments) throws XPathException {
-        String msg = "Cannot find a matching " + arguments.length +
+        String msg = "Cannot find a " + arguments.length +
                 "-argument function named " + functionName.getClarkName() + "()";
         Configuration config = env.getConfiguration();
         if (config.getBooleanProperty(FeatureKeys.ALLOW_EXTERNAL_FUNCTIONS)) {
