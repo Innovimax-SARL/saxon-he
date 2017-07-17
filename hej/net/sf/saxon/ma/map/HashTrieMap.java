@@ -524,16 +524,12 @@ public class HashTrieMap extends AbstractItem implements MapItem, GroundedValue 
     public AtomicIterator keys() {
         return new AtomicIterator() {
 
-            int pos = 0;
             Iterator<Tuple2<AtomicMatchKey, KeyValuePair>> base = imap.iterator();
 
             public AtomicValue next() {
                 if (base.hasNext()) {
-                    AtomicValue curr = base.next()._2.key;
-                    pos++;
-                    return curr;
+                    return base.next()._2.key;
                 } else {
-                    pos = -1;
                     return null;
                 }
             }
