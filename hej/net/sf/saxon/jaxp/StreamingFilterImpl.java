@@ -8,28 +8,29 @@
 package net.sf.saxon.jaxp;
 
 import net.sf.saxon.Version;
-import net.sf.saxon.event.ContentHandlerProxy;
+import net.sf.saxon.s9api.SAXDestination;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.Xslt30Transformer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 import java.io.IOException;
 
 
 /**
- * <B>FilterImpl</B> is an XMLFilter (a SAX2 filter) that performs a transformation
- * taking a SAX stream as input and producing a SAX stream as output.
+ * <B>StreamingFilterImpl</B> is an XMLFilter (a SAX2 filter) that performs a transformation
+ * taking a SAX stream as input and producing a SAX stream as output, using XSLT 3.0 streaming
+ * to process the source
  *
- * @author Michael H. Kay
+ * @since 9.8.0.4
  */
 
-public class FilterImpl extends AbstractXMLFilter {
+public class StreamingFilterImpl extends AbstractXMLFilter {
 
-    private TransformerImpl transformer;
+    private Xslt30Transformer transformer;
 
-    FilterImpl(TransformerImpl transformer) {
+    StreamingFilterImpl(Xslt30Transformer transformer) {
         this.transformer = transformer;
     }
 
@@ -38,13 +39,13 @@ public class FilterImpl extends AbstractXMLFilter {
      * perform a transformation. The method is equivalent to transform().
      *
      * @param input The input source (the XML document to be transformed)
-     * @throws org.xml.sax.SAXException Any SAX exception, possibly
+     * @throws SAXException Any SAX exception, possibly
      *                                  wrapping another exception.
-     * @throws java.io.IOException      An IO exception from the parser,
+     * @throws IOException      An IO exception from the parser,
      *                                  possibly from a byte stream or character stream
      *                                  supplied by the application.
-     * @see org.xml.sax.InputSource
-     * @see #parse(java.lang.String)
+     * @see InputSource
+     * @see #parse(String)
      * @see #setEntityResolver
      * @see #setDTDHandler
      * @see #setContentHandler
@@ -59,29 +60,18 @@ public class FilterImpl extends AbstractXMLFilter {
                 throw new SAXException(err);
             }
         }
+        if (lexicalHandler != null && lexicalHandler != contentHandler) {
+            throw new IllegalStateException("ContentHandler and LexicalHandler must be the same object");
+        }
         SAXSource source = new SAXSource();
         source.setInputSource(input);
         source.setXMLReader(parser);
-        ContentHandlerProxy result = new ContentHandlerProxy();
-        result.setPipelineConfiguration(transformer.getConfiguration().makePipelineConfiguration());
-        result.setUnderlyingContentHandler(contentHandler);
+        SAXDestination result = new SAXDestination(contentHandler);
 
-        if (lexicalHandler != null) {
-            result.setLexicalHandler(lexicalHandler);
-        }
         try {
-            //result.open();
-            result.setOutputProperties(transformer.getOutputProperties());
-            transformer.transform(source, result);
-        } catch (TransformerException err) {
-            Throwable cause = err.getException();
-            if (cause != null && cause instanceof SAXException) {
-                throw (SAXException) cause;
-            } else if (cause != null && cause instanceof IOException) {
-                throw (IOException) cause;
-            } else {
-                throw new SAXException(err);
-            }
+            transformer.applyTemplates(source, result);
+        } catch (SaxonApiException err) {
+            throw new SAXException(err);
         }
 
 
@@ -91,10 +81,10 @@ public class FilterImpl extends AbstractXMLFilter {
      * Get the underlying Transformer. This is a Saxon-specific method that allows the
      * user to set parameters on the transformation, set a URIResolver or ErrorListener, etc.
      *
-     * @since Saxon 7.2
+     * @since Saxon 9.8
      */
 
-    public Transformer getTransformer() {
+    public Xslt30Transformer getTransformer() {
         return transformer;
     }
 

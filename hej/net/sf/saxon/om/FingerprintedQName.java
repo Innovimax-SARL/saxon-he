@@ -227,4 +227,9 @@ public class FingerprintedQName implements NodeName {
             this.equals(other) &&
             this.getPrefix().equals(((NodeName) other).getPrefix());
     }
+
+    @Override
+    public String toString() {
+        return qName.getDisplayName();
+    }
 }

@@ -464,7 +464,7 @@ public class SaxonTransformerFactory extends SAXTransformerFactory {
         if (!(templates instanceof TemplatesImpl)) {
             throw new TransformerConfigurationException("Supplied Templates object was not created using Saxon");
         }
-        TransformerImpl transformer = (TransformerImpl) templates.newTransformer();
+        AbstractTransformerImpl transformer = (AbstractTransformerImpl) templates.newTransformer();
         return transformer.newXMLFilter();
     }
 

@@ -22,6 +22,7 @@ import net.sf.saxon.value.EmptySequence;
 import net.sf.saxon.value.ObjectValue;
 import net.sf.saxon.value.UntypedAtomicValue;
 import org.w3c.dom.Node;
+import org.xml.sax.XMLFilter;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -266,6 +267,14 @@ abstract class AbstractTransformerImpl extends IdentityTransformer {
      */
 
     public abstract Controller getUnderlyingController();
+
+    /**
+     * Create a JAXP XMLFilter which allows this transformation to be added to a SAX pipeline
+     *
+     * @return the transformation in the form of an XMLFilter
+     */
+
+    public abstract XMLFilter newXMLFilter();
 
 
 }

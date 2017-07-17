@@ -12,6 +12,7 @@ import net.sf.saxon.event.*;
 import net.sf.saxon.lib.SerializerFactory;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
+import org.xml.sax.XMLFilter;
 
 import javax.xml.transform.*;
 import javax.xml.transform.sax.TransformerHandler;
@@ -155,6 +156,16 @@ public class StreamingTransformerImpl extends AbstractTransformerImpl {
 
     public Controller getUnderlyingController() {
         return xsltTransformer.getUnderlyingController();
+    }
+
+    /**
+     * Create a JAXP XMLFilter which allows this transformation to be added to a SAX pipeline
+     *
+     * @return the transformation in the form of an XMLFilter
+     */
+
+    public XMLFilter newXMLFilter() {
+        return new StreamingFilterImpl(xsltTransformer);
     }
 
     /**
