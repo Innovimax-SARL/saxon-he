@@ -64,7 +64,7 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
      * @param parent The XOMNodeWrapper that wraps the parent of this node
      * @param index  Position of this node among its siblings
      */
-    protected XOMNodeWrapper(Node node, XOMNodeWrapper parent, int index) {
+    XOMNodeWrapper(Node node, XOMNodeWrapper parent, int index) {
         short kind;
         if (node instanceof Element) {
             kind = Type.ELEMENT;
@@ -117,7 +117,7 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
         if (node == docWrapper.node) return docWrapper;
         XOMNodeWrapper wrapper = new XOMNodeWrapper(node, parent, index);
         wrapper.docWrapper = docWrapper;
-        wrapper.treeInfo = (TreeInfo)docWrapper;
+        wrapper.treeInfo = docWrapper;
         return wrapper;
     }
 
@@ -603,7 +603,7 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
     }
 
     public XOMNodeWrapper getSuccessorElement(XOMNodeWrapper anchor, String uri, String local) {
-        Node stop = (anchor == null ? null : ((XOMNodeWrapper) anchor).node);
+        Node stop = (anchor == null ? null : anchor.node);
         Node next = node;
         do {
             next = getSuccessorNode(next, stop);
@@ -681,124 +681,6 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
         }
     }
 
-    /**
-     * Return an iteration over the nodes reached by the given axis from this
-     * node
-     *
-     * @param axisNumber
-     *            the axis to be used
-     * @return a SequenceIterator that scans the nodes reached by the axis in
-     *         turn.
-     */
-
-    /*public AxisIterator iterateAxis(byte axisNumber) {
-         return iterateAxis(axisNumber, AnyNodeTest.getInstance());
-     } */
-
-    /**
-     * Return an iteration over the nodes reached by the given axis from this
-     * node
-     * <p/>
-     * // * @param axisNumber
-     * the axis to be used
-     *
-     * @param nodeTest A pattern to be matched by the returned nodes
-     * @return a SequenceIterator that scans the nodes reached by the axis in
-     *         turn.
-     */
-
-/*	public AxisIterator iterateAxis(byte axisNumber, NodeTest nodeTest) {
-		// for clarifications, see the W3C specs or:
-		// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/xmlsdk/html/xmrefaxes.asp
-		switch (axisNumber) {
-		case AxisInfo.ANCESTOR:
-			return new AncestorAxisIterator(this, false, nodeTest);
-
-		case AxisInfo.ANCESTOR_OR_SELF:
-			return new AncestorAxisIterator(this, true, nodeTest);
-
-		case AxisInfo.ATTRIBUTE:
-			if (nodeKind != Type.ELEMENT || ((Element) node).getAttributeCount() == 0) {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			} else {
-				return new AttributeAxisIterator(this, nodeTest);
-			}
-
-		case AxisInfo.CHILD:
-			if (hasChildNodes()) {
-				return new ChildAxisIterator(this, true, true, nodeTest);
-			} else {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			}
-
-		case AxisInfo.DESCENDANT:
-			if (hasChildNodes()) {
-				return new DescendantAxisIterator(this, false, false, nodeTest);
-			} else {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			}
-
-		case AxisInfo.DESCENDANT_OR_SELF:
-			if (hasChildNodes()) {
-				return new DescendantAxisIterator(this, true, false, nodeTest);
-			} else {
-				return Navigator.filteredSingleton(this, nodeTest);
-			}
-
-		case AxisInfo.FOLLOWING:
-			if (getParent() == null) {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			} else {
-				return new DescendantAxisIterator(this, false, true, nodeTest);
-			}
-
-		case AxisInfo.FOLLOWING_SIBLING:
-			if (nodeKind == Type.ATTRIBUTE || getParent() == null) {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			} else {
-				return new ChildAxisIterator(this, false, true, nodeTest);
-			}
-
-		case AxisInfo.NAMESPACE:
-			if (nodeKind == Type.ELEMENT) {
-				return NamespaceNode.makeIterator(this, nodeTest);
-			} else {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			}
-
-		case AxisInfo.PARENT:
-			if (getParent() == null) {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			} else {
-				return Navigator.filteredSingleton(getParent(), nodeTest);
-			}
-
-		case AxisInfo.PRECEDING:
-			return new PrecedingAxisIterator(this, false, nodeTest);
-//			return new Navigator.AxisFilter(
-//					new Navigator.PrecedingEnumeration(this, false), nodeTest);
-
-		case AxisInfo.PRECEDING_SIBLING:
-			if (nodeKind == Type.ATTRIBUTE || getParent() == null) {
-				return EmptyIterator.OfNodes.THE_INSTANCE;
-			} else {
-				return new ChildAxisIterator(this, false, false, nodeTest);
-			}
-
-		case AxisInfo.SELF:
-			return Navigator.filteredSingleton(this, nodeTest);
-
-		case AxisInfo.PRECEDING_OR_ANCESTOR:
-			// This axis is used internally by saxon for the xsl:number implementation,
-			// it returns the union of the preceding axis and the ancestor axis.
-			return new PrecedingAxisIterator(this, true, nodeTest);
-//			return new Navigator.AxisFilter(new Navigator.PrecedingEnumeration(
-//					this, true), nodeTest);
-
-		default:
-			throw new IllegalArgumentException("Unknown axis number " + axisNumber);
-		}
-	}  */
     @Override
     protected AxisIterator iterateAttributes(NodeTest nodeTest) {
         return new Navigator.AxisFilter(
@@ -827,24 +709,19 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
     @Override
     protected AxisIterator iterateDescendants(NodeTest nodeTest, boolean includeSelf) {
         if (includeSelf) {
-            return new SteppingNavigator.DescendantAxisIterator(this, true, nodeTest);
+            return new SteppingNavigator.DescendantAxisIterator<XOMNodeWrapper>(
+                    this, true, nodeTest);
 
         } else {
             if (hasChildNodes()) {
-                return new SteppingNavigator.DescendantAxisIterator(this, false, nodeTest);
+                return new SteppingNavigator.DescendantAxisIterator<XOMNodeWrapper>(
+                        this, false, nodeTest);
             } else {
                 return EmptyIterator.OfNodes.THE_INSTANCE;
             }
 
         }
     }
-
-//	private static AxisIterator makeSingleIterator(XOMNodeWrapper wrapper, NodeTest nodeTest) {
-//		if (nodeTest == AnyNodeTest.getInstance() || nodeTest.matches(wrapper))
-//			return SingletonIterator.makeIterator(wrapper);
-//		else
-//			return EmptyIterator.getInstance();
-//	}
 
     /**
      * Get the string value of a given attribute of this node
@@ -992,18 +869,15 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
 
         private XOMNodeWrapper start;
 
-        private NodeInfo current;
         private int cursor;
 
         private NodeTest nodeTest;
-        private int position;
 
-        public AttributeAxisIterator(XOMNodeWrapper start, NodeTest test) {
+        AttributeAxisIterator(XOMNodeWrapper start, NodeTest test) {
             // use lazy instead of eager materialization (performance)
             this.start = start;
             if (test == AnyNodeTest.getInstance()) test = null;
             nodeTest = test;
-            position = 0;
             cursor = 0;
         }
 
@@ -1012,11 +886,7 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
             NodeInfo curr;
             do { // until we find a match
                 curr = advance();
-            }
-            while (curr != null && nodeTest != null && (!nodeTest.matchesNode(curr)));
-
-            if (curr != null) position++;
-            current = curr;
+            } while (curr != null && nodeTest != null && (!nodeTest.matchesNode(curr)));
             return curr;
         }
 
@@ -1048,36 +918,30 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
      */
     private final class ChildAxisIterator implements AxisIterator {
 
-        private XOMNodeWrapper start;
         private XOMNodeWrapper commonParent;
         private int ix;
-        private boolean downwards; // iterate children of start node (not siblings)
         private boolean forwards; // iterate in document order (not reverse order)
 
-        private NodeInfo current;
         private ParentNode par;
         private int cursor;
 
         private NodeTest nodeTest;
-        private int position;
 
         private ChildAxisIterator(XOMNodeWrapper start, boolean downwards, boolean forwards, NodeTest test) {
-            this.start = start;
-            this.downwards = downwards;
             this.forwards = forwards;
 
-            if (test == AnyNodeTest.getInstance()) test = null;
+            if (test == AnyNodeTest.getInstance()) {
+                test = null;
+            }
             nodeTest = test;
-            position = 0;
 
-            commonParent = downwards ? start : (XOMNodeWrapper) start.getParent();
+            commonParent = downwards ? start : start.getParent();
 
             par = (ParentNode) commonParent.node;
             if (downwards) {
                 ix = (forwards ? 0 : par.getChildCount());
             } else {
                 // find the start node among the list of siblings
-//				ix = start.getSiblingPosition();
                 ix = par.indexOf(start.node);
                 if (forwards) ix++;
             }
@@ -1090,11 +954,7 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
             NodeInfo curr;
             do { // until we find a match
                 curr = advance();
-            }
-            while (curr != null && nodeTest != null && (!nodeTest.matchesNode(curr)));
-
-            if (curr != null) position++;
-            current = curr;
+            } while (curr != null && nodeTest != null && (!nodeTest.matchesNode(curr)));
             return curr;
         }
 
@@ -1102,10 +962,14 @@ public class XOMNodeWrapper extends AbstractNodeWrapper implements SiblingCounti
             Node nextChild;
             do {
                 if (forwards) {
-                    if (cursor == par.getChildCount()) return null;
+                    if (cursor == par.getChildCount()) {
+                        return null;
+                    }
                     nextChild = par.getChild(cursor++);
                 } else { // backwards
-                    if (cursor == 0) return null;
+                    if (cursor == 0) {
+                        return null;
+                    }
                     nextChild = par.getChild(--cursor);
                 }
             } while (nextChild instanceof DocType);
