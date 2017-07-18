@@ -22,14 +22,14 @@ public interface SteppingNode<N extends SteppingNode> extends NodeInfo {
      * @return the parent of this node; or null if it is the root of the tree
      */
 
-    public N getParent();
+    N getParent();
 
     /**
      * Get the next sibling of this node
      *
      * @return the next sibling if there is one, or null otherwise
      */
-    public N getNextSibling();
+    N getNextSibling();
 
     /**
      * Get the previous sibling of this node
@@ -37,7 +37,7 @@ public interface SteppingNode<N extends SteppingNode> extends NodeInfo {
      * @return the previous sibling if there is one, or null otherwise
      */
 
-    public N getPreviousSibling();
+    N getPreviousSibling();
 
     /**
      * Get the first child of this node
@@ -45,7 +45,7 @@ public interface SteppingNode<N extends SteppingNode> extends NodeInfo {
      * @return the first child if there is one, or null otherwise
      */
 
-    public N getFirstChild();
+    N getFirstChild();
 
     /**
      * Find the next matching element in document order; that is, the first child element
@@ -60,7 +60,7 @@ public interface SteppingNode<N extends SteppingNode> extends NodeInfo {
      *         within the subtree being navigated
      */
 
-    public N getSuccessorElement(N anchor, String uri, String local);
+    N getSuccessorElement(N anchor, String uri, String local);
 
 }
 

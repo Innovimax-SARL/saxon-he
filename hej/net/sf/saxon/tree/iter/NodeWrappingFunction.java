@@ -19,6 +19,6 @@ import net.sf.saxon.om.NodeInfo;
 
 public interface NodeWrappingFunction<B, T extends NodeInfo> {
 
-    public T wrap(B node);
+    T wrap(B node);
 }
 

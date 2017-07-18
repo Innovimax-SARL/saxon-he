@@ -40,7 +40,7 @@ import java.util.ListIterator;
 
 public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCountingNode {
 
-    protected Object node;          // the JDOM node to which this XPath node is mapped; or a List of
+    protected Object node;          // the JDOM2 node to which this XPath node is mapped; or a List of
     // adjacent text nodes
     protected short nodeKind;
     private JDOM2NodeWrapper parent;     // null means unknown
@@ -54,7 +54,7 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
      * @param parent The NodeWrapper that wraps the parent of this node
      * @param index  Position of this node among its siblings
      */
-    protected JDOM2NodeWrapper(Object node, JDOM2NodeWrapper parent, int index) {
+    private JDOM2NodeWrapper(Object node, JDOM2NodeWrapper parent, int index) {
         this.node = node;
         this.parent = parent;
         this.index = index;
@@ -246,11 +246,12 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
             } else if (obj instanceof Text) {
                 sb.append(((Text) obj).getText());
             } else if (obj instanceof EntityRef) {
-                throw new IllegalStateException("Unexpanded entity in JDOM tree");
+                throw new IllegalStateException("Unexpanded entity in JDOM2 tree");
             } else if (obj instanceof DocType) {
-                // do nothing: can happen in JDOM beta 10
+                //noinspection UnnecessaryContinue
+                continue;
             } else {
-                throw new AssertionError("Unknown JDOM node type");
+                throw new AssertionError("Unknown JDOM2 node type");
             }
         }
     }
@@ -470,12 +471,12 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
         } else {
             descendants = ((Parent) node).getDescendants();
         }
-        NodeWrappingFunction wrappingFunct = new NodeWrappingFunction<Content, NodeInfo>() {
+        NodeWrappingFunction<Content, NodeInfo> wrappingFunct = new NodeWrappingFunction<Content, NodeInfo>() {
             public NodeInfo wrap(Content node) {
                 return makeWrapper(node, getTreeInfo());
             }
         };
-        AxisIterator wrappedDescendants = new DescendantWrappingIterator(descendants, wrappingFunct);
+        AxisIterator wrappedDescendants = new DescendantWrappingIterator<Content>(descendants, wrappingFunct);
 
         if (includeSelf && nodeTest.matchesNode(this)) {
             wrappedDescendants = new PrependAxisIterator(this, wrappedDescendants);
@@ -488,9 +489,11 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
         }
     }
 
-    private static class DescendantWrappingIterator extends NodeWrappingAxisIterator<Object> {
+    private static class DescendantWrappingIterator<N> extends NodeWrappingAxisIterator<N> {
 
-        public DescendantWrappingIterator(Iterator descendantIterator, NodeWrappingFunction<Object, NodeInfo> wrappingFunction) {
+        DescendantWrappingIterator(
+                Iterator<? extends N> descendantIterator,
+                NodeWrappingFunction<? super N, NodeInfo> wrappingFunction) {
             super(descendantIterator, wrappingFunction);
         }
 
@@ -593,7 +596,6 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
             List addl = elem.getAdditionalNamespaces();
             int size = addl.size() + 1;
             NamespaceBinding[] result = (buffer == null || size > buffer.length ? new NamespaceBinding[size] : buffer);
-            NamePool pool = getNamePool();
             Namespace ns = elem.getNamespace();
             String prefix = ns.getPrefix();
             String uri = ns.getURI();
@@ -647,16 +649,16 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
 
     private final class AttributeEnumeration extends AxisIteratorImpl {
 
-        private Iterator atts;
+        private Iterator<Attribute> atts;
         private int ix = 0;
         private JDOM2NodeWrapper start;
 
-        public AttributeEnumeration(JDOM2NodeWrapper start) {
+        AttributeEnumeration(JDOM2NodeWrapper start) {
             this.start = start;
             atts = ((Element) start.node).getAttributes().iterator();
         }
 
-        public NodeInfo next() {
+        public JDOM2NodeWrapper next() {
             if (atts.hasNext()) {
                 return makeWrapper(atts.next(), getTreeInfo(), start, ix++);
             } else {
@@ -676,17 +678,13 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
 
     private final class ChildEnumeration extends AxisIteratorImpl {
 
-        private JDOM2NodeWrapper start;
         private JDOM2NodeWrapper commonParent;
         private ListIterator children;
         private int ix = 0;
-        private boolean downwards;  // iterate children of start node (not siblings)
         private boolean forwards;   // iterate in document order (not reverse order)
 
         public ChildEnumeration(JDOM2NodeWrapper start,
                                 boolean downwards, boolean forwards) {
-            this.start = start;
-            this.downwards = downwards;
             this.forwards = forwards;
 
             if (downwards) {
@@ -744,7 +742,7 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
             }
         }
 
-        public NodeInfo next() {
+        public JDOM2NodeWrapper next() {
             if (forwards) {
                 if (children.hasNext()) {
                     Object nextChild = children.next();

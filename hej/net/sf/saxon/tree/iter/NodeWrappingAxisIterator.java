@@ -12,19 +12,16 @@ import net.sf.saxon.om.NodeInfo;
 import java.util.Iterator;
 
 /**
- * An AxisIterator that wraps a Java Iterator. This is an abstract class, because the Java
- * iterator does not hold enough information to support the getAnother() method, needed to
- * implement the XPath last() function
+ * An AxisIterator that wraps a Java Iterator.
+ * @param <B> the class of the external nodes being wrapped.
  */
 
-public abstract class NodeWrappingAxisIterator<B extends Object>
+public abstract class NodeWrappingAxisIterator<B>
         implements AxisIterator, LookaheadIterator {
 
 
-    private int position = 0;
-    /*@Nullable*/ private NodeInfo current = null;
-    private Iterator<B> base;
-    private NodeWrappingFunction<B, NodeInfo> wrappingFunction;
+    private Iterator<? extends B> base;
+    private NodeWrappingFunction<? super B, NodeInfo> wrappingFunction;
 
 
     /**
@@ -34,18 +31,18 @@ public abstract class NodeWrappingAxisIterator<B extends Object>
      * @param wrappingFunction a function that wraps objects of type B in a Saxon NodeInfo
      */
 
-    public NodeWrappingAxisIterator(Iterator<B> base, NodeWrappingFunction<B, NodeInfo> wrappingFunction) {
+    public NodeWrappingAxisIterator(
+            Iterator<? extends B> base,
+            NodeWrappingFunction<? super B, NodeInfo> wrappingFunction) {
         this.base = base;
-        position = 0;
-        current = null;
         this.wrappingFunction = wrappingFunction;
     }
 
-    public Iterator<B> getBaseIterator() {
+    public Iterator<? extends B> getBaseIterator() {
         return base;
     }
 
-    public NodeWrappingFunction<B, NodeInfo> getNodeWrappingFunction() {
+    public NodeWrappingFunction<? super B, NodeInfo> getNodeWrappingFunction() {
         return wrappingFunction;
     }
 
@@ -59,14 +56,10 @@ public abstract class NodeWrappingAxisIterator<B extends Object>
         while (base.hasNext()) {
             B next = base.next();
             if (!isIgnorable(next)) {
-                current = wrappingFunction.wrap(next);
-                position++;
-                return current;
+                return wrappingFunction.wrap(next);
             }
         }
-        current = null;
-        position = -1;
-        return current;
+        return null;
     }
 
     public void close() {
