@@ -1015,9 +1015,15 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
                 NodeInfo grandParent = parent.getParent();
                 if (!(grandParent instanceof XSLUsePackage)) {
                     bad = true;
-                } else if (((XSLUsePackage) grandParent).getUsedPackage() != modePack) {
-                    bad = true;
-                }
+                } else {
+                    SymbolicName modeName = mode.getSymbolicName();
+                    Component.M usedMode = (Component.M)((XSLUsePackage) grandParent).getUsedPackage().getComponent(modeName);
+                    if (usedMode == null) {
+                        bad = true;
+                    } else if (usedMode.getVisibility() == Visibility.FINAL) {
+                        bad = true;
+                    }
+                } 
             }
             if (bad) {
                 template.compileError("A template rule cannot be added to a mode declared in a used package " +

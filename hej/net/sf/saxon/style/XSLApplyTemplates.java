@@ -56,7 +56,7 @@ public class XSLApplyTemplates extends StyleElement {
 
         AttributeCollection atts = getAttributeList();
 
-        String selectAtt = null;
+        String selectAtt;
 
         for (int a = 0; a < atts.getLength(); a++) {
             String f = atts.getQName(a);
@@ -134,22 +134,16 @@ public class XSLApplyTemplates extends StyleElement {
         // handle sorting if requested
 
         AxisIterator kids = iterateAxis(AxisInfo.CHILD);
-        while (true) {
-            NodeInfo child = kids.next();
-            if (child == null) {
-                break;
-            }
-            if (child instanceof XSLSort) {
-                // no-op
-            } else if (child instanceof XSLWithParam) {
-                // usesParams = true;
-            } else if (child.getNodeKind() == Type.TEXT) {
+        NodeInfo child;
+        while ((child = kids.next()) != null) {
+            if (child.getNodeKind() == Type.TEXT) {
                 // with xml:space=preserve, white space nodes may still be there
                 if (!Whitespace.isWhite(child.getStringValueCS())) {
                     compileError("No character data is allowed within xsl:apply-templates", "XTSE0010");
                 }
-            } else {
-                compileError("Invalid element within xsl:apply-templates", "XTSE0010");
+            } else if (!(child instanceof XSLSort || child instanceof XSLWithParam)){
+                compileError("Invalid element " + Err.wrap(child.getDisplayName(), Err.ELEMENT) +
+                                     " within xsl:apply-templates", "XTSE0010");
             }
         }
 
@@ -166,18 +160,7 @@ public class XSLApplyTemplates extends StyleElement {
         }
 
         select = typeCheck("select", select);
-//        if (getEffectiveVersion() < 30) {
-//            try {
-//                RoleDiagnostic role =
-//                        new RoleDiagnostic(RoleDiagnostic.INSTRUCTION, "xsl:apply-templates/select", 0);
-//                role.setErrorCode("XTTE0520");
-//                select = config.getTypeChecker().staticTypeCheck(select,
-//                        SequenceType.NODE_SEQUENCE,
-//                        false, role, makeExpressionVisitor());
-//            } catch (XPathException err) {
-//                compileError(err);
-//            }
-//        }
+
     }
 
     /**

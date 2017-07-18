@@ -46,17 +46,18 @@ public final class RuleManager {
      */
 
     public RuleManager(StylesheetPackage pack) {
-        this.stylesheetPackage = pack;
-        this.config = pack.getConfiguration();
-        compilerInfo = config.getDefaultXsltCompilerInfo();
-        resetHandlers();
+        this(pack, pack.getConfiguration().getDefaultXsltCompilerInfo());
     }
 
     public RuleManager(StylesheetPackage pack, CompilerInfo compilerInfo) {
         this.stylesheetPackage = pack;
         this.config = pack.getConfiguration();
         this.compilerInfo = compilerInfo;
-        resetHandlers();
+        this.unnamedMode = config.makeMode(Mode.UNNAMED_MODE_NAME, this.compilerInfo);
+        Component c = unnamedMode.makeDeclaringComponent(Visibility.PRIVATE, stylesheetPackage);
+        this.stylesheetPackage.addComponent(c);
+        this.unnamedMode.setRecoveryPolicy(recoveryPolicy);
+        this.modes = new HashMap<StructuredQName, Mode>(5);
     }
 
     /**
@@ -82,7 +83,7 @@ public final class RuleManager {
     /**
      * Set the compiler information specifically.
      *
-     * @param compilerInfo
+     * @param compilerInfo the compiler options in use
      */
     public void setCompilerInfo(CompilerInfo compilerInfo) {
         this.compilerInfo = compilerInfo;
@@ -127,18 +128,6 @@ public final class RuleManager {
     }
 
     /**
-     * Set up a new table of handlers.
-     */
-
-    public void resetHandlers() {
-        unnamedMode = config.makeMode(Mode.UNNAMED_MODE_NAME, compilerInfo);
-        Component c = unnamedMode.makeDeclaringComponent(Visibility.PRIVATE, stylesheetPackage);
-        stylesheetPackage.addComponent(c);
-        unnamedMode.setRecoveryPolicy(recoveryPolicy);
-        modes = new HashMap<StructuredQName, Mode>(5);
-    }
-
-    /**
      * Get the mode object for the unnamed mode
      *
      * @return the unnamed mode
@@ -175,16 +164,11 @@ public final class RuleManager {
             }
             return omniMode;
         }
-        //Integer modekey = new Integer(modeNameCode & 0xfffff);
+
         Mode m = modes.get(modeName);
         if (m == null && createIfAbsent) {
             m = config.makeMode(modeName, compilerInfo);
             m.setRecoveryPolicy(recoveryPolicy);
-//            if (omniMode != null) {
-//                // when creating a specific mode, copy all the rules currently held
-//                // in the omniMode, as these apply to all modes
-//                Mode.copyRules(omniMode, m);
-//            }
             modes.put(modeName, m);
             Component c = m.makeDeclaringComponent(Visibility.PRIVATE, stylesheetPackage);
             stylesheetPackage.addComponent(c);
@@ -269,6 +253,7 @@ public final class RuleManager {
 
     public Rule getTemplateRule(Item item, Mode mode, int min, int max, XPathContext c)
             throws XPathException {
+        // DO NOT DELETE: USED FROM BYTECODE
         if (mode == null) {
             mode = unnamedMode;
         }
@@ -322,19 +307,6 @@ public final class RuleManager {
      * @param presenter the object used to present the output
      */
 
-    public void exportTemplateRules(ExpressionPresenter presenter) throws XPathException {
-        unnamedMode.export(presenter);
-        for (Mode mode : modes.values()) {
-            mode.export(presenter);
-        }
-    }
-
-    /**
-     * Explain (that is, output the expression tree) for all template rules
-     *
-     * @param presenter the object used to present the output
-     */
-
     public void explainTemplateRules(ExpressionPresenter presenter) throws XPathException {
         unnamedMode.explain(presenter);
         for (Mode mode : modes.values()) {
@@ -348,7 +320,6 @@ public final class RuleManager {
      * In this case we know the modes are instances of at least ModeEE
      */
     public void optimizeRules() {
-
         unnamedMode.optimizeRules();
         for (Mode mode : modes.values()) {
             mode.getActivePart().optimizeRules();
