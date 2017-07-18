@@ -209,7 +209,7 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
 
     private static String getStringValue(Object node) {
         if (node instanceof Document) {
-            List children1 = ((Document) node).getContent();
+            List<Content> children1 = ((Document) node).getContent();
             FastStringBuffer sb1 = new FastStringBuffer(FastStringBuffer.C256);
             expandStringValue(children1, sb1);
             return sb1.toString();
@@ -239,10 +239,10 @@ public class JDOM2NodeWrapper extends AbstractNodeWrapper implements SiblingCoun
      * @param list the list containing the nodes
      * @param sb   the StringBuffer to contain the result
      */
-    private static void expandStringValue(List list, FastStringBuffer sb) {
-        for (Object obj : list) {
+    private static void expandStringValue(List<Content> list, FastStringBuffer sb) {
+        for (Content obj : list) {
             if (obj instanceof Element) {
-                sb.append(((Element) obj).getValue());
+                sb.append(obj.getValue());
             } else if (obj instanceof Text) {
                 sb.append(((Text) obj).getText());
             } else if (obj instanceof EntityRef) {
