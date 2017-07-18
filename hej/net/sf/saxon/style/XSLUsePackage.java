@@ -60,6 +60,7 @@ public class XSLUsePackage extends StyleElement {
     /**
      * Get the package to which this xsl:use-package element refers. Assumes that findPackage()
      * has already been called.
+     *
      * @return the package that is referenced.
      */
 
@@ -69,11 +70,11 @@ public class XSLUsePackage extends StyleElement {
 
     /**
      * Get the ranges of package versions this use-package directive will accept.
-     *
+     * <p>
      * <p>This will involve processing the attributes once to derive any ranges declared (and the name of the required package).
      * If no range is defined, the catchall '*' is assumed. </p>
      *
-     * @return  the ranges of versions of the named package that this declaration will accept
+     * @return the ranges of versions of the named package that this declaration will accept
      * @throws XPathException
      */
 
@@ -121,7 +122,7 @@ public class XSLUsePackage extends StyleElement {
                 // no action
             } else {
                 compileError("Child element " + Err.wrap(child.getDisplayName(), Err.ELEMENT) +
-                        " is not allowed as a child of xsl:use-package", "XTSE0010");
+                                     " is not allowed as a child of xsl:use-package", "XTSE0010");
             }
         }
     }
@@ -171,6 +172,7 @@ public class XSLUsePackage extends StyleElement {
 
     /**
      * Get the child xsl:accept elements
+     *
      * @return the list of child xsl:accept elements
      */
 
@@ -186,15 +188,18 @@ public class XSLUsePackage extends StyleElement {
             }
         }
         return acceptors;
-    } ;
+    }
+
+    ;
 
     /**
      * Process all the xsl:override declarations in the xsl:use-package, adding the overriding named components
      * to the list of top-level declarations
-     * @param module the top-level stylesheet module of this package
-     * @param topLevel the list of declarations in this package (to which this method appends)
+     *
+     * @param module    the top-level stylesheet module of this package
+     * @param topLevel  the list of declarations in this package (to which this method appends)
      * @param overrides set of named components for which this xsl:use-package provides an override
-     * (which this method populates).
+     *                  (which this method populates).
      * @throws XPathException in the event of an error.
      */
 
@@ -254,9 +259,9 @@ public class XSLUsePackage extends StyleElement {
      *
      * @param module    the top-level stylesheet module of this package (the using package)
      * @param overrides set of named components for which this xsl:use-package provides an override
-     * (which this method populates). If the xsl:override contains any template rules, then the named
-     * mode will be included in this list, but the individual template rules will not be added to
-     * the top-level list.
+     *                  (which this method populates). If the xsl:override contains any template rules, then the named
+     *                  mode will be included in this list, but the individual template rules will not be added to
+     *                  the top-level list.
      * @throws XPathException in the event of an error.
      */
 
@@ -275,50 +280,53 @@ public class XSLUsePackage extends StyleElement {
                 AxisIterator overridings = override.iterateAxis(AxisInfo.CHILD, NodeKindTest.ELEMENT);
                 NodeInfo overridingDeclaration;
                 while ((overridingDeclaration = overridings.next()) != null) {
-                    //if (overridingDeclaration instanceof StylesheetComponent) {
-                        if (overridingDeclaration instanceof XSLTemplate && overridingDeclaration.getAttributeValue("", "match") != null) {
-                            StructuredQName[] modeNames = ((XSLTemplate)overridingDeclaration).getModeNames();
-                            for (StructuredQName modeName : modeNames) {
-                                SymbolicName symbolicName = new SymbolicName(StandardNames.XSL_MODE, modeName);
-                                overrides.add(symbolicName);
-                                Mode newBaseMode = ruleManager.obtainMode(modeName, false);
-                                if (newBaseMode == null) {
-                                    overriddenModes.add(symbolicName);
-                                    Component usedComponent = usedPackage.getComponent(symbolicName);
-                                    if (usedComponent == null) {
-                                        ((StyleElement) overridingDeclaration).compileError(
-                                            "Mode " + modeName.getDisplayName() + " is not defined in the used package");
-                                        continue;
-                                    }
-                                    Mode usedMode = (Mode)usedComponent.getActor();
-                                    if (usedComponent.getVisibility() != Visibility.PUBLIC) {
-                                        ((StyleElement) overridingDeclaration).compileError(
-                                            "Cannot override template rules in mode " + modeName.getDisplayName() +
-                                                ", because the mode is not public", "XTSE3060");
-                                        continue;
-                                    }
-                                    SimpleMode overridingMode = new SimpleMode(modeName);
-                                    CompoundMode newCompoundMode = new CompoundMode(usedMode, overridingMode);
-                                    ruleManager.registerMode(newCompoundMode);
-                                    Component newModeComponent =
-                                        newCompoundMode.makeDeclaringComponent(Visibility.PUBLIC, thisPackage);
-                                    for (XSLAccept acceptor : acceptors) {
-                                        acceptor.acceptComponent(newModeComponent);
-                                    }
-                                    if (newModeComponent.getVisibility() != Visibility.PUBLIC) {
-                                        ((StyleElement) overridingDeclaration).compileError(
-                                            "Cannot override template rules in mode " + modeName.getDisplayName() +
-                                                ", because the mode (as defined in xsl:accept) is not public", "XTSE3060");
-                                        continue;
-                                    }
-                                    thisPackage.getComponentIndex().put(symbolicName, newModeComponent);
-                                    //compoundMode.setBaseComponent(baseComponent);
-                                    //base.allocateAllBindingSlots(module.getStylesheetPackage());
-                                    newCompoundMode.allocateAllBindingSlots(thisPackage);
-                                }
+                    if (overridingDeclaration instanceof XSLTemplate && overridingDeclaration.getAttributeValue("", "match") != null) {
+                        StructuredQName[] modeNames = ((XSLTemplate) overridingDeclaration).getModeNames();
+                        for (StructuredQName modeName : modeNames) {
+                            SymbolicName symbolicName = new SymbolicName(StandardNames.XSL_MODE, modeName);
+                            overrides.add(symbolicName);
+                            Component.M derivedComponent = (Component.M)thisPackage.getComponent(symbolicName);
+
+                            if (derivedComponent == null) {
+                                ((StyleElement) overridingDeclaration).compileError(
+                                        "Mode " + modeName.getDisplayName() + " is not defined in the used package");
+                                continue;
                             }
+
+                            if (derivedComponent.getDeclaringPackage() == thisPackage) {
+                                ((StyleElement) overridingDeclaration).compileError(
+                                        "Mode " + modeName.getDisplayName() +
+                                                " cannot be overridden because it is local to this package", "XTSE3440");
+                                continue;
+                            }
+
+                            Component.M usedComponent = (Component.M)derivedComponent.getBaseComponent();
+
+                            if (derivedComponent.getVisibility() == Visibility.FINAL || usedComponent.getVisibility() == Visibility.FINAL) {
+                                ((StyleElement) overridingDeclaration).compileError(
+                                        "Cannot define overriding template rules in mode " + modeName.getDisplayName() +
+                                                " because it has visibility=final", "XTSE3060");
+                                continue;
+                            }
+
+                            Mode usedMode = usedComponent.getActor();
+                            if (usedComponent.getVisibility() != Visibility.PUBLIC) {
+                                ((StyleElement) overridingDeclaration).compileError(
+                                        "Cannot override template rules in mode " + modeName.getDisplayName() +
+                                                ", because the mode is not public", "XTSE3060");
+                                continue;
+                            }
+                            if (derivedComponent.getActor() == usedMode) {
+                                SimpleMode overridingMode = new SimpleMode(modeName);
+                                CompoundMode newCompoundMode = new CompoundMode(usedMode, overridingMode);
+                                newCompoundMode.setDeclaringComponent(derivedComponent);
+                                ruleManager.registerMode(newCompoundMode);
+                                derivedComponent.setActor(newCompoundMode);
+                                newCompoundMode.allocateAllBindingSlots(thisPackage);
+                            }       // TODO: surely too early to allocate slots, until we've done all the overrides
                         }
-                    //}
+                    }
+
                 }
             }
         }

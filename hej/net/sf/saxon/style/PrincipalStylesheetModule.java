@@ -1429,7 +1429,7 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
                             HashMap<SymbolicName, Component> componentIndex = getStylesheetPackage().getComponentIndex();
                             Component existing = componentIndex.get(sName);
                             if (existing != null && existing.getDeclaringPackage() != getStylesheetPackage()) {
-                                if (element instanceof XSLTemplate) {
+                                if (element instanceof XSLTemplate && !(element.getParent() instanceof XSLOverride)) {
                                     element.compileError("A template rule cannot be added to a mode declared in a used package " +
                                                                   "unless the xsl:template declaration appears within an xsl:override child of the appropriate xsl:use-package element",
                                                           "XTSE3050");

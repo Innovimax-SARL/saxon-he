@@ -57,6 +57,7 @@ public abstract class Mode extends Actor {
     public boolean mustBeTyped = false;
     public boolean mustBeUntyped = false;
     boolean hasRules = false;
+    boolean bindingSlotsAllocated = false;
 
     private Set<? extends Accumulator> accumulators;
 

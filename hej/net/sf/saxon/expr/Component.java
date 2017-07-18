@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class Component {
 
-    private Actor actor;
+    protected Actor actor;
     private Visibility visibility;
     private List<ComponentBinding> bindings = new ArrayList<ComponentBinding>();
     private StylesheetPackage containingPackage;
@@ -242,6 +242,10 @@ public class Component {
         @Override
         public Mode getActor() {
             return (Mode)super.getActor();
+        }
+
+        public void setActor(Mode m) {
+            this.actor = m;
         }
     }
 

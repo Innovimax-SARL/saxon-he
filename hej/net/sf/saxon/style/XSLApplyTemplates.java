@@ -114,21 +114,19 @@ public class XSLApplyTemplates extends StyleElement {
                 compileError("The #unnamed mode must be explicitly declared in an xsl:mode declaration", "XTSE3085");
             }
 
-            if (psm.isDeclaredModes() && psm.getRuleManager().obtainMode(modeName, false) == null) {
-                compileError("Mode name " + modeName.getDisplayName() + " must be explicitly declared in an xsl:mode declaration", "XTSE3085");
-            }
             SymbolicName sName = new SymbolicName(StandardNames.XSL_MODE, modeName);
             StylesheetPackage containingPackage = decl.getSourceElement().getContainingPackage();
             HashMap<SymbolicName, Component> componentIndex = containingPackage.getComponentIndex();
             // see if there is a mode with this name in a used package
-            if (!modeName.equals(Mode.UNNAMED_MODE_NAME)) {
-                Component existing = componentIndex.get(sName);
-                if (existing != null && existing.getDeclaringPackage() != containingPackage) {
+            Component existing = componentIndex.get(sName);
+                if (existing != null) {
                     mode = (Mode)existing.getActor();
-
                 }
-            }
+
             if (mode == null) {
+                if (psm.isDeclaredModes()) {
+                    compileError("Mode name " + modeName.getDisplayName() + " must be explicitly declared in an xsl:mode declaration", "XTSE3085");
+                }
                 mode = psm.getRuleManager().obtainMode(modeName, true);
             }
         }

@@ -151,11 +151,14 @@ public class CompoundMode extends Mode {
      */
 
     public void allocateAllBindingSlots(final StylesheetPackage pack) {
-        List<ComponentBinding> baseBindings = base.getDeclaringComponent().getComponentBindings();
-        List<ComponentBinding> newBindings = new ArrayList<ComponentBinding>(baseBindings);
-        Component comp = getDeclaringComponent();
-        comp.setComponentBindings(newBindings);
-        SimpleMode.forceAllocateAllBindingSlots(pack, overrides, newBindings);
+        if (!bindingSlotsAllocated) {
+            List<ComponentBinding> baseBindings = base.getDeclaringComponent().getComponentBindings();
+            List<ComponentBinding> newBindings = new ArrayList<ComponentBinding>(baseBindings);
+            Component comp = getDeclaringComponent();
+            comp.setComponentBindings(newBindings);
+            SimpleMode.forceAllocateAllBindingSlots(pack, overrides, newBindings);
+            bindingSlotsAllocated = true;
+        }
     }
 
     /**

@@ -937,8 +937,9 @@ public class SimpleMode extends Mode {
      */
 
     public void allocateAllBindingSlots(final StylesheetPackage pack) {
-        if (getDeclaringComponent().getDeclaringPackage() == pack) {
+        if (getDeclaringComponent().getDeclaringPackage() == pack && !bindingSlotsAllocated) {
             forceAllocateAllBindingSlots(pack, this, getDeclaringComponent().getComponentBindings());
+            bindingSlotsAllocated = true;
         }
     }
 
@@ -961,12 +962,7 @@ public class SimpleMode extends Mode {
             throw new AssertionError(e);
         }
     }
-
-    public void incrementalSlotAllocation(TemplateRule rule) throws XPathException {
-        allocateBindingSlotsRecursive((StylesheetPackage) getPackageData(), this, rule.getBody() ,getDeclaringComponent().getComponentBindings());
-    }
-
-
+    
     /**
      * Compute the streamability of all template rules. No action in Saxon-HE.
      */
