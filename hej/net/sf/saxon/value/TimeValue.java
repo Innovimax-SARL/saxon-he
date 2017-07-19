@@ -156,7 +156,7 @@ public final class TimeValue extends CalendarValue implements Comparable {
         }
 
         int tz = 0;
-
+        boolean negativeTz = false;
         int state = 0;
         while (tok.hasMoreElements()) {
             if (state == 9) {
@@ -208,9 +208,8 @@ public final class TimeValue extends CalendarValue implements Comparable {
                 if (tz > 14 * 60) {
                     return badTime("timezone hour is out of range", s);
                 }
-                //if (tz > 12 * 60) return badTime("Because of Java limitations, Saxon currently limits the timezone to +/- 12 hours");
                 if ("-".equals(delim)) {
-                    tz = -tz;
+                    negativeTz = true;
                 }
             } else if (":".equals(delim)) {
                 if (state != 2) {
@@ -229,10 +228,11 @@ public final class TimeValue extends CalendarValue implements Comparable {
                 if (tzminute > 59) {
                     return badTime("timezone minute is out of range", s);
                 }
-                if (tz < 0) {
-                    tzminute = -tzminute;
-                }
+
                 tz += tzminute;
+                if (negativeTz) {
+                    tz = -tz;
+                }
                 tv.setTimezoneInMinutes(tz);
             } else {
                 return badTime("timezone format is incorrect", s);
