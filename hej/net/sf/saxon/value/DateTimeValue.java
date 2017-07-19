@@ -357,7 +357,7 @@ public final class DateTimeValue extends CalendarValue implements Comparable {
         }
 
         int tz = 0;
-
+        boolean negativeTz = false;
         int state = 0;
         while (tok.hasMoreElements()) {
             if (state == 9) {
@@ -417,7 +417,7 @@ public final class DateTimeValue extends CalendarValue implements Comparable {
                 tz *= 60;
 
                 if ("-".equals(delim)) {
-                    tz = -tz;
+                    negativeTz = true;
                 }
 
             } else if (":".equals(delim)) {
@@ -437,13 +437,13 @@ public final class DateTimeValue extends CalendarValue implements Comparable {
                 if (tzminute > 59) {
                     return badDate("Timezone minute is out of range", s);
                 }
-                if (tz < 0) {
-                    tzminute = -tzminute;
-                }
                 if (Math.abs(tz) == 14 * 60 && tzminute != 0) {
                     return badDate("Timezone is out of range (-14:00 to +14:00)", s);
                 }
                 tz += tzminute;
+                if (negativeTz) {
+                    tz = -tz;
+                }
                 dt.setTimezoneInMinutes(tz);
             } else {
                 return badDate("Timezone format is incorrect", s);
