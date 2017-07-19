@@ -460,6 +460,52 @@ namespace Saxon.Api
 
     }
 
+
+    /// <summary>
+    /// The class XdmExternalObject represents an XDM item that wraps an external .NET object.
+    /// As such, it is outside the scope of the XDM specification (but permitted as an extension).
+    /// 
+    /// </summary>
+    [Serializable]
+    public class XdmExternalObjectValue : XdmItem
+    {
+
+        /// <summary>
+        /// Constructor to create an XdmExternalObject that wraps a supplied .Net object
+        /// </summary>
+        /// <param name="o">the supplied .NET object</param>
+        public XdmExternalObjectValue(object o) {
+            value = new net.sf.saxon.value.ObjectValue(o);
+        }
+
+        /// <summary>
+        /// Determine whether the item is an atomic value
+        /// </summary>
+        /// <returns>
+        /// false (the item is not an atomic value)
+        /// </returns>
+        public override bool IsAtomic()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Get the wrapped .NET object
+        /// </summary>
+        /// <returns>the wrapped object</returns>
+        public object GetExternalObject() {
+            return ((net.sf.saxon.value.ObjectValue)value).getObject();
+        }
+
+        /// <summary>
+        /// Get the result of converting the external value to a string.
+        /// </summary>
+        /// <returns>the result of applying ToString() to the wrapped external object</returns>
+        public override string ToString() {
+            return GetExternalObject().ToString();
+        }
+    }
+
     /// <summary inherits="XdmItem">
     /// The class <c>XdmAtomicValue</c> represents an item in an XPath 2.0 sequence
     /// that is an atomic value. The value may belong to any of the 19 primitive types
