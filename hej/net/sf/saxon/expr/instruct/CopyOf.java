@@ -135,16 +135,6 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
     }
 
     /**
-     * Set the "saxon:read-once" optimization mode
-     *
-     * @param b true to enable the optimization
-     */
-
-    //public void setReadOnce(boolean b) {
-//        readOnce = b;
-//    }
-
-    /**
      * Set whether line numbers are to be copied from the source to the result.
      * Default is false.
      *
@@ -255,7 +245,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
      * Copy an expression. This makes a deep copy.
      *
      * @return the copy of the original expression
-     * @param rebindings
+     * @param rebindings information about variables whose bindings need to be replaced
      */
 
     /*@NotNull*/
@@ -477,7 +467,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
         if (copyAccumulators) {
             fsb.append('m');
         }
-        if (fsb.length() > 0) {
+        if (!fsb.isEmpty()) {
             out.emitAttribute("flags", fsb.toString());
         }
         getSelect().export(out);
@@ -618,6 +608,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
                         source.copy(eval, copyOptions, getLocation());
                         if (copyLineNumbers) {
                             eval = savedReceiver;
+                            assert eval != null;
                             eval.setPipelineConfiguration(savedPipe);
                         }
                         break;
@@ -690,6 +681,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
                         source.copy(val, copyOptions, getLocation());
                         if (copyLineNumbers) {
                             val = savedReceiver;
+                            assert val != null;
                             val.setPipelineConfiguration(savedPipe);
                         }
 //                        if (val != out) {

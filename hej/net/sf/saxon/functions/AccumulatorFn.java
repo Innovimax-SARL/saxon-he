@@ -21,19 +21,19 @@ import net.sf.saxon.type.Type;
  */
 public abstract class AccumulatorFn extends SystemFunction {
 
-    public enum Phase {AFTER, BEFORE};
+    public enum Phase {AFTER, BEFORE}
 
     public abstract Phase getPhase();
 
 
     private Sequence getAccumulatorValue(String name, Phase phase, XPathContext context) throws XPathException {
-        StructuredQName qName = null;
+        StructuredQName qName;
             try {
                 qName = StructuredQName.fromLexicalQName(name, false, true, getRetainedStaticContext());
             } catch (XPathException err) {
                 throw new XPathException("Invalid accumulator name: " + err.getMessage(), "XTDE3340", context);
             }
-        AccumulatorRegistry registry = (AccumulatorRegistry) getRetainedStaticContext().getPackageData().getAccumulatorRegistry();
+        AccumulatorRegistry registry = getRetainedStaticContext().getPackageData().getAccumulatorRegistry();
         Accumulator accumulator = registry == null ? null : registry.getAccumulator(qName);
         if (accumulator == null) {
             throw new XPathException("Accumulator " + name + " has not been declared", "XTDE3340");
@@ -60,11 +60,9 @@ public abstract class AccumulatorFn extends SystemFunction {
         if (!accumulator.isUniversallyApplicable() && !context.getController().getAccumulatorManager().isApplicable(root, accumulator)) {
             throw new XPathException("Accumulator " + name + " is not applicable to the current document", "XTDE3362");
         }
-        AccumulatorManager manager = (AccumulatorManager)context.getController().getAccumulatorManager();
+        AccumulatorManager manager = context.getController().getAccumulatorManager();
         IAccumulatorData data = manager.getAccumulatorData(root, accumulator, context);
-        Sequence seq = data.getValue((NodeInfo) node, phase == Phase.AFTER);
-        //System.err.println(phase == phase.AFTER ? "AFTER: " : "BEFORE: " + seq);
-        return seq;
+        return data.getValue((NodeInfo) node, phase == Phase.AFTER);
     }
 
     /**

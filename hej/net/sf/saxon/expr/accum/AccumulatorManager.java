@@ -140,23 +140,5 @@ public class AccumulatorManager {
         map.put(acc, accData);
     }
 
-    /**
-     * Copy the accumulator data for a subtree (unstreamed) when making a virtual copy of the subtree
-     * @param item the root of the subtree
-     * @param vc the virtual copy being created
-     * @throws XPathException
-     */
-
-    public void copyAccumulatorData(NodeInfo item, VirtualCopy vc) throws XPathException {
-        // TODO: this only copies the accumulators that have actually been evaluated on the original tree.
-        // We also need to (virtually?) copy the accumulators that have not been evaluated, but which might be.
-        TreeInfo source = item.getTreeInfo();
-        Map<Accumulator, IAccumulatorData> map = accumulatorDataIndex.get(source);
-        for (IAccumulatorData original : map.values()) {
-            VirtualAccumulatorData vad = new VirtualAccumulatorData(original);
-            addAccumulatorData(vc.getTreeInfo(), original.getAccumulator(), vad);
-        }
-    }
-
 
 }

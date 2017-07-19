@@ -7,7 +7,6 @@
 
 package net.sf.saxon.functions;
 
-import net.sf.saxon.expr.accum.AccumulatorManager;
 import net.sf.saxon.expr.*;
 import net.sf.saxon.expr.instruct.CopyOf;
 import net.sf.saxon.lib.Validation;
@@ -43,8 +42,6 @@ public class CopyOfFn extends SystemFunction {
             } else {
                 VirtualCopy vc = VirtualCopy.makeVirtualCopy((NodeInfo) item);
                 vc.getTreeInfo().setCopyAccumulators(true);
-                AccumulatorManager manager = context.getController().getAccumulatorManager();
-                manager.copyAccumulatorData((NodeInfo) item, vc);
                 // TODO: set the base URI
                 return vc;
             }
