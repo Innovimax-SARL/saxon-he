@@ -13,6 +13,7 @@ import net.sf.saxon.om.AtomicArray;
 import net.sf.saxon.om.SequenceTool;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.trans.packages.PackageLibrary;
 import net.sf.saxon.value.AtomicValue;
 
 import javax.xml.transform.Source;
@@ -35,6 +36,7 @@ public class XsltProcessor extends SaxonCAPI {
 
     private XsltExecutable executable = null;
     private List<XdmNode> xslMessages = new ArrayList<XdmNode>();
+    private Set<File> packagesToLoad = new HashSet<>();
 
     /**
      * Constructor to initialise XsltProcessor with processor and license flag
@@ -104,13 +106,13 @@ public class XsltProcessor extends SaxonCAPI {
     }
 
     /**
-     * Save this compiled package to filestore.
+     * Compile package from source file and save resulting sef to file store.
      *
      * @param cwd      - current working directory
-     * @param xsl - File name of the stylsheet
+     * @param xsl - File name of the stylesheet
      * @param outFilename - the file to which the compiled package should be saved
      */
-    public void saveFromFile(String cwd, String xsl, String outFilename){
+    public void compileFromFileAndSave(String cwd, String xsl, String outFilename){
         XsltCompiler compiler = processor.newXsltCompiler();
         try {
             Source source = resolveFileToSource(cwd, xsl);
@@ -124,13 +126,13 @@ public class XsltProcessor extends SaxonCAPI {
 
 
     /**
-     * Save this compiled package to filestore.
+     * Compile package from string and save resulting sef to file store.
      *
      * @param cwd      - current working directory
      * @param str - File name of the stylsheet
      * @param filename - the file to which the compiled package should be saved
      */
-    public void saveFromString(String cwd, String str, String filename){
+    public void compileFromStringAndSave(String cwd, String str, String filename){
 
         XsltCompiler compiler = processor.newXsltCompiler();
         try {
@@ -143,13 +145,13 @@ public class XsltProcessor extends SaxonCAPI {
     }
 
     /**
-     * Save this compiled package to filestore.
+     * Compile package from Xdm node and save resulting sef to file store.
      *
      * @param cwd      - current working directory
      * @param obj -
      * @param filename - the file to which the compiled package should be saved
      */
-    public void saveFromXdmNode(String cwd, Object obj, String filename) throws SaxonApiException {
+    public void compileFromXdmNodeAndSave(String cwd, Object obj, String filename) throws SaxonApiException {
 
         XsltCompiler compiler = processor.newXsltCompiler();
 
@@ -170,6 +172,7 @@ public class XsltProcessor extends SaxonCAPI {
 
 
 
+
     /**
      * Compile the stylesheet from file  for use later
      *
@@ -183,6 +186,9 @@ public class XsltProcessor extends SaxonCAPI {
             clearExceptions();
             XsltCompiler compiler = processor.newXsltCompiler();
             executable = null;
+            if(packagesToLoad.size()>0) {
+                compilePackages(compiler);
+            }
             Source source = resolveFileToSource(cwd, filename);
 
             compiler.setErrorListener(errorListener);
@@ -222,6 +228,9 @@ public class XsltProcessor extends SaxonCAPI {
 
         compiler.setErrorListener(errorListener);
         try {
+            if(packagesToLoad.size()>0) {
+                compilePackages(compiler);
+            }
             executable = compiler.compile(source);
             return executable;
         } catch (SaxonApiException ex) {
@@ -256,6 +265,9 @@ public class XsltProcessor extends SaxonCAPI {
 
         compiler.setErrorListener(errorListener);
         try {
+            if(packagesToLoad.size()>0) {
+                compilePackages(compiler);
+            }
             executable = compiler.compile(node.asSource());
             return executable;
         } catch (SaxonApiException ex) {
@@ -305,6 +317,9 @@ public class XsltProcessor extends SaxonCAPI {
                 compiler.setSchemaAware(schemaAware);
 
                 try {
+                    if(packagesToLoad.size()>0) {
+                        compilePackages(compiler);
+                    }
                     transformer = compiler.compile(source).load();
                 } catch (SaxonApiException ex) {
                     SaxonCException ex2 = new SaxonCException(ex);
@@ -582,7 +597,9 @@ public class XsltProcessor extends SaxonCAPI {
                 XsltCompiler compiler = processor.newXsltCompiler();
                 source = resolveFileToSource(cwd, stylesheet);
                 compiler.setErrorListener(errorListener);
-
+                if(packagesToLoad.size()>0) {
+                    compilePackages(compiler);
+                }
                 transformer = compiler.compile(source).load();
 
             }
@@ -645,6 +662,9 @@ public class XsltProcessor extends SaxonCAPI {
                 XsltCompiler compiler = processor.newXsltCompiler();
                 source = resolveFileToSource(cwd, stylesheet);
                 compiler.setErrorListener(errorListener);
+                if(packagesToLoad.size()>0) {
+                    compilePackages(compiler);
+                }
                 XsltExecutable tempExecutable =   compiler.compile(source);
                 tempExecutable.getUnderlyingCompiledStylesheet();
                 transformer = tempExecutable.load();
@@ -676,6 +696,56 @@ public class XsltProcessor extends SaxonCAPI {
             throw ex;
         }
     }
+
+
+
+    /***
+     * Compile a library package and link it for use.
+     * <p/>
+     * <p>The source argument identifies an XML file containing an &lt;xsl:package&gt; element. Any packages
+     * on which this package depends must have been made available to the <code>XsltCompiler</code>
+     * by importing them.</p>
+     */
+    public void compilePackages(XsltCompiler compiler) throws SaxonApiException {
+        try {
+            PackageLibrary library = new PackageLibrary(compiler.getUnderlyingCompilerInfo(), packagesToLoad);
+        } catch (XPathException e) {
+            throw new SaxonApiException(e);
+        }
+
+
+    }
+
+
+    /***
+     * File names to XsltPackages stored on filestore are added to a set of packages, which
+     * will be imported later when compiling
+     * @param cwd current working directory
+     * @param packs array of file names of XSLT packages stored in filestore
+     */
+    public void addPackages(String cwd, String [] packs){
+        File filei;
+          for(int i=0;i<packs.length;i++){
+              try {
+                  filei = resolveFile(cwd, packs[i]);
+              } catch (SaxonApiException e) {
+                  System.err.println("Java: Failure in adding packages "+ e.getMessage());
+                  continue;
+              }
+              packagesToLoad.add(filei);
+          }
+    }
+
+
+    /***
+     * Clear set of packages.
+     */
+    public void clearPackages(){
+        packagesToLoad.clear();
+
+    }
+
+
 
     /**
      * One-shot method to do transformation to a Xdm node in memory
@@ -741,7 +811,7 @@ public class XsltProcessor extends SaxonCAPI {
     }
 
     public static void main(String[] args) throws Exception {
-        String cwd2 = "/Users/ond1/work/development/svn/archive/opensource/latest9.7/hec/samples/php/trax";
+        String cwd2 = "/Users/ond1/work/development/svn/archive/opensource/latest9.8/hec/samples/php/trax";
         String cwd = "/Users/ond1/work/development/tests/jeroen";
         // String cwd = "C:///www///html///trax";
         //String cwd = "http://localhost/trax";
@@ -755,7 +825,7 @@ public class XsltProcessor extends SaxonCAPI {
         Processor processor = new Processor(true);
         XsltProcessor cpp = new XsltProcessor(processor);
         //cpp.createStylesheetFromFile(cwd2, "xsl/foo.xsl");
-        cpp.saveFromFile(cwd2, "xsl/foo.xsl", "xsl/foo.xslp");
+        cpp.compileFromFileAndSave(cwd2, "xsl/foo.xsl", "xsl/foo.xslp");
         String resultStr = cpp.transformToString(cwd2, "xml/foo.xml", "xsl/foo.xslp", null, null);
         System.out.println(resultStr);
 

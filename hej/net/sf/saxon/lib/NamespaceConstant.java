@@ -284,7 +284,7 @@ public class NamespaceConstant {
     /**
       * URI for the user extension calls in Saxon/C for C++ and PHP
       */
-     public static final String NATIVE = "http://saxonica.com/ns/native";
+     public static final String PHP = "http://php.net/xsl";
 
     /**
      * URI for interactive XSLT extensions in Saxon-CE and Saxon-JS

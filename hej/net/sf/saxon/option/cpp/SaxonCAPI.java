@@ -8,7 +8,7 @@
 package net.sf.saxon.option.cpp;
 
 
-import com.saxonica.functions.extfn.NativeCall;
+import com.saxonica.functions.extfn.cpp.NativeCall;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.lib.*;
 import net.sf.saxon.om.SequenceTool;
