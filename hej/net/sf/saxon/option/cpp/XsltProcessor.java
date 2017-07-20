@@ -7,6 +7,8 @@
 
 package net.sf.saxon.option.cpp;
 
+import com.saxonica.functions.extfn.cpp.CPPFunctionSet;
+import com.saxonica.functions.extfn.cpp.PHPFunctionSet;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.lib.FeatureKeys;
 import net.sf.saxon.om.AtomicArray;
@@ -45,9 +47,14 @@ public class XsltProcessor extends SaxonCAPI {
      */
     public XsltProcessor(Processor proc) {
         super(proc);
-        schemaAware = processor.getUnderlyingConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
+        Configuration config = processor.getUnderlyingConfiguration();
+               schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
         if (debug) {
             System.err.println("XsltProcessor constructor(proc, l), Processor: " + System.identityHashCode(proc));
+        }
+        if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
         }
     }
 
@@ -70,10 +77,16 @@ public class XsltProcessor extends SaxonCAPI {
      */
     public XsltProcessor(boolean license) {
         processor = new Processor(license);
-        schemaAware = processor.getUnderlyingConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
+        Configuration config = processor.getUnderlyingConfiguration();
+        schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
         if (debug) {
             System.err.println("XsltProcessor(l), Processor: " + System.identityHashCode(processor));
         }
+        if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
+        }
+
     }
 
 
