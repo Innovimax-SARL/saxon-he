@@ -267,7 +267,7 @@ public class GeneralPositionalPattern extends Pattern {
         }
     }
 
-    private int getActualPosition(NodeInfo node, int max) throws XPathException {
+    private int getActualPosition(NodeInfo node, int max) {
         return Navigator.getSiblingPosition(node, nodeTest, max);
     }
 

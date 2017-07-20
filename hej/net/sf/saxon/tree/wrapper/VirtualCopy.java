@@ -20,6 +20,7 @@ import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.tree.util.NamespaceIterator;
 import net.sf.saxon.tree.util.Navigator;
 import net.sf.saxon.type.SchemaType;
+import net.sf.saxon.type.Type;
 
 import javax.xml.transform.SourceLocator;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class VirtualCopy implements NodeInfo {
     protected VirtualCopy parent;
     protected NodeInfo root;        // the node forming the root of the subtree that was copied
     protected VirtualTreeInfo tree;
+    private boolean dropNamespaces = false;
 
     /**
      * Protected constructor: create a virtual copy of a node
@@ -115,6 +117,18 @@ public class VirtualCopy implements NodeInfo {
      */
     public VirtualTreeInfo getTreeInfo() {
         return tree;
+    }
+
+    /**
+     * Say that namespaces in the virtual tree should not be copied from the underlying
+     * tree. The semantics follow the rules for xsl:copy-of with copy-namespaces="no": that
+     * is, the only namespaces that are retained are those explicitly used in element or
+     * attribute nodes.
+     * @param drop true if namespaces are to be dropped
+     */
+
+    public void setDropNamespaces(boolean drop) {
+        this.dropNamespaces = drop;
     }
 
     /**
@@ -552,7 +566,7 @@ public class VirtualCopy implements NodeInfo {
     }
 
     /**
-     * Get all namespace undeclarations and undeclarations defined on this element.
+     * Get all namespace declarations and undeclarations defined on this element.
      *
      * @param buffer If this is non-null, and the result array fits in this buffer, then the result
      *               may overwrite the contents of this array, to avoid the cost of allocating a new array on the heap.
@@ -560,7 +574,7 @@ public class VirtualCopy implements NodeInfo {
      *         this element. For a node other than an element, return null. Otherwise, the returned array is a
      *         sequence of NamespaceBinding objects.
      *         The XML namespace is never included in the list. If the supplied array is larger than required,
-     *         then the first unused entry will be set to -1.
+     *         then the first unused entry will be set to null.
      *         <p/>
      *         <p>For a VirtualCopy, the method needs to return all namespaces that are in scope for
      *         this element, because the virtual copy is assumed to contain copies of all the in-scope
@@ -568,13 +582,39 @@ public class VirtualCopy implements NodeInfo {
      */
 
     public NamespaceBinding[] getDeclaredNamespaces(NamespaceBinding[] buffer) {
-        List<NamespaceBinding> allNamespaces = new ArrayList<NamespaceBinding>(20);
-        Iterator<NamespaceBinding> iter = NamespaceIterator.iterateNamespaces(original);
-        while (iter.hasNext()) {
-            allNamespaces.add(iter.next());
+        if (getNodeKind() == Type.ELEMENT) {
+            if (dropNamespaces) {
+                List<NamespaceBinding> allNamespaces = new ArrayList<NamespaceBinding>(5);
+                String ns = getURI();
+                if (ns.isEmpty()) {
+                    if (getParent() != null && !getParent().getURI().isEmpty()) {
+                        allNamespaces.add(new NamespaceBinding("", ""));
+                    }
+                } else {
+                    allNamespaces.add(new NamespaceBinding(getPrefix(), getURI()));
+                }
+                NodeInfo att;
+                AxisIterator atts = original.iterateAxis(AxisInfo.ATTRIBUTE);
+                while ((att = atts.next()) != null) {
+                    if (att.getURI() != null) {
+                        NamespaceBinding b = new NamespaceBinding(att.getPrefix(), att.getURI());
+                        if (!allNamespaces.contains(b)) {
+                            allNamespaces.add(b);
+                        }
+                    }
+                }
+                return allNamespaces.toArray(new NamespaceBinding[allNamespaces.size()]);
+            } else {
+                List<NamespaceBinding> allNamespaces = new ArrayList<NamespaceBinding>(20);
+                Iterator<NamespaceBinding> iter = NamespaceIterator.iterateNamespaces(original);
+                while (iter.hasNext()) {
+                    allNamespaces.add(iter.next());
+                }
+                return allNamespaces.toArray(new NamespaceBinding[allNamespaces.size()]);
+            }
+        } else {
+            return null;
         }
-        return allNamespaces.toArray(new NamespaceBinding[allNamespaces.size()]);
-        //return original.getDeclaredNamespaces(buffer);
     }
 
     /**

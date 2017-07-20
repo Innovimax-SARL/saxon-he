@@ -1072,10 +1072,9 @@ public final class Navigator {
      * @param max      the maximum number of nodes to be counted
      * @return the number of preceding siblings that satisfy the node test, plus one, unless the
      *         number exceeds max, in which case return some number greater than or equal to max.
-     * @throws net.sf.saxon.trans.XPathException if a dynamic error occurs
      */
 
-    public static int getSiblingPosition(NodeInfo node, NodeTest nodeTest, int max) throws XPathException {
+    public static int getSiblingPosition(NodeInfo node, NodeTest nodeTest, int max) {
         AxisIterator prev = node.iterateAxis(AxisInfo.PRECEDING_SIBLING, nodeTest);
         int count = 1;
         while (prev.next() != null) {

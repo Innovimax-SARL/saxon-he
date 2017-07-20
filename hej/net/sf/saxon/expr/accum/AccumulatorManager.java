@@ -12,6 +12,7 @@ import net.sf.saxon.expr.XPathContextMajor;
 import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.TreeInfo;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.tree.tiny.TinyTree;
 import net.sf.saxon.tree.wrapper.VirtualCopy;
 import net.sf.saxon.tree.wrapper.VirtualTreeInfo;
 
@@ -103,6 +104,9 @@ public class AccumulatorManager {
             VirtualAccumulatorData vad = new VirtualAccumulatorData(originalData);
             map.put(acc, vad);
             return vad;
+        } else if (doc instanceof TinyTree && ((TinyTree)doc).getCopiedFrom() != null) {
+            IAccumulatorData original = getAccumulatorData(((TinyTree) doc).getCopiedFrom().getTreeInfo(), acc, context);
+            return new PathMappedAccumulatorData(original, ((TinyTree) doc).getCopiedFrom());
         } else {
             AccumulatorData d = new AccumulatorData(acc);
             XPathContextMajor c2 = context.newCleanContext();

@@ -346,6 +346,12 @@ public class SaxonErrorCode {
 
     public static final String SXWN9016 = "SXWN9016";
 
+    /**
+     * SXWN9017: saxon:copy-of copying accumulators pointlessly
+     */
+
+    public static final String SXWN9017 = "SXWN9017";
+
 
 }
 

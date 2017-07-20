@@ -2587,6 +2587,33 @@ public abstract class StyleElement extends ElementImpl {
     }
 
     /**
+     * Ask whether this is an instruction that is known to be constructing nodes which
+     * will become children of a parent document or element node, and will not have an
+     * independent existence of their own.
+     * @return true if it is known that this is an instruction that creates nodes that
+     * will immediately be attached to a parent element or document node
+     */
+
+    public boolean isConstructingComplexContent() {
+        if (!isInstruction()) {
+            return false;
+        }
+        NodeInfo parent = getParent();
+        while (true) {
+            if (!(parent instanceof StyleElement && ((StyleElement)parent).isInstruction())) {
+                return false;
+            }
+            if (parent instanceof XSLGeneralVariable) {
+                return ((XSLGeneralVariable)parent).getAttributeValue("as") == null;
+            }
+            if (parent instanceof XSLElement || parent instanceof LiteralResultElement || parent instanceof XSLDocument || parent instanceof XSLCopy) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+    }
+
+    /**
      * Ask whether this element contains a binding for a variable with a given name; and if it does,
      * return the source binding information
      *

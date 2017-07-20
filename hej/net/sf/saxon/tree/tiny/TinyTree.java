@@ -165,6 +165,8 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     private HashMap<String, NodeInfo> idTable;
     protected HashMap<String, String[]> entityTable;
 
+    private NodeInfo copiedFrom;
+
     /**
      * Create a tree with a specified initial size
      *
@@ -283,6 +285,28 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     public PrefixPool getPrefixPool() {
         return prefixPool;
+    }
+
+    /**
+     * Declare that this tree was produced as a copy of another tree, and identify
+     * the root node of that tree
+     * @param copiedFrom the root of the tree from which this one was copied
+     */
+
+    public void setCopiedFrom(NodeInfo copiedFrom) {
+        this.copiedFrom = copiedFrom;
+    }
+
+    /**
+     * Declare that this tree was produced as a copy of another tree, and identify
+     * the root node of that tree
+     *
+     * @return the root of the tree from which this one was copied, or null if this
+     * does not apply
+     */
+
+    public NodeInfo getCopiedFrom() {
+        return this.copiedFrom;
     }
 
     /**

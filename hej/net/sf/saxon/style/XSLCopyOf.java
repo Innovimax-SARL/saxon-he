@@ -12,6 +12,7 @@ import net.sf.saxon.expr.instruct.CopyOf;
 import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.lib.Validation;
 import net.sf.saxon.om.AttributeCollection;
+import net.sf.saxon.trans.SaxonErrorCode;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.SchemaType;
 import net.sf.saxon.value.Whitespace;
@@ -76,6 +77,12 @@ public final class XSLCopyOf extends StyleElement {
             copyAccumulators = false;
         } else {
             copyAccumulators = processBooleanAttribute("copy-accumulators", copyAccumulatorsAtt);
+            if (copyAccumulators && isConstructingComplexContent()) {
+                compileWarning("Copying accumulators is pointless when the copied element "
+                                       + "is immediately attached to a new parent, since that action "
+                                       + "will lose the accumulator values", SaxonErrorCode.SXWN9017);
+                copyAccumulators = false;
+            }
         }
 
         if (copyNamespacesAtt == null) {

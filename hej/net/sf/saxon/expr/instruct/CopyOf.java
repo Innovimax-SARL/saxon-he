@@ -22,6 +22,8 @@ import net.sf.saxon.pattern.NodeKindTest;
 import net.sf.saxon.pattern.NodeTest;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.tree.tiny.TinyBuilder;
+import net.sf.saxon.tree.tiny.TinyNodeImpl;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.tree.wrapper.VirtualCopy;
 import net.sf.saxon.tree.wrapper.VirtualUntypedCopy;
@@ -175,7 +177,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
      * Test whether this expression requires a document or element node
      *
      * @return true if this expression requires the value of the argument to be a document or element node,
-     *         false if there is no such requirement
+     * false if there is no such requirement
      */
 
     public boolean isDocumentOrElementRequired() {
@@ -224,6 +226,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
 
     /**
      * Say whether accumulator values should be copied from the source document
+     *
      * @param copy true if values should be copied
      */
 
@@ -233,6 +236,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
 
     /**
      * Ask whether accumulator values should be copied from the source document
+     *
      * @return true if values should be copied
      */
 
@@ -244,8 +248,8 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
     /**
      * Copy an expression. This makes a deep copy.
      *
-     * @return the copy of the original expression
      * @param rebindings information about variables whose bindings need to be replaced
+     * @return the copy of the original expression
      */
 
     /*@NotNull*/
@@ -395,26 +399,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
 
     /*@NotNull*/
     public Expression optimize(ExpressionVisitor visitor, ContextItemStaticInfo contextItemType) throws XPathException {
-//        if (readOnce) {
-//            Expression optcopy;
-//            if (!(getSelect() instanceof DocumentSorter)) {
-//                optcopy = getConfiguration().obtainOptimizer().optimizeCopy(visitor, contextItemType, getSelect());
-//                if (optcopy != null) {
-//                    optcopy = optcopy.typeCheck(visitor, contextItemType);
-//                    ExpressionTool.copyLocationInfo(this, optcopy);
-//                    return optcopy;
-//                }
-//            }
-//            selectOp.optimize(visitor, contextItemType);
-//            optcopy = getConfiguration().obtainOptimizer().optimizeCopy(visitor, contextItemType, getSelect());
-//            if (optcopy != null) {
-//                ExpressionTool.copyLocationInfo(this, optcopy);
-//                return optcopy;
-//            }
-//        } else {
-            selectOp.optimize(visitor, contextItemType);
-//        }
-
+        selectOp.optimize(visitor, contextItemType);
         if (Literal.isEmptySequence(getSelect())) {
             return getSelect();
         }
@@ -446,9 +431,6 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
         if (rejectDuplicateAttributes) {
             fsb.append('a');
         }
-//        if (readOnce) {
-//            fsb.append('o');
-//        }
         if (validating) {
             fsb.append('v');
         }
@@ -501,9 +483,9 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
      * @param pathMap        the PathMap to which the expression should be added
      * @param pathMapNodeSet the PathMapNodeSet to which the paths embodied in this expression should be added
      * @return the pathMapNodeSet representing the points in the source document that are both reachable by this
-     *         expression, and that represent possible results of this expression. For an expression that does
-     *         navigation, it represents the end of the arc in the path map that describes the navigation route. For other
-     *         expressions, it is the same as the input pathMapNode.
+     * expression, and that represent possible results of this expression. For an expression that does
+     * navigation, it represents the end of the arc in the path map that describes the navigation route. For other
+     * expressions, it is the same as the input pathMapNode.
      */
 
     public PathMap.PathMapNodeSet addToPathMap(PathMap pathMap, PathMap.PathMapNodeSet pathMapNodeSet) {
@@ -527,178 +509,212 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
 
     public TailCall processLeavingTail(XPathContext context) throws XPathException {
 
-        Controller controller = context.getController();
         SequenceReceiver out = context.getReceiver();
-        boolean copyBaseURI = out.getSystemId() == null;
-        // if the copy is being attached to an existing parent, it inherits the base URI of the parent
 
-        int copyOptions = CopyOptions.TYPE_ANNOTATIONS;
-        if (copyNamespaces) {
-            copyOptions |= CopyOptions.ALL_NAMESPACES;
-        }
         if (copyAccumulators) {
-            copyOptions |= CopyOptions.ACCUMULATORS;
-        }
-        if (copyForUpdate) {
-            copyOptions |= CopyOptions.FOR_UPDATE;
-        }
-        //int whichNamespaces = (copyNamespaces ? NodeInfo.ALL_NAMESPACES : NodeInfo.NO_NAMESPACES);
-
-        SequenceIterator iter = getSelect().iterate(context);
-        Item item;
-        while ((item = iter.next()) != null) {
-            if (item instanceof NodeInfo) {
-                NodeInfo source = (NodeInfo) item;
-                int kind = source.getNodeKind();
-                if (requireDocumentOrElement &&
-                        !(kind == Type.ELEMENT || kind == Type.DOCUMENT)) {
-                    XPathException e = new XPathException("Operand of validate expression must be a document or element node");
-                    e.setXPathContext(context);
-                    e.setErrorCode("XQTY0030");
-                    throw e;
-                }
-                final Configuration config = controller.getConfiguration();
-                switch (kind) {
-
-                    case Type.ELEMENT: {
-                        Receiver eval = out;
-                        if (validating) {
-                            ParseOptions options = new ParseOptions();
-                            options.setSchemaValidationMode(validation);
-                            SchemaType type = schemaType;
-                            if (type == null) {
-                                // Bug 3062
-                                String xsitype = source.getAttributeValue(NamespaceConstant.SCHEMA_INSTANCE, "type");
-                                if (xsitype != null) {
-                                    StructuredQName typeName;
-                                    try {
-                                        typeName = StructuredQName.fromLexicalQName(
-                                                xsitype,
-                                                true,
-                                                false,
-                                                new InscopeNamespaceResolver(source));
-                                    } catch (XPathException e) {
-                                        throw new XPathException("Invalid QName in xsi:type attribute of element being validated: " + xsitype, "XTTE1510");
-                                    }
-                                    type = config.getSchemaType(typeName);
-                                    if (type == null) {
-                                        throw new XPathException("Unknown xsi:type in element being validated: " + xsitype, "XTTE1510");
-                                    }
-                                }
-                            }
-                            options.setTopLevelType(type);
-                            options.setTopLevelElement(NameOfNode.makeName(source).getStructuredQName());
-                            options.setErrorListener(context.getErrorListener());
-                            config.prepareValidationReporting(context, options);
-                            eval = config.getElementValidator(out, options, getLocation());
-                        }
-                        if (copyBaseURI) {
-                            eval.setSystemId(computeNewBaseUri(source, getStaticBaseURIString()));
-                        }
-
-                        Receiver savedReceiver = null;
-                        PipelineConfiguration savedPipe = null;
-                        if (copyLineNumbers) {
-                            savedReceiver = eval;
-                            PipelineConfiguration pipe = eval.getPipelineConfiguration();
-                            savedPipe = new PipelineConfiguration(pipe);
-                            LocationCopier copier = new LocationCopier(false);
-                            pipe.setComponent(CopyInformee.class.getName(), copier);
-                        }
-                        source.copy(eval, copyOptions, getLocation());
-                        if (copyLineNumbers) {
-                            eval = savedReceiver;
-                            assert eval != null;
-                            eval.setPipelineConfiguration(savedPipe);
-                        }
-                        break;
+            // Try to create a virtual copy if we can. This is cheaper
+            if (mustPush()) {
+                // This typically happens with the combination copy-accumulators=yes, validation=strict
+                // Test case accumulators-070
+                // We have to create a physical copy because of the validation requirement, but this makes
+                // it difficult to copy the accumulator values.
+                SequenceIterator iter = getSelect().iterate(context);
+                Item item;
+                while ((item = iter.next()) != null) {
+                    if (item instanceof NodeInfo) {
+                        TinyBuilder builder = new TinyBuilder(out.getPipelineConfiguration());
+                        builder.open();
+                        copyOneNode(context, new TreeReceiver(builder), (NodeInfo)item, CopyOptions.ALL_NAMESPACES);
+                        builder.close();
+                        TinyNodeImpl copy = (TinyNodeImpl)builder.getCurrentRoot();
+                        copy.getTree().setCopiedFrom((NodeInfo)item);
+                        out.append(copy);
+                    } else {
+                        out.append(item);
                     }
-                    case Type.ATTRIBUTE:
-                        if (schemaType != null && schemaType.isComplexType()) {
-                            XPathException e = new XPathException("When copying an attribute with schema validation, the requested type must not be a complex type");
-                            e.setLocation(getLocation());
-                            e.setXPathContext(context);
-                            e.setErrorCode("XTTE1535");
-                            throw dynamicError(getLocation(), e, context);
-                        }
-                        try {
-                            copyAttribute(source, (SimpleType) schemaType, validation, this, context, rejectDuplicateAttributes);
-                        } catch (NoOpenStartTagException err) {
-                            XPathException e = new XPathException(err.getMessage());
-                            e.setLocation(getLocation());
-                            e.setXPathContext(context);
-                            e.setErrorCodeQName(err.getErrorCodeQName());
-                            throw dynamicError(getLocation(), e, context);
-                        }
-                        break;
-                    case Type.TEXT:
-                        out.characters(source.getStringValueCS(), getLocation(), 0);
-                        break;
-
-                    case Type.PROCESSING_INSTRUCTION:
-                        if (copyBaseURI) {
-                            out.setSystemId(source.getBaseURI());
-                        }
-                        out.processingInstruction(source.getDisplayName(), source.getStringValueCS(), getLocation(), 0);
-                        break;
-
-                    case Type.COMMENT:
-                        out.comment(source.getStringValueCS(), getLocation(), 0);
-                        break;
-
-                    case Type.NAMESPACE:
-                        try {
-                            source.copy(out, 0, getLocation());
-                        } catch (NoOpenStartTagException err) {
-                            XPathException e = new XPathException(err.getMessage());
-                            e.setXPathContext(context);
-                            e.setErrorCodeQName(err.getErrorCodeQName());
-                            throw dynamicError(getLocation(), e, context);
-                        }
-                        break;
-
-                    case Type.DOCUMENT: {
-                        ParseOptions options = new ParseOptions();
-                        options.setSchemaValidationMode(validation);
-                        options.setSpaceStrippingRule(NoElementsSpaceStrippingRule.getInstance());
-                        options.setTopLevelType(schemaType);
-                        options.setErrorListener(context.getErrorListener());
-                        config.prepareValidationReporting(context, options);
-                        Receiver val = config.getDocumentValidator(out, source.getBaseURI(), options, getLocation());
-                        //val.setPipelineConfiguration(out.getPipelineConfiguration());
-                        if (copyBaseURI) {
-                            val.setSystemId(source.getBaseURI());
-                        }
-                        Receiver savedReceiver = null;
-                        PipelineConfiguration savedPipe = null;
-                        if (copyLineNumbers) {
-                            savedReceiver = val;
-                            savedPipe = new PipelineConfiguration(val.getPipelineConfiguration());
-                            LocationCopier copier = new LocationCopier(true);
-                            val.getPipelineConfiguration().setComponent(CopyInformee.class.getName(), copier);
-
-                        }
-                        source.copy(val, copyOptions, getLocation());
-                        if (copyLineNumbers) {
-                            val = savedReceiver;
-                            assert val != null;
-                            val.setPipelineConfiguration(savedPipe);
-                        }
-//                        if (val != out) {
-//                            See bug 2403
-//                            val.close(); // needed to flush out unresolved IDREF values when validating: test copy-5021
-//                        }
-                        break;
-                    }
-                    default:
-                        throw new IllegalArgumentException("Unknown node kind " + source.getNodeKind());
                 }
 
             } else {
-                out.append(item, getLocation(), NodeInfo.ALL_NAMESPACES);
+                // Use the iterate() method to create a virtual copy.
+                SequenceIterator iter = iterate(context);
+                Item item;
+                while ((item = iter.next()) != null) {
+                    out.append(item);
+                }
+            }
+        } else {
+
+            int copyOptions = CopyOptions.TYPE_ANNOTATIONS;
+            if (copyNamespaces) {
+                copyOptions |= CopyOptions.ALL_NAMESPACES;
+            }
+
+            if (copyForUpdate) {
+                copyOptions |= CopyOptions.FOR_UPDATE;
+            }
+            //int whichNamespaces = (copyNamespaces ? NodeInfo.ALL_NAMESPACES : NodeInfo.NO_NAMESPACES);
+
+            SequenceIterator iter = getSelect().iterate(context);
+            Item item;
+            while ((item = iter.next()) != null) {
+                if (item instanceof NodeInfo) {
+                    copyOneNode(context, out, (NodeInfo) item, copyOptions);
+
+                } else {
+                    out.append(item, getLocation(), NodeInfo.ALL_NAMESPACES);
+                }
             }
         }
         return null;
+    }
+
+    private void copyOneNode(XPathContext context, SequenceReceiver out, NodeInfo item, int copyOptions) throws XPathException {
+        Controller controller = context.getController();
+        boolean copyBaseURI = out.getSystemId() == null;
+        int kind = item.getNodeKind();
+        if (requireDocumentOrElement &&
+                !(kind == Type.ELEMENT || kind == Type.DOCUMENT)) {
+            XPathException e = new XPathException("Operand of validate expression must be a document or element node");
+            e.setXPathContext(context);
+            e.setErrorCode("XQTY0030");
+            throw e;
+        }
+        final Configuration config = controller.getConfiguration();
+        switch (kind) {
+
+            case Type.ELEMENT: {
+                Receiver eval = out;
+                if (validating) {
+                    ParseOptions options = new ParseOptions();
+                    options.setSchemaValidationMode(validation);
+                    SchemaType type = schemaType;
+                    if (type == null) {
+                        // Bug 3062
+                        String xsitype = item.getAttributeValue(NamespaceConstant.SCHEMA_INSTANCE, "type");
+                        if (xsitype != null) {
+                            StructuredQName typeName;
+                            try {
+                                typeName = StructuredQName.fromLexicalQName(
+                                        xsitype,
+                                        true,
+                                        false,
+                                        new InscopeNamespaceResolver(item));
+                            } catch (XPathException e) {
+                                throw new XPathException("Invalid QName in xsi:type attribute of element being validated: " + xsitype, "XTTE1510");
+                            }
+                            type = config.getSchemaType(typeName);
+                            if (type == null) {
+                                throw new XPathException("Unknown xsi:type in element being validated: " + xsitype, "XTTE1510");
+                            }
+                        }
+                    }
+                    options.setTopLevelType(type);
+                    options.setTopLevelElement(NameOfNode.makeName(item).getStructuredQName());
+                    options.setErrorListener(context.getErrorListener());
+                    config.prepareValidationReporting(context, options);
+                    eval = config.getElementValidator(out, options, getLocation());
+                }
+                if (copyBaseURI) {
+                    eval.setSystemId(computeNewBaseUri(item, getStaticBaseURIString()));
+                }
+
+                Receiver savedReceiver = null;
+                PipelineConfiguration savedPipe = null;
+                if (copyLineNumbers) {
+                    savedReceiver = eval;
+                    PipelineConfiguration pipe = eval.getPipelineConfiguration();
+                    savedPipe = new PipelineConfiguration(pipe);
+                    LocationCopier copier = new LocationCopier(false);
+                    pipe.setComponent(CopyInformee.class.getName(), copier);
+                }
+                item.copy(eval, copyOptions, getLocation());
+                if (copyLineNumbers) {
+                    eval = savedReceiver;
+                    assert eval != null;
+                    eval.setPipelineConfiguration(savedPipe);
+                }
+                break;
+            }
+            case Type.ATTRIBUTE:
+                if (schemaType != null && schemaType.isComplexType()) {
+                    XPathException e = new XPathException("When copying an attribute with schema validation, the requested type must not be a complex type");
+                    e.setLocation(getLocation());
+                    e.setXPathContext(context);
+                    e.setErrorCode("XTTE1535");
+                    throw dynamicError(getLocation(), e, context);
+                }
+                try {
+                    copyAttribute(item, (SimpleType) schemaType, validation, this, context, rejectDuplicateAttributes);
+                } catch (NoOpenStartTagException err) {
+                    XPathException e = new XPathException(err.getMessage());
+                    e.setLocation(getLocation());
+                    e.setXPathContext(context);
+                    e.setErrorCodeQName(err.getErrorCodeQName());
+                    throw dynamicError(getLocation(), e, context);
+                }
+                break;
+            case Type.TEXT:
+                out.characters(item.getStringValueCS(), getLocation(), 0);
+                break;
+
+            case Type.PROCESSING_INSTRUCTION:
+                if (copyBaseURI) {
+                    out.setSystemId(item.getBaseURI());
+                }
+                out.processingInstruction(item.getDisplayName(), item.getStringValueCS(), getLocation(), 0);
+                break;
+
+            case Type.COMMENT:
+                out.comment(item.getStringValueCS(), getLocation(), 0);
+                break;
+
+            case Type.NAMESPACE:
+                try {
+                    item.copy(out, 0, getLocation());
+                } catch (NoOpenStartTagException err) {
+                    XPathException e = new XPathException(err.getMessage());
+                    e.setXPathContext(context);
+                    e.setErrorCodeQName(err.getErrorCodeQName());
+                    throw dynamicError(getLocation(), e, context);
+                }
+                break;
+
+            case Type.DOCUMENT: {
+                ParseOptions options = new ParseOptions();
+                options.setSchemaValidationMode(validation);
+                options.setSpaceStrippingRule(NoElementsSpaceStrippingRule.getInstance());
+                options.setTopLevelType(schemaType);
+                options.setErrorListener(context.getErrorListener());
+                config.prepareValidationReporting(context, options);
+                Receiver val = config.getDocumentValidator(out, item.getBaseURI(), options, getLocation());
+                //val.setPipelineConfiguration(out.getPipelineConfiguration());
+                if (copyBaseURI) {
+                    val.setSystemId(item.getBaseURI());
+                }
+                Receiver savedReceiver = null;
+                PipelineConfiguration savedPipe = null;
+                if (copyLineNumbers) {
+                    savedReceiver = val;
+                    savedPipe = new PipelineConfiguration(val.getPipelineConfiguration());
+                    LocationCopier copier = new LocationCopier(true);
+                    val.getPipelineConfiguration().setComponent(CopyInformee.class.getName(), copier);
+
+                }
+                item.copy(val, copyOptions, getLocation());
+                if (copyLineNumbers) {
+                    val = savedReceiver;
+                    assert val != null;
+                    val.setPipelineConfiguration(savedPipe);
+                }
+                //                        if (val != out) {
+                //                            See bug 2403
+                //                            val.close(); // needed to flush out unresolved IDREF values when validating: test copy-5021
+                //                        }
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Unknown node kind " + item.getNodeKind());
+        }
     }
 
     public static String computeNewBaseUri(NodeInfo source, String staticBaseURI) {
@@ -768,12 +784,12 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
     /**
      * Validate an attribute node and return the type annotation to be used
      *
-     * @param source           the node to be copied
-     * @param schemaType       the simple type against which the value is to be validated, if any
-     * @param validation       one of preserve, strip, strict, lax
-     * @param context          the dynamic context
-     * @throws XPathException if the attribute is not valid
+     * @param source     the node to be copied
+     * @param schemaType the simple type against which the value is to be validated, if any
+     * @param validation one of preserve, strip, strict, lax
+     * @param context    the dynamic context
      * @return the type annotation to be used for the attribute
+     * @throws XPathException if the attribute is not valid
      */
 
 
@@ -784,7 +800,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
         if (schemaType != null) {
             if (schemaType.isNamespaceSensitive()) {
                 XPathException err = new XPathException("Cannot create a parentless attribute whose " +
-                        "type is namespace-sensitive (such as xs:QName)");
+                                                                "type is namespace-sensitive (such as xs:QName)");
                 err.setErrorCode("XTTE1545");
                 throw err;
             }
@@ -792,7 +808,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
                     value, DummyNamespaceResolver.getInstance(), context.getConfiguration().getConversionRules());
             if (err != null) {
                 err.setMessage("Attribute being copied does not match the required type. " +
-                        err.getMessage());
+                                       err.getMessage());
                 throw err.makeException();
             }
             annotation = schemaType;
@@ -818,17 +834,34 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
         return annotation;
     }
 
+    private boolean mustPush() {
+        return schemaType != null || validation == Validation.LAX || validation == Validation.STRICT ||
+                /*!copyNamespaces ||*/ copyForUpdate;
+    }
+
     /*@NotNull*/
     public SequenceIterator iterate(XPathContext context) throws XPathException {
         final Controller controller = context.getController();
         assert controller != null;
-        if (schemaType == null && copyNamespaces && !copyForUpdate) {
+        if (schemaType == null /*&& copyNamespaces*/ && !copyForUpdate) {
             if (validation == Validation.PRESERVE) {
                 // create a virtual copy of the underlying nodes
                 ItemMappingFunction copier = new ItemMappingFunction() {
-                    public Item mapItem(Item item) {
+                    public Item mapItem(Item item) throws XPathException {
                         if (item instanceof NodeInfo) {
+                            if (((NodeInfo) item).getTreeInfo().isTyped()) {
+                                if (!copyNamespaces && ((NodeInfo) item).getNodeKind() == Type.ELEMENT) {
+                                    // A lot of extra work here just to check for error XTTE0950, but the conditions are rare
+                                    Sink sink = new Sink(controller.makePipelineConfiguration());
+                                    ((NodeInfo) item).copy(sink, CopyOptions.TYPE_ANNOTATIONS, getLocation());
+                                }
+                                if (((NodeInfo) item).getNodeKind() == Type.ATTRIBUTE &&
+                                        ((SimpleType) ((NodeInfo) item).getSchemaType()).isNamespaceSensitive()) {
+                                    throw new XPathException("Cannot copy an attribute with namespace-sensitive content except as part of its containing element", "XTTE0950");
+                                }
+                            }
                             VirtualCopy vc = VirtualCopy.makeVirtualCopy((NodeInfo) item);
+                            vc.setDropNamespaces(!copyNamespaces);
                             vc.getTreeInfo().setCopyAccumulators(copyAccumulators);
                             if (((NodeInfo) item).getNodeKind() == Type.ELEMENT) {
                                 vc.setSystemId(computeNewBaseUri((NodeInfo) item, getStaticBaseURIString()));
@@ -849,6 +882,7 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
                         }
                         VirtualCopy vc = VirtualUntypedCopy.makeVirtualUntypedTree((NodeInfo) item, (NodeInfo) item);
                         vc.getTreeInfo().setCopyAccumulators(copyAccumulators);
+                        vc.setDropNamespaces(!copyNamespaces);
                         if (((NodeInfo) item).getNodeKind() == Type.ELEMENT) {
                             vc.setSystemId(computeNewBaseUri((NodeInfo) item, getStaticBaseURIString()));
                         }
@@ -874,7 +908,6 @@ public class CopyOf extends Instruction implements ValidatingInstruction {
         context.setReceiver(saved);
         return out.getSequence().iterate();
     }
-
 
 
 }

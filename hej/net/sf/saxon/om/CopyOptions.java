@@ -24,10 +24,6 @@ public abstract class CopyOptions {
 
     public static final int FOR_UPDATE = 8;
 
-    public static final int ACCUMULATORS = 16;
-
-    public static final int IS_XQUERY = 32; // either XSLT or XQUERY: only affects error codes
-
     public static boolean includes(int options, int option) {
         return (options & option) == option;
     }
