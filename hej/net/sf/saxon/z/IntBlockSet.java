@@ -7,11 +7,9 @@
 
 package net.sf.saxon.z;
 
-import java.io.Serializable;
-
 /**
- * Set of int values. This implementation of IntSet uses a sorted array
- * of integer ranges.
+ * Set of int values. This implementation of IntSet represents a dense monotonic
+ * range of integers from A to B.
  *
  * @author Michael Kay
  */

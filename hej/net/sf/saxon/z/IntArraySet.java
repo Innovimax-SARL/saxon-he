@@ -10,7 +10,6 @@ package net.sf.saxon.z;
 
 import net.sf.saxon.tree.util.FastStringBuffer;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -184,7 +183,7 @@ public class IntArraySet extends AbstractIntSet implements IntSet {
      */
 
     public IntIterator iterator() {
-        return new IntArraySetIterator();
+        return new IntArraySetIterator(contents, contents.length);
     }
 
     /**
@@ -334,30 +333,26 @@ public class IntArraySet extends AbstractIntSet implements IntSet {
      * Iterator class
      */
 
-    private class IntArraySetIterator implements IntIterator {
+    public static class IntArraySetIterator implements IntIterator {
 
+        private int[] contents;
+        private int limit;
         private int i = 0;
 
-        public IntArraySetIterator() {
+        public IntArraySetIterator(int[] contents, int limit) {
             i = 0;
+            this.contents = contents;
+            this.limit = limit;
         }
 
         public boolean hasNext() {
-            return i < contents.length;
+            return i < limit;
         }
 
         public int next() {
             return contents[i++];
         }
     }
-
-//    public static void main(String[] args) {
-//        int[] a = {0,20,21,33,44};
-//        int[] b = {1,5,8,12,15};
-//        IntArraySet x = new IntArraySet(a).union(new IntArraySet(b));
-//        String s = x.toString();
-//        System.out.println(s);
-//    }
 
 }
 
