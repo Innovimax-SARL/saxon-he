@@ -52,9 +52,6 @@ public abstract class AbstractIntSet implements IntSet {
         if (other instanceof IntComplementSet) {
             return other.union(this);
         }
-        if (other instanceof IntCheckingSet) {
-            return other.union(this);
-        }
         IntHashSet n = new IntHashSet(this.size() + other.size());
         IntIterator it = iterator();
         while (it.hasNext()) {

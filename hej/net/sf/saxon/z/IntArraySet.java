@@ -13,19 +13,12 @@ import net.sf.saxon.tree.util.FastStringBuffer;
 import java.util.Arrays;
 
 /**
- * Set of int values. This class is modelled on the java.net.Set interface, but it does
- * not implement this interface, because the set members are int's rather than Objects.
- * <p/>
- * This implementation of a set of integers is optimized to use very little storage
- * and to provide fast comparison of two sets. The equals() method determines whether
- * two sets contain the same integers.
+ * Set of int values, implemented as an array of integers in sorted order.
  * <p/>
  * This implementation is not efficient at adding new integers to the set. It creates a new
  * array each time you do that.
  * <p/>
  * Not thread safe.
- *
- * @author Michael Kay
  */
 public class IntArraySet extends AbstractIntSet implements IntSet {
 
@@ -183,7 +176,7 @@ public class IntArraySet extends AbstractIntSet implements IntSet {
      */
 
     public IntIterator iterator() {
-        return new IntArraySetIterator(contents, contents.length);
+        return new IntArrayIterator(contents, contents.length);
     }
 
     /**
@@ -283,21 +276,6 @@ public class IntArraySet extends AbstractIntSet implements IntSet {
         return sb.toString();
     }
 
-
-    /**
-     * Test if this set has overlapping membership with another set
-     */
-
-//    public boolean containsSome(IntArraySet other) {
-//        IntIterator it = other.iterator();
-//        while (it.hasNext()) {
-//            if (contains(it.next())) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     /**
      * Test whether this set has exactly the same members as another set
      */
@@ -330,16 +308,23 @@ public class IntArraySet extends AbstractIntSet implements IntSet {
     }
 
     /**
-     * Iterator class
+     * Iterator class: iterate over an array of integers
      */
 
-    public static class IntArraySetIterator implements IntIterator {
+    public static class IntArrayIterator implements IntIterator {
 
         private int[] contents;
         private int limit;
         private int i = 0;
 
-        public IntArraySetIterator(int[] contents, int limit) {
+        /**
+         * Create an iterator over the integers in an array (in positions 0 to n-1
+         * inclusive, were n is the value of the limit argument)
+         * @param contents the array over which to iterate
+         * @param limit the number of items to be included in the iteration
+         */
+
+        public IntArrayIterator(int[] contents, int limit) {
             i = 0;
             this.contents = contents;
             this.limit = limit;

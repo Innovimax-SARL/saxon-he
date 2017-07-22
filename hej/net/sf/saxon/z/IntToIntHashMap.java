@@ -289,7 +289,6 @@ public class IntToIntHashMap implements IntToIntMap {
     private class IntToIntHashMapKeyIterator implements IntIterator {
 
         private int i = 0;
-        private static final long serialVersionUID = -5978261613309710617L;
 
         public IntToIntHashMapKeyIterator() {
             i = 0;

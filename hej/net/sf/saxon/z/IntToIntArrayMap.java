@@ -7,8 +7,6 @@
 
 package net.sf.saxon.z;
 
-import java.io.Serializable;
-
 /**
  * An implementation of {@link IntToIntMap} that relies on serial searching, and
  * is therefore optimized for very small map sizes

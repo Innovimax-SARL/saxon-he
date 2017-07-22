@@ -8,7 +8,7 @@
 package net.sf.saxon.z;
 
 /**
- * Set of int values. This implementation of IntSet represents a dense monotonic
+ * Set of int values. This immutable implementation of IntSet represents a dense monotonic
  * range of integers from A to B.
  *
  * @author Michael Kay
@@ -55,6 +55,11 @@ public class IntBlockSet extends AbstractIntSet implements IntSet {
         return value >= startPoint && value <= endPoint;
     }
 
+    /**
+     * Remove an integer from the set
+     * @throws UnsupportedOperationException (always)
+     */
+
     public boolean remove(int value) {
         throw new UnsupportedOperationException("remove");
     }
@@ -64,10 +69,10 @@ public class IntBlockSet extends AbstractIntSet implements IntSet {
     }
 
     /**
-     * Add an integer to the set
-     *
+     * Add an integer to the set. Always throws UnsupportedOperationException
      * @param value the integer to be added
      * @return true if the integer was added, false if it was already present
+     * @throws UnsupportedOperationException (always)
      */
 
     public boolean add(int value) {

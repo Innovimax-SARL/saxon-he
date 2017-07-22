@@ -7,6 +7,7 @@
 
 package net.sf.saxon.z;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -62,20 +63,9 @@ public class IntHashMap<T> {
     public void clear() {
         _n = 0;
         for (int i = 0; i < _nmax; ++i) {
-            //_filled[i] = false;
             _value[i] = null;
         }
     }
-
-    /**
-     * Finds a key in the map.
-     *
-     * @param key Key
-     * @return true if the key is mapped
-     */
-//    public boolean find(int key) {
-//        return _filled[indexOf(key)] ? true : false;
-//    }
 
     /**
      * Gets the value for this key.
@@ -84,8 +74,6 @@ public class IntHashMap<T> {
      * @return the value, null if not found.
      */
     public T get(int key) {
-//        int i = indexOf(key);
-//        return _filled[i] ? _value[i] : null;
         return _value[indexOf(key)];
     }
 
@@ -290,12 +278,12 @@ public class IntHashMap<T> {
      * Diagnostic display of contents
      */
 
-    public void display() {
+    public void display(PrintStream ps) {
         IntIterator iter = new IntHashMapKeyIterator();
         while (iter.hasNext()) {
             int key = iter.next();
             Object value = get(key);
-            System.err.println(key + " -> " + value.toString());
+            ps.println(key + " -> " + value.toString());
         }
     }
 

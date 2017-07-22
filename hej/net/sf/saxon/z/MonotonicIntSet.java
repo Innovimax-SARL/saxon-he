@@ -77,8 +77,11 @@ public class MonotonicIntSet extends AbstractIntSet implements IntSet {
     /**
      * Add an integer to the set
      *
-     * @param value the integer to be added
+     * @param value the integer to be added (which must be greater than or equal to the
+     *              largest integer currently in the set)
      * @return true if the integer was added, false if it was already present
+     * @throws UnsupportedOperationException if the set already contains an integer larger
+     * than the supplied value
      */
 
     public boolean add(int value) {
@@ -104,7 +107,7 @@ public class MonotonicIntSet extends AbstractIntSet implements IntSet {
      */
 
     public IntIterator iterator() {
-        return new IntArraySet.IntArraySetIterator(contents, used);
+        return new IntArraySet.IntArrayIterator(contents, used);
     }
 
     /**
@@ -172,10 +175,6 @@ public class MonotonicIntSet extends AbstractIntSet implements IntSet {
         return new MonotonicIntSet(in, size);
     }
 
-    private MonotonicIntSet(int[] content) {
-        contents = content;
-        used = content.length;
-    }
 
     private MonotonicIntSet(int[] content, int used) {
         this.contents = content;
@@ -183,9 +182,9 @@ public class MonotonicIntSet extends AbstractIntSet implements IntSet {
     }
 
     public String toString() {
-        FastStringBuffer sb = new FastStringBuffer(contents.length * 4);
-        for (int i = 0; i < contents.length; i++) {
-            if (i == contents.length - 1) {
+        FastStringBuffer sb = new FastStringBuffer(used * 4);
+        for (int i = 0; i < used; i++) {
+            if (i == used - 1) {
                 sb.append(contents[i] + "");
             } else if (contents[i] + 1 != contents[i + 1]) {
                 sb.append(contents[i] + ",");
@@ -193,7 +192,7 @@ public class MonotonicIntSet extends AbstractIntSet implements IntSet {
                 int j = i + 1;
                 while (contents[j] == contents[j - 1] + 1) {
                     j++;
-                    if (j == contents.length) {
+                    if (j == used) {
                         break;
                     }
                 }

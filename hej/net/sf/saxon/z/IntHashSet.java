@@ -204,7 +204,7 @@ public class IntHashSet extends AbstractIntSet implements IntSet {
         //double factor = 0.25;
         int nbit, nmax;
         for (nbit = 1, nmax = 2; nmax < capacity * 4 && nmax < MAX_SIZE; ++nbit, nmax *= 2) {
-            ;
+            // do nothing
         }
         int nold = _nmax;
         if (nmax == nold) {
@@ -212,8 +212,8 @@ public class IntHashSet extends AbstractIntSet implements IntSet {
         }
 
         _nmax = nmax;
-        _nlo = (int) (nmax / 4);
-        _nhi = (int) (MAX_SIZE / 4);
+        _nlo = nmax / 4;
+        _nhi = MAX_SIZE / 4;
         _shift = 1 + NBIT - nbit;
         _mask = nmax - 1;
 
@@ -301,10 +301,10 @@ public class IntHashSet extends AbstractIntSet implements IntSet {
     public static String toString(IntIterator it) {
         FastStringBuffer sb = new FastStringBuffer(100);
         while (it.hasNext()) {
-            if (sb.length() != 0) {
-                sb.append(" " + it.next());
-            } else {
+            if (sb.isEmpty()) {
                 sb.append("" + it.next());
+            } else {
+                sb.append(" " + it.next());
             }
         }
         return sb.toString();

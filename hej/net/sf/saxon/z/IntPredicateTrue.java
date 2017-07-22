@@ -8,7 +8,7 @@
 package net.sf.saxon.z;
 
 /**
- * An IntPredicate that matches a single specific integer
+ * An IntPredicate that matches every integer, unconditionally
  */
 
 public class IntPredicateTrue implements IntPredicate {

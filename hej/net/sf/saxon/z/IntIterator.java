@@ -18,7 +18,7 @@ public interface IntIterator {
      * @return true if there are more integers to come
      */
 
-    public boolean hasNext();
+    boolean hasNext();
 
     /**
      * Return the next integer in the sequence. The result is undefined unless hasNext() has been called
@@ -27,5 +27,5 @@ public interface IntIterator {
      * @return the next integer in the sequence
      */
 
-    public int next();
+    int next();
 }
