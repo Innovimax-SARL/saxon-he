@@ -499,16 +499,17 @@ public abstract class Assignation extends Expression implements LocalBinding {
                 results[0] += ref.isInLoop() ? 10 : 1;
                 references.add((LocalVariableReference) exp);
             }
-        } else if (--results[1] <= 0) {
-            // abandon the search
-            results[0] = 100;
-            results[1] = 0;
-        } else {
-            for (Operand o : exp.operands()) {
-                countReferences(binding, o.getChildExpression(), references, results);
+        } else if ((exp.getDependencies() & StaticProperty.DEPENDS_ON_LOCAL_VARIABLES) != 0) {
+            if (--results[1] <= 0) {
+                // abandon the search
+                results[0] = 100;
+                results[1] = 0;
+            } else {
+                for (Operand o : exp.operands()) {
+                    countReferences(binding, o.getChildExpression(), references, results);
+                }
             }
         }
-
     }
 
     /**
