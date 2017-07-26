@@ -62,7 +62,9 @@ public class NamedTemplate extends Actor {
      * Create a named template
      */
 
-    public NamedTemplate() {}
+    public NamedTemplate(StructuredQName templateName) {
+        setTemplateName(templateName);
+    }
 
     /**
      * Initialize the template

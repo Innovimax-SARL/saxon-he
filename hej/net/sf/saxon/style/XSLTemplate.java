@@ -567,43 +567,26 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
 
     public void index(ComponentDeclaration decl, PrincipalStylesheetModule top) throws XPathException {
         if (getTemplateName() != null) {
-            compiledNamedTemplate = new NamedTemplate();
-            compiledNamedTemplate.setTemplateName(getTemplateName());
-            top.indexNamedTemplate(decl);
-            Item child;
-            SequenceIterator kids = iterateAxis(AxisInfo.CHILD);
-            while ((child = kids.next()) != null) {
-                if (child instanceof XSLLocalParam) {
-                    LocalParam lp = new LocalParam();
-                    lp.setVariableQName(((XSLLocalParam) child).getVariableQName());
-                    lp.setRequiredType(((XSLLocalParam) child).getRequiredType());
-                    lp.setTunnel(((XSLLocalParam) child).isTunnelParam());
-                    compiledNamedTemplate.addLocalParam(lp);
+            if (compiledNamedTemplate == null) {
+                compiledNamedTemplate = new NamedTemplate(getTemplateName());
+                top.indexNamedTemplate(decl);
+                Item child;
+                SequenceIterator kids = iterateAxis(AxisInfo.CHILD);
+                while ((child = kids.next()) != null) {
+                    if (child instanceof XSLLocalParam) {
+                        LocalParam lp = new LocalParam();
+                        lp.setVariableQName(((XSLLocalParam) child).getVariableQName());
+                        lp.setRequiredType(((XSLLocalParam) child).getRequiredType());
+                        lp.setTunnel(((XSLLocalParam) child).isTunnelParam());
+                        compiledNamedTemplate.addLocalParam(lp);
+                    }
                 }
+            } else {
+                // Typically happens when a stylesheet module is imported twice by different routes
+                top.indexNamedTemplate(decl);
             }
         }
 
-        // Following change was attempted to fix a problem with multiple includes, but
-        // it caused other tests to crash e.g. apply-imports-001. MHK 2017-03-07
-
-//        if (getTemplateName() != null) {
-//            NamedTemplate namedTemplate = top.indexNamedTemplate(decl);
-//            // returns null if this template is already indexed, e.g. because of multiple includes
-//            if (namedTemplate != null) {
-//                compiledNamedTemplate = namedTemplate;
-//                Item child;
-//                SequenceIterator kids = iterateAxis(AxisInfo.CHILD);
-//                while ((child = kids.next()) != null) {
-//                    if (child instanceof XSLLocalParam) {
-//                        LocalParam lp = new LocalParam();
-//                        lp.setVariableQName(((XSLLocalParam) child).getVariableQName());
-//                        lp.setRequiredType(((XSLLocalParam) child).getRequiredType());
-//                        lp.setTunnel(((XSLLocalParam) child).isTunnelParam());
-//                        compiledNamedTemplate.addLocalParam(lp);
-//                    }
-//                }
-//            }
-//        }
     }
 
     /**
