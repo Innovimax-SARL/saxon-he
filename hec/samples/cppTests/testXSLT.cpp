@@ -15,7 +15,7 @@ using namespace std;
 JNINativeMethod cppMethods[] =
 {
     {
-         "_phpCall",
+         "_nativeCall",
          "(Ljava/lang/String;[Ljava/lang/Object;[Ljava/lang/String;)Ljava/lang/Object;",
          (void *)&cppNativeCall
     }
@@ -48,9 +48,9 @@ void testTransformToString1(SaxonProcessor * processor, XsltProcessor * trans){
 void testTransformToStringExtensionFunc(SaxonProcessor * processor, XsltProcessor * trans){
 	
   cout<<endl<<"Test: TransformToStringExtensionFunc:"<<endl;
-trans->setProperty("extc", "/home/ond1/work/new-svn/latest9.7-hec/hec/samples/cppTests/cppExtensionFunction");
+trans->setProperty("extc", "/home/ond1/work/new-svn/latest9.8-hec/hec/samples/cppTests/cppExtensionFunction");
 cout<<endl<<"Test: checkpoint 1:"<<endl;
-processor->registerNativeMethods(SaxonProcessor::sxn_environ->env, "com/saxonica/functions/extfn/PhpCall$PhpFunctionCall",
+processor->registerNativeMethods(SaxonProcessor::sxn_environ->env, "com/saxonica/functions/extfn/cpp/NativeCall",
     cppMethods, sizeof(cppMethods) / sizeof(cppMethods[0]));
 cout<<endl<<"Test: checkpoint 2:"<<endl;
     const char * output = trans->transformFileToString("cat.xml", "testExtension.xsl");
@@ -522,7 +522,7 @@ int main()
     SaxonProcessor * processor = new SaxonProcessor(true);
     cout<<"Test: XsltProcessor with Saxon version="<<processor->version()<<endl<<endl; 
     //processor->setcwd("/home");
-    processor->setConfigurationProperty("http://saxon.sf.net/feature/generateByteCode", "off");
+   processor->setConfigurationProperty("http://saxon.sf.net/feature/generateByteCode","false");
 
     XsltProcessor * trans = processor->newXsltProcessor();
   /*  exampleSimple1Err(trans);
@@ -564,7 +564,7 @@ delete processor;
  SaxonProcessor * processor2 = new SaxonProcessor(true);
     cout<<"Test2: XsltProcessor with Saxon version="<<processor2->version()<<endl<<endl; 
     //processor->setcwd("/home");
-    processor2->setConfigurationProperty("http://saxon.sf.net/feature/generateByteCode", "off");
+    
 
     XsltProcessor * trans2 = processor2->newXsltProcessor();
 testTransformToString1(processor2, trans2);
