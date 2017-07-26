@@ -121,7 +121,7 @@ public class PatternParser30 extends XPathParser implements PatternParser {
                 checkNoPredicatePattern(((VennExpression) exp).getRhsExpression());
             }
             ExpressionVisitor visitor = ExpressionVisitor.make(env);
-            ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(AnyItemType.getInstance(), true);
+            ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(AnyNodeTest.getInstance(), true);
             Pattern pat = PatternMaker.fromExpression(exp.simplify().typeCheck(visitor, cit), env.getConfiguration(), true);
             if (exp instanceof FilterExpression && ((FilterExpression)exp).getBase() instanceof ContextItemExpression) {
                 grumble("A predicatePattern can appear only at the outermost level (parentheses not allowed)");

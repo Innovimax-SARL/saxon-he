@@ -8,9 +8,13 @@
 package net.sf.saxon.om;
 
 import net.sf.saxon.expr.LastPositionFinder;
+import net.sf.saxon.pattern.AnyNodeTest;
+import net.sf.saxon.pattern.NodeTest;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.tree.iter.AxisIterator;
 import net.sf.saxon.tree.iter.GroundedIterator;
 import net.sf.saxon.tree.iter.LookaheadIterator;
+import net.sf.saxon.tree.wrapper.SiblingCountingNode;
 import net.sf.saxon.value.SequenceExtent;
 
 /**
@@ -31,6 +35,7 @@ public class FocusTrackingIterator implements FocusIterator, LookaheadIterator, 
     private Item curr;
     private int pos = 0;
     private int last = -1;
+    private SiblingMemory siblingMemory = null;
 
     public FocusTrackingIterator(SequenceIterator base) {
         this.base = base;
@@ -199,5 +204,64 @@ public class FocusTrackingIterator implements FocusIterator, LookaheadIterator, 
      */
     public int getProperties() {
         return base.getProperties();
+    }
+
+    /**
+     * Cached data to support optimization of the getSiblingPosition() method
+     */
+
+    private static class SiblingMemory {
+        public NodeTest mostRecentNodeTest = null;
+        public NodeInfo mostRecentNode = null;
+        public int mostRecentPosition = -1;
+    }
+
+    /**
+     * Get the sibling position of a node: specifically, count how many preceding siblings
+     * of a node satisfy the nodetest. This method appears here because it can potentially
+     * make use of cached information. When an instruction such as {@code xsl:apply-templates
+     * select="*"} (which selects a set of sibling nodes) is used in conjunction with patterns
+     * such as {@code match="*[position() mod 2 = 1]}, then calculation of the position of one
+     * node in the sequence of siblings can take advantage of the fact that the position of the
+     * immediately preceding sibling is already known.
+     *
+     * <p>This optimization was suggested by the late Sebastian Rahtz, one of Saxon's earliest
+     * power users, and it is dedicated to his memory.</p>
+     *
+     * @param node     the starting node, which is assumed to satisfy the node test
+     * @param nodeTest the node test
+     * @param max      the maximum number of nodes to be counted
+     * @return the number of preceding siblings that satisfy the node test, plus one, unless the
+     * number exceeds max, in which case return some number greater than or equal to max.
+     */
+
+    public int getSiblingPosition(NodeInfo node, NodeTest nodeTest, int max) {
+        if (node instanceof SiblingCountingNode && nodeTest instanceof AnyNodeTest) {
+            return ((SiblingCountingNode) node).getSiblingPosition();
+        }
+        if (siblingMemory == null) {
+            siblingMemory = new SiblingMemory();
+        } else if (siblingMemory.mostRecentNodeTest.equals(nodeTest) && node.isSameNodeInfo(siblingMemory.mostRecentNode)) {
+            return siblingMemory.mostRecentPosition;
+        }
+        SiblingMemory s = siblingMemory;
+        AxisIterator prev = node.iterateAxis(AxisInfo.PRECEDING_SIBLING, nodeTest);
+        NodeInfo prior;
+        int count = 1;
+        while ((prior = prev.next()) != null) {
+            if (s.mostRecentNode != null && prior.isSameNodeInfo(s.mostRecentNode) && nodeTest.equals(s.mostRecentNodeTest)) {
+                int result = count + s.mostRecentPosition;
+                s.mostRecentNode = node;
+                s.mostRecentPosition = result;
+                return result;
+            }
+            if (++count > max) {
+                return count;
+            }
+        }
+        s.mostRecentNode = node;
+        s.mostRecentPosition = count;
+        s.mostRecentNodeTest = nodeTest;
+        return count;
     }
 }

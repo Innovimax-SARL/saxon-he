@@ -1075,6 +1075,9 @@ public final class Navigator {
      */
 
     public static int getSiblingPosition(NodeInfo node, NodeTest nodeTest, int max) {
+        if (node instanceof SiblingCountingNode && nodeTest instanceof AnyNodeTest) {
+            return ((SiblingCountingNode)node).getSiblingPosition();
+        }
         AxisIterator prev = node.iterateAxis(AxisInfo.PRECEDING_SIBLING, nodeTest);
         int count = 1;
         while (prev.next() != null) {

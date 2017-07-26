@@ -111,6 +111,11 @@ public final class AncestorQualifiedPattern extends Pattern {
         return basePattern.isMotionless() && upperPattern.isMotionless();
     }
 
+    @Override
+    public boolean matchesCurrentGroup() {
+        return upperPattern.matchesCurrentGroup();
+    }
+
     /**
      * Simplify the pattern: perform any context-independent optimisations
      *

@@ -16,9 +16,7 @@ import net.sf.saxon.expr.parser.ContextItemStaticInfo;
 import net.sf.saxon.expr.parser.ExpressionTool;
 import net.sf.saxon.expr.parser.ExpressionVisitor;
 import net.sf.saxon.expr.parser.RebindingMap;
-import net.sf.saxon.om.AxisInfo;
-import net.sf.saxon.om.Item;
-import net.sf.saxon.om.NodeInfo;
+import net.sf.saxon.om.*;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.ManualIterator;
@@ -32,9 +30,7 @@ import net.sf.saxon.value.NumericValue;
 
 /**
  * A GeneralPositionalPattern is a pattern of the form A[P] where A is an axis expression using the child axis
- * and P is an expression that depends on the position. When this kind of pattern is used for matching streamed nodes,
- * it relies on the histogram data of preceding siblings maintained as part of a
- * {@link com.saxonica.ee.stream.om.FleetingParentNode}
+ * and P is an expression that depends on the position.
  * <p/>
  * This class handles cases where the predicate P is arbitrarily complex. Simple comparisons of position() against
  * an integer value are handled by the class SimplePositionalPattern.
@@ -225,7 +221,6 @@ public class GeneralPositionalPattern extends Pattern {
      */
 
     private boolean internalMatches(NodeInfo node, NodeInfo anchor, XPathContext context) throws XPathException {
-        // System.err.println("Matching node type and fingerprint");
         if (!nodeTest.matchesNode(node)) {
             return false;
         }
@@ -236,8 +231,10 @@ public class GeneralPositionalPattern extends Pattern {
 
         try {
             XPathContext c = c2;
+            int actualPosition = -1;
             if (usesPosition) {
-                ManualIterator man = new ManualIterator(node, getActualPosition(node, Integer.MAX_VALUE));
+                actualPosition = getActualPosition(node, Integer.MAX_VALUE, context.getCurrentIterator());
+                ManualIterator man = new ManualIterator(node, actualPosition);
                 XPathContext c3 = c2.newMinorContext();
                 c3.setCurrentIterator(man);
                 c = c3;
@@ -246,7 +243,10 @@ public class GeneralPositionalPattern extends Pattern {
             if (predicate instanceof NumericValue) {
                 NumericValue position = (NumericValue) positionExpr.evaluateItem(context);
                 int requiredPos = position.asSubscript();
-                return requiredPos != -1 && getActualPosition(node, requiredPos) == requiredPos;
+                if (actualPosition < 0 && requiredPos != -1) {
+                    actualPosition = getActualPosition(node, requiredPos, context.getCurrentIterator());
+                }
+                return requiredPos != -1 && actualPosition == requiredPos;
             } else {
                 return ExpressionTool.effectiveBooleanValue(predicate);
             }
@@ -267,7 +267,11 @@ public class GeneralPositionalPattern extends Pattern {
         }
     }
 
-    private int getActualPosition(NodeInfo node, int max) {
+    private int getActualPosition(NodeInfo node, int max, FocusIterator iterator) {
+        if (iterator instanceof FocusTrackingIterator) {
+            // This path makes use of cached information
+            return ((FocusTrackingIterator)iterator).getSiblingPosition(node, nodeTest, max);
+        }
         return Navigator.getSiblingPosition(node, nodeTest, max);
     }
 

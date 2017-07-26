@@ -123,7 +123,6 @@ public class XSLCallTemplate extends StyleElement {
 
     private void checkParams() throws XPathException {
         if (template.getBody() == null) {
-            System.err.println("Problems with " + template);
             compileError("Internal error: Cannot check template params before target template is compiled");
             return;
         }

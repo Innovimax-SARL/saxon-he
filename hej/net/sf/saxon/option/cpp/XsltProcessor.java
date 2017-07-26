@@ -38,7 +38,7 @@ public class XsltProcessor extends SaxonCAPI {
 
     private XsltExecutable executable = null;
     private List<XdmNode> xslMessages = new ArrayList<XdmNode>();
-    private Set<File> packagesToLoad = new HashSet<>();
+    private Set<File> packagesToLoad = new HashSet<File>();
 
     /**
      * Constructor to initialise XsltProcessor with processor and license flag
