@@ -52,6 +52,7 @@ using JArrayItem = net.sf.saxon.ma.arrays.ArrayItem;
 using JKeyValuePair = net.sf.saxon.ma.map.KeyValuePair;
 using JSimpleArrayItem = net.sf.saxon.ma.arrays.SimpleArrayItem;
 using JDecimalValue = net.sf.saxon.value.DecimalValue;
+using JObjectValue = net.sf.saxon.value.ObjectValue;
 using System.Collections.Generic;
 
 namespace Saxon.Api
@@ -197,6 +198,9 @@ namespace Saxon.Api
                 {
                     result = new XdmFunctionItem();
                     result.value = (JFunction)first;
+                    return result;
+                } else if (first is JObjectValue) {
+                    result = new XdmExternalObjectValue(first);
                     return result;
                 }
                 else {
@@ -475,7 +479,7 @@ namespace Saxon.Api
         /// </summary>
         /// <param name="o">the supplied .NET object</param>
         public XdmExternalObjectValue(object o) {
-            value = new net.sf.saxon.value.ObjectValue(o);
+            value = new JObjectValue(o);
         }
 
         /// <summary>
@@ -494,7 +498,7 @@ namespace Saxon.Api
         /// </summary>
         /// <returns>the wrapped object</returns>
         public object GetExternalObject() {
-            return ((net.sf.saxon.value.ObjectValue)value).getObject();
+            return ((JObjectValue)value).getObject();
         }
 
         /// <summary>
