@@ -8,6 +8,7 @@
 package net.sf.saxon.pull;
 
 import net.sf.saxon.event.Receiver;
+import net.sf.saxon.event.ReceiverOptions;
 import net.sf.saxon.event.SequenceReceiver;
 import net.sf.saxon.expr.parser.ExplicitLocation;
 import net.sf.saxon.expr.parser.Location;
@@ -114,7 +115,7 @@ public class PullPushTee extends PullFilter {
 
             case TEXT:
 
-                out.characters(in.getStringValue(), loc, 0);
+                out.characters(in.getStringValue(), loc, ReceiverOptions.WHOLE_TEXT_NODE);
                 break;
 
             case COMMENT:

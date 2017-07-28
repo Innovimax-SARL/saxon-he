@@ -9,8 +9,10 @@ package net.sf.saxon.pull;
 
 
 import net.sf.saxon.Configuration;
-import net.sf.saxon.event.*;
-import net.sf.saxon.expr.parser.*;
+import net.sf.saxon.event.NamespaceReducer;
+import net.sf.saxon.event.PipelineConfiguration;
+import net.sf.saxon.event.ReceiverOptions;
+import net.sf.saxon.expr.parser.ExplicitLocation;
 import net.sf.saxon.om.*;
 import net.sf.saxon.serialize.XMLEmitter;
 import net.sf.saxon.trans.SaxonErrorCode;
@@ -24,9 +26,9 @@ import net.sf.saxon.type.SimpleType;
 import net.sf.saxon.type.Untyped;
 import net.sf.saxon.value.AtomicValue;
 import net.sf.saxon.value.Whitespace;
+import net.sf.saxon.z.IntHashMap;
 
 import javax.xml.stream.*;
-import javax.xml.stream.Location;
 import javax.xml.stream.events.EntityDeclaration;
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,11 +52,13 @@ public class StaxBridge implements PullProvider {
     private XMLStreamReader reader;
     private StaxAttributes attributes = new StaxAttributes();
     private PipelineConfiguration pipe;
-    /*@Nullable*/ private List unparsedEntities = null;
+    private NamePool namePool;
+    private IntHashMap<NodeName> nameCache = new IntHashMap<NodeName>();
+    private List unparsedEntities = null;
     int currentEvent = START_OF_INPUT;
     int depth = 0;
     boolean ignoreIgnorable = false;
-
+    
     /**
      * Create a new instance of the class
      */
@@ -101,6 +105,7 @@ public class StaxBridge implements PullProvider {
 
     public void setPipelineConfiguration(PipelineConfiguration pipe) {
         this.pipe = new PipelineConfiguration(pipe);
+        this.namePool = pipe.getConfiguration().getNamePool();
         ignoreIgnorable = pipe.getConfiguration().getParseOptions().getSpaceStrippingRule() != NoElementsSpaceStrippingRule.getInstance();
     }
 
@@ -385,10 +390,18 @@ public class StaxBridge implements PullProvider {
         if (currentEvent == START_ELEMENT || currentEvent == END_ELEMENT) {
             String local = reader.getLocalName();
             String uri = reader.getNamespaceURI();
-            if (uri == null) {
-                return new NoNamespaceName(local);
+            int fp = namePool.allocateFingerprint(uri, local);
+            NodeName cached = nameCache.get(fp);
+            if (cached != null && cached.getPrefix().equals(reader.getPrefix())) {
+                return cached;
             } else {
-                return new FingerprintedQName(reader.getPrefix(), uri, local);
+                if (uri == null) {
+                    cached = new NoNamespaceName(local, fp);
+                } else {
+                    cached = new FingerprintedQName(reader.getPrefix(), uri, local, fp);
+                }
+                nameCache.put(fp, cached);
+                return cached;
             }
         } else if (currentEvent == PROCESSING_INSTRUCTION) {
             String local = reader.getPITarget();
