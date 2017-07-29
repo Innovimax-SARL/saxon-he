@@ -26,7 +26,6 @@ import net.sf.saxon.type.SimpleType;
 import net.sf.saxon.type.Untyped;
 import net.sf.saxon.value.AtomicValue;
 import net.sf.saxon.value.Whitespace;
-import net.sf.saxon.z.IntHashMap;
 
 import javax.xml.stream.*;
 import javax.xml.stream.events.EntityDeclaration;
@@ -39,6 +38,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -53,7 +53,8 @@ public class StaxBridge implements PullProvider {
     private StaxAttributes attributes = new StaxAttributes();
     private PipelineConfiguration pipe;
     private NamePool namePool;
-    private IntHashMap<NodeName> nameCache = new IntHashMap<NodeName>();
+    //private IntHashMap<NodeName> nameCache = new IntHashMap<NodeName>();
+    private HashMap<String, NodeName> nameCache = new HashMap<String, NodeName>();
     private List unparsedEntities = null;
     int currentEvent = START_OF_INPUT;
     int depth = 0;
@@ -390,17 +391,19 @@ public class StaxBridge implements PullProvider {
         if (currentEvent == START_ELEMENT || currentEvent == END_ELEMENT) {
             String local = reader.getLocalName();
             String uri = reader.getNamespaceURI();
-            int fp = namePool.allocateFingerprint(uri, local);
-            NodeName cached = nameCache.get(fp);
-            if (cached != null && cached.getPrefix().equals(reader.getPrefix())) {
+            // We keep a cache indexed by local name, on the assumption that most of the time, a given
+            // local name will only ever be used with the same prefix and URI
+            NodeName cached = nameCache.get(local);
+            if (cached != null && cached.hasURI(uri) && cached.getPrefix().equals(reader.getPrefix())) {
                 return cached;
             } else {
+                int fp = namePool.allocateFingerprint(uri, local);
                 if (uri == null) {
                     cached = new NoNamespaceName(local, fp);
                 } else {
                     cached = new FingerprintedQName(reader.getPrefix(), uri, local, fp);
                 }
-                nameCache.put(fp, cached);
+                nameCache.put(local, cached);
                 return cached;
             }
         } else if (currentEvent == PROCESSING_INSTRUCTION) {

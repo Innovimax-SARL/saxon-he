@@ -100,9 +100,9 @@ public interface NodeName extends IdentityComparable {
     NamespaceBinding getNamespaceBinding();
 
     /**
-     * Ask whether this node name representation has a known namecode and fingerprint
+     * Ask whether this node name representation has a known fingerprint
      *
-     * @return true if the methods getFingerprint() and getNameCode() will
+     * @return true if the method getFingerprint() will
      *         return a result other than -1
      */
 

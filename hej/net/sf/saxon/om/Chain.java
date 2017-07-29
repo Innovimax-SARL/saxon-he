@@ -36,6 +36,12 @@ import java.util.*;
  * would be quadratic). The figure of 30 was chosen because elapsed time is almost
  * as good as with smaller chunks, and memory use during navigation is substantially
  * reduced.</p>
+ * <p/>
+ * <p>A Chain has two phases in its life-cycle. In the first phase, the Chain is mutable;
+ * it can be extended using append() calls. In the second phase, the Chain is immutable;
+ * further append() operations are not allowed. The transition from the first to the
+ * second phase occurs when any of the methods itemAt(), reduce(), or subsequence()
+ * is called.</p>
  */
 public class Chain implements GroundedValue {
 
@@ -252,7 +258,7 @@ public class Chain implements GroundedValue {
      */
     public GroundedValue reduce() {
         consolidate();
-        return new SequenceExtent(extent);
+        return SequenceExtent.makeSequenceExtent(extent);
     }
 
     private class ChainIterator implements UnfailingIterator, GroundedIterator {
@@ -275,7 +281,6 @@ public class Chain implements GroundedValue {
             stack = new Stack<ChainPosition>();
             stack.push(new ChainPosition(Chain.this, 0));
         }
-
 
         /**
          * Get the next item in the sequence.
@@ -354,11 +359,20 @@ public class Chain implements GroundedValue {
          *
          * @return the corresponding Value
          */
+
         public GroundedValue materialize() {
             return Chain.this;
         }
 
-        @Override
+        /**
+         * Return a GroundedValue containing all the remaining items in the sequence returned by this
+         * SequenceIterator, starting at the current position. This should be an "in-memory" value, not a Closure.
+         *
+         * @return the corresponding Value
+         * @throws XPathException in the cases of subclasses (such as the iterator over a MemoClosure)
+         *                        which cause evaluation of expressions while materializing the value.
+         */
+
         public GroundedValue getResidue() throws XPathException {
             return new SequenceExtent(this);
         }
