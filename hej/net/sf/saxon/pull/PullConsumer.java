@@ -33,7 +33,7 @@ public class PullConsumer {
     /**
      * Consume the input
      *
-     * @throws net.sf.saxon.trans.XPathException
+     * @throws net.sf.saxon.trans.XPathException if (for example) the parser input is not well-formed
      *
      */
 

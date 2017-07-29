@@ -97,8 +97,8 @@ public class NamespaceContextImpl implements NamespaceContext, NamespaceResolver
      * @param uri the namespace URI
      * @return an iterator over all the prefixes bound to this namespace URI
      */
-    public Iterator getPrefixes(String uri) {
-        List list = new ArrayList(4);
+    public Iterator<String> getPrefixes(String uri) {
+        List<String> list = new ArrayList<String>(4);
         Iterator prefixes = iteratePrefixes();
         while (prefixes.hasNext()) {
             String p = (String) prefixes.next();

@@ -47,7 +47,6 @@ public class PullPushTee extends PullFilter {
     public PullPushTee(/*@NotNull*/ PullProvider base, Receiver branch) throws XPathException {
         super(base);
         this.branch = branch;
-        //branch.open();
     }
 
     /**
@@ -148,7 +147,6 @@ public class PullPushTee extends PullFilter {
 
             case END_OF_INPUT:
                 in.close();
-                //out.close();
                 break;
 
             case ATOMIC_VALUE:
@@ -176,7 +174,6 @@ public class PullPushTee extends PullFilter {
                     out.attribute(getNodeName(),
                             (SimpleType) in.getSchemaType(), getStringValue(), loc, 0);
                     break;
-                    //throw new XPathException("Cannot serialize a free-standing attribute node");
                 }
 
             case NAMESPACE:
@@ -190,7 +187,6 @@ public class PullPushTee extends PullFilter {
                 } else {
                     out.namespace(new NamespaceBinding(getNodeName().getPrefix(), getNodeName().getURI()), 0);
                     break;
-                    //throw new XPathException("Cannot serialize a free-standing namespace node");
                 }
 
             default:

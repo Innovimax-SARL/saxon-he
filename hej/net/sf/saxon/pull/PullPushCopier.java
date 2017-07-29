@@ -35,7 +35,7 @@ public class PullPushCopier {
      * Copy the input to the output. This method will open the output Receiver before appending to
      * it, and will close it afterwards.
      *
-     * @throws XPathException
+     * @throws XPathException if, for example, the input is not well-formed
      */
 
     public void copy() throws XPathException {
@@ -49,7 +49,7 @@ public class PullPushCopier {
      * Copy the input to the output. This method relies on the caller to open the output Receiver before
      * use and to close it afterwards.
      *
-     * @throws XPathException
+     * @throws XPathException if, for example, the input is not well-formed
      */
 
     public void append() throws XPathException {

@@ -16,7 +16,6 @@ import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.SchemaType;
 import net.sf.saxon.value.AtomicValue;
 
-import javax.xml.transform.SourceLocator;
 import java.util.List;
 
 /**

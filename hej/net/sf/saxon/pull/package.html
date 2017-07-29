@@ -19,11 +19,6 @@
     over the pull parser interfaces provided on Java and .NET, and that can in principle be implemented
     by other data sources to deliver input documents as if they came from a parser.</p>
 
-<p>This package is almost obsolete. Pull-mode processing of queries, when required at all, is generally
-    done using the classes in the {@link net.sf.saxon.evpull} package, which deliver a stream of events
-    as objects, rather than as simple integers (analogous to the two styles of pull processing interface
-    in StAX).</p>
-
 <p>The API, defined in class <code>PullProvider</code>, is loosely modelled on the StAX <code>XMLReader</code>
     API. It is not identical, because it is designed as an intimate and efficient interface that integrates with
     Saxon concepts such as the <code>SequenceIterator</code> and the <code>NamePool</code>. A class

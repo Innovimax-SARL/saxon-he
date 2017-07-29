@@ -8,13 +8,10 @@
 package net.sf.saxon.pull;
 
 
-import net.sf.saxon.Configuration;
-import net.sf.saxon.event.NamespaceReducer;
 import net.sf.saxon.event.PipelineConfiguration;
 import net.sf.saxon.event.ReceiverOptions;
 import net.sf.saxon.expr.parser.ExplicitLocation;
 import net.sf.saxon.om.*;
-import net.sf.saxon.serialize.XMLEmitter;
 import net.sf.saxon.trans.SaxonErrorCode;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.tiny.CharSlice;
@@ -29,9 +26,6 @@ import net.sf.saxon.value.Whitespace;
 
 import javax.xml.stream.*;
 import javax.xml.stream.events.EntityDeclaration;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,7 +34,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * This class implements the Saxon PullProvider API on top of a standard StAX parser
@@ -53,7 +46,6 @@ public class StaxBridge implements PullProvider {
     private StaxAttributes attributes = new StaxAttributes();
     private PipelineConfiguration pipe;
     private NamePool namePool;
-    //private IntHashMap<NodeName> nameCache = new IntHashMap<NodeName>();
     private HashMap<String, NodeName> nameCache = new HashMap<String, NodeName>();
     private List unparsedEntities = null;
     int currentEvent = START_OF_INPUT;
@@ -784,111 +776,6 @@ public class StaxBridge implements PullProvider {
     }
 
     /**
-     * Return the public identifier for the current document event.
-     * <p/>
-     * <p>The return value is the public identifier of the document
-     * entity or of the external parsed entity in which the markup
-     * triggering the event appears.</p>
-     *
-     * @return A string containing the public identifier, or
-     *         null if none is available.
-     * @see #getSystemId
-     */
-    public String getPublicId() {
-        return reader.getLocation().getPublicId();
-    }
-
-    /**
-     * Return the system identifier for the current document event.
-     * <p/>
-     * <p>The return value is the system identifier of the document
-     * entity or of the external parsed entity in which the markup
-     * triggering the event appears.</p>
-     * <p/>
-     * <p>If the system identifier is a URL, the parser must resolve it
-     * fully before passing it to the application.  For example, a file
-     * name must always be provided as a <em>file:...</em> URL, and other
-     * kinds of relative URI are also resolved against their bases.</p>
-     *
-     * @return A string containing the system identifier, or null
-     *         if none is available.
-     * @see #getPublicId
-     */
-    public String getSystemId() {
-        Location location = reader.getLocation();
-        return (location == null ? null : location.getSystemId());
-    }
-
-    /**
-     * Return the line number where the current document event ends.
-     * Lines are delimited by line ends, which are defined in
-     * the XML specification.
-     * <p/>
-     * <p><strong>Warning:</strong> The return value from the method
-     * is intended only as an approximation for the sake of diagnostics;
-     * it is not intended to provide sufficient information
-     * to edit the character content of the original XML document.
-     * In some cases, these "line" numbers match what would be displayed
-     * as columns, and in others they may not match the source text
-     * due to internal entity expansion.  </p>
-     * <p/>
-     * <p>The return value is an approximation of the line number
-     * in the document entity or external parsed entity where the
-     * markup triggering the event appears.</p>
-     * <p/>
-     * <p>If possible, the SAX driver should provide the line position
-     * of the first character after the text associated with the document
-     * event.  The first line is line 1.</p>
-     *
-     * @return The line number, or -1 if none is available.
-     * @see #getColumnNumber
-     */
-    public int getLineNumber() {
-        Location location = reader.getLocation();
-        return (location == null ? -1 : location.getLineNumber());
-    }
-
-    /**
-     * Return the column number where the current document event ends.
-     * This is one-based number of Java <code>char</code> values since
-     * the last line end.
-     * <p/>
-     * <p><strong>Warning:</strong> The return value from the method
-     * is intended only as an approximation for the sake of diagnostics;
-     * it is not intended to provide sufficient information
-     * to edit the character content of the original XML document.
-     * For example, when lines contain combining character sequences, wide
-     * characters, surrogate pairs, or bi-directional text, the value may
-     * not correspond to the column in a text editor's display. </p>
-     * <p/>
-     * <p>The return value is an approximation of the column number
-     * in the document entity or external parsed entity where the
-     * markup triggering the event appears.</p>
-     * <p/>
-     * <p>If possible, the SAX driver should provide the line position
-     * of the first character after the text associated with the document
-     * event.  The first column in each line is column 1.</p>
-     *
-     * @return The column number, or -1 if none is available.
-     * @see #getLineNumber
-     */
-    public int getColumnNumber() {
-        return reader.getLocation().getColumnNumber();
-    }
-
-    public String getSystemId(int locationId) {
-        return getSystemId();
-    }
-
-    public int getLineNumber(int locationId) {
-        return getLineNumber();
-    }
-
-    public int getColumnNumber(int locationId) {
-        return getColumnNumber();
-    }
-
-    /**
      * Get a list of unparsed entities.
      *
      * @return a list of unparsed entities, or null if the information is not available, or
@@ -896,13 +783,12 @@ public class StaxBridge implements PullProvider {
      *         be an instance of {@link net.sf.saxon.pull.UnparsedEntity}
      */
 
-    public List getUnparsedEntities() {
+    public List<UnparsedEntity> getUnparsedEntities() {
         if (unparsedEntities == null) {
             return null;
         }
-        List list = new ArrayList(unparsedEntities.size());
-        for (int i = 0; i < unparsedEntities.size(); i++) {
-            Object ent = unparsedEntities.get(i);
+        List<UnparsedEntity> list = new ArrayList<UnparsedEntity>(unparsedEntities.size());
+        for (Object ent : unparsedEntities) {
             String name = null;
             String systemId = null;
             String publicId = null;
@@ -918,15 +804,16 @@ public class StaxBridge implements PullProvider {
                 // Woodstox 3.0.0 returns this: use introspection to get the data we need
                 try {
                     Class woodstoxClass = ent.getClass();
-                    Class[] noArgs = new Class[0];
-                    Method method = woodstoxClass.getMethod("getName", noArgs);
-                    name = (String) method.invoke(ent, (Object[]) noArgs);
-                    method = woodstoxClass.getMethod("getSystemId", noArgs);
-                    systemId = (String) method.invoke(ent, (Object[]) noArgs);
-                    method = woodstoxClass.getMethod("getPublicId", noArgs);
-                    publicId = (String) method.invoke(ent, (Object[]) noArgs);
-                    method = woodstoxClass.getMethod("getBaseURI", noArgs);
-                    baseURI = (String) method.invoke(ent, (Object[]) noArgs);
+                    Class<?>[] noArgClasses = new Class<?>[0];
+                    Object[] noArgs = new Object[0];
+                    Method method = woodstoxClass.getMethod("getName", noArgClasses);
+                    name = (String) method.invoke(ent, noArgs);
+                    method = woodstoxClass.getMethod("getSystemId", noArgClasses);
+                    systemId = (String) method.invoke(ent, noArgs);
+                    method = woodstoxClass.getMethod("getPublicId", noArgClasses);
+                    publicId = (String) method.invoke(ent, noArgs);
+                    method = woodstoxClass.getMethod("getBaseURI", noArgClasses);
+                    baseURI = (String) method.invoke(ent, noArgs);
                 } catch (NoSuchMethodException e) {
                     //
                 } catch (IllegalAccessException e) {
@@ -971,33 +858,5 @@ public class StaxBridge implements PullProvider {
 
     }
 
-    /**
-     * Simple test program
-     * Usage: java StaxBridge in.xml [out.xml]
-     *
-     * @param args command line arguments
-     */
-
-    public static void main(String[] args) throws Exception {
-        for (int i = 0; i < 1; i++) {
-            long startTime = System.currentTimeMillis();
-            PipelineConfiguration pipe = new Configuration().makePipelineConfiguration();
-            StaxBridge puller = new StaxBridge();
-            puller.setPipelineConfiguration(pipe);
-            File f = new File(args[0]);
-            puller.setInputStream(f.toURI().toString(), new FileInputStream(f));
-            XMLEmitter emitter = new XMLEmitter();
-            emitter.setPipelineConfiguration(pipe);
-            emitter.setOutputProperties(new Properties());
-            if (args.length > 1) {
-                emitter.setOutputStream(new FileOutputStream(args[1]));
-            } else {
-                emitter.setOutputStream(System.out);
-            }
-            NamespaceReducer r = new NamespaceReducer(emitter);
-            new PullPushCopier(puller, r).copy();
-            System.err.println("Elapsed time: " + (System.currentTimeMillis() - startTime) + "ms");
-        }
-    }
 }
 
