@@ -508,7 +508,7 @@ PHP_METHOD(SaxonProcessor, registerPHPFunction)
     if (saxonProcessor != NULL && libName != NULL) {
         saxonProcessor->setConfigurationProperty("extc", libName);
     }
-saxonProcessor->registerNativeMethods(SaxonProcessor::sxn_environ->env, "com/saxonica/functions/extfn/PhpCall$PhpFunctionCall",
+saxonProcessor->registerNativeMethods(SaxonProcessor::sxn_environ->env, "com/saxonica/functions/extfn/cpp/PHPFunctionSet$PhpFunction",
     phpMethods, sizeof(phpMethods) / sizeof(phpMethods[0]));
    // std::cerr<<"checkpoint in registerPHPFunction end"<<std::endl;
 }
@@ -650,7 +650,7 @@ PHP_METHOD(XsltProcessor, transformFileToString)
     }
 }
 
-enum saxonTypeEnum
+/*enum saxonTypeEnum
 {
 	enumNode,
 	enumString,
@@ -659,7 +659,7 @@ enum saxonTypeEnum
 	enumFloat,
 	enumBool,
 	enumArrXdmValue
-};
+};*/
 
 jobject JNICALL phpNativeCall
   (JNIEnv *env, jobject object, jstring funcName, jobjectArray arguments, jobjectArray argTypes){

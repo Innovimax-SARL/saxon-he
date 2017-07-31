@@ -5,6 +5,58 @@
     </head>
     <body>
         <?php 
+	
+ 	// define a user space function
+   	 function userFunction($param , $param2)
+    	{
+		
+     	   echo("userspace function called with no paramXXX\n");
+	 if(is_numeric($param2)){
+		$param32 = $param32*2;
+		echo("PAram3 = ".$param2);
+	} 
+	
+	if(is_a($param2, "Saxon\\XdmNode")) {
+		/*$proc = new Saxon\SaxonProcessor(true);
+		$xpath = $proc->newXPathProcessor();
+		$xpath->setContextItem($param3);
+                $value = $xpath->evaluate("(//*)");*/
+		$value = $param2->getStringValue();
+		echo("XdmNode value= ".$value);
+	}
+	
+	   $resulti = $param.", ".$param2.", ".$param2->getStringValue();
+	   
+	   return $param2;
+    	}
+
+	function  userFunctionExample($saxon, $proc,$xmlfile, $xslFile){
+		echo '<b>userFunctionExample:</b><br/>';
+		global $resultg;
+
+		$proc->setProperty("extc", "/home/ond1/work/new-svn/latest9.8-hec/hec/samples/cppTests/cppExtensionFunction");//"/usr/lib/php5/20121212+lfs/saxon");
+ 		$proc->setSourceFromFile($xmlfile);
+                $proc->compileFromFile($xslFile);
+		$saxon->registerPHPFunction(NULL);
+  	              
+                $result = $proc->transformToString();               
+		if($result != null) {               		
+		echo 'Output=======:'.$result;
+		} else {
+			echo "Result is null";
+			if($proc->exceptionOccurred()){
+				echo "Exception occurred";
+			}
+			$errCount = $proc->getExceptionCount(); 
+			for($i =0;$i<$errCount;$i++) {
+				echo 'Error Message='.$proc->getErrorMessage($i);
+			}
+		}
+		
+		$proc->clearParameters();
+		$proc->clearProperties();
+
+	}
             
             /* simple example to show transforming to string */
             function exampleSimple1($proc, $xmlfile, $xslFile){
@@ -132,7 +184,7 @@ $proc->clearProperties();
                 $proc->clearParameters();                
                 //unset($result);
                 echo 'again with a no parameter value<br/>';
-		$proc->setProperty('!indent', 'yes'); //Serialization property indicated with a '!' symbol
+		$proc->setProperty('!indent', 'yes'); 
                 $result = $proc->transformToString();
                
                 $proc->clearProperties();
@@ -143,8 +195,16 @@ $proc->clearProperties();
                 $xdmvalue = $saxonProc->createAtomicValue(strval("goodbye to you"));
 		$proc->setParameter('a-param', $xdmvalue);
 		
-                $result = $proc->transformToString();                
-                echo $result;
+                $result = $proc->transformToString();   
+		if($result != null) {             
+                	echo 'Output ='.$result;
+		} else {
+			echo 'Error in result';
+			$errCount = $proc->getExceptionCount(); 
+			for($i =0;$i<$errCount;$i++) {
+				echo 'Error Message='.$proc->getErrorMessage($i);
+			}
+		}
 		$proc->clearParameters();
 		$proc->clearProperties(); 
                         
@@ -311,12 +371,14 @@ $proc->clearProperties();
             $multidoc_xsl = "xsl/multidoc.xsl";
             $identity_xsl = "xsl/identity.xsl"; 
             
-            $saxonProc = new Saxon\SaxonProcessor();
+            $saxonProc = new Saxon\SaxonProcessor(true);
 	    $proc = $saxonProc->newXsltProcessor();	
             $version = $saxonProc->version();
             echo 'Saxon Processor version: '.$version;
-            echo '<br/>';        
-            exampleSimple1($proc, $foo_xml, $foo_xsl);
+            echo '<br/>';   
+	       
+	    echo '<br/>';  
+           /* exampleSimple1($proc, $foo_xml, $foo_xsl);
             echo '<br/>';
             exampleSimple2($proc, "xml/foo.xml", $foo_xsl);
             echo '<br/>';            
@@ -330,10 +392,10 @@ $proc->clearProperties();
             echo '<br/>';
             exampleXMLFilterChain($proc, $foo_xml, $foo_xsl, $foo2_xsl, $foo3_xsl);
             echo '<br/>';                    
-            exampleXMLFilterChain2($saxonProc, $proc, $foo_xml, $foo_xsl, $foo2_xsl, $foo3_xsl);          
+            exampleXMLFilterChain2($saxonProc, $proc, $foo_xml, $foo_xsl, $foo2_xsl, $foo3_xsl);  */        
             echo '<br/>';  
-
-            
+	    userFunctionExample($saxonProc, $proc,  $foo_xml, 'xsl/testExFunc.xsl');
+            echo '<br/>';
             unset($proc);
 	    unset($saxonproc);
 	
