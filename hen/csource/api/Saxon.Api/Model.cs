@@ -578,7 +578,7 @@ namespace Saxon.Api
 
         public XdmAtomicValue(decimal d)
         {
-            this.value = new JBigDecimalValue(new JBigDecimal(d.ToString()));
+            this.value = new JBigDecimalValue(new JBigDecimal(d.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         }
 
         /// <summary>
