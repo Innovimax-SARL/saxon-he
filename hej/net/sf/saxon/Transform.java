@@ -740,6 +740,9 @@ public class Transform {
                 }
                 if (export) {
                     sheet.export(new FileOutputStream(exportOutputFileName));
+                    if (showTime) {
+                        System.err.println("Stylesheet exported to: " + exportOutputFileName);
+                    }
                 }
 
                 if (run) {
