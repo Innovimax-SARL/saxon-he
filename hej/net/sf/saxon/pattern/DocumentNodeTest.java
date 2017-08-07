@@ -156,14 +156,15 @@ public class DocumentNodeTest extends NodeTest {
     /**
      * Generate Javascript code to test whether an item conforms to this item type
      * @param knownToBe a type that the item is known to conform to, without further testing
+     * @param targetVersion
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
      *
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
-        String elTest = "function e(item) {" + elementTest.generateJavaScriptItemTypeTest(NodeKindTest.ELEMENT) + "};";
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
+        String elTest = "function e(item) {" + elementTest.generateJavaScriptItemTypeTest(NodeKindTest.ELEMENT, targetVersion) + "};";
         return elTest + "return SaxonJS.U.isNode(item) && (item.nodeType===9 || item.nodeType===11) && " +
                 "SaxonJS.U.Axis.child(item).filter(e).next();"; }
 

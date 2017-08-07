@@ -185,7 +185,8 @@ public final class SimplePositionalPattern extends Pattern {
         presenter.startElement("p.simPos");
         presenter.emitAttribute("test", nodeTest.toString());
         if ("JS".equals(presenter.getOption("target"))) {
-            presenter.emitAttribute("jsTest", nodeTest.generateJavaScriptItemTypeTest(AnyItemType.getInstance()));
+            int targetVersion = presenter.getIntOption("targetVersion", 1);
+            presenter.emitAttribute("jsTest", nodeTest.generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion));
         }
         presenter.emitAttribute("pos", position + "");
         presenter.endElement();

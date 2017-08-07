@@ -318,7 +318,8 @@ public class TryCatch extends Expression {
             out.startElement("catch");
             out.emitAttribute("err", clause.nameTest.toString());
             if ("JS".equals(out.getOption("target"))) {
-                out.emitAttribute("test", clause.nameTest.generateJavaScriptNameTest());
+                int targetVersion = out.getIntOption("targetVersion", 1);
+                out.emitAttribute("test", clause.nameTest.generateJavaScriptNameTest(targetVersion));
             }
             clause.catchOp.getChildExpression().export(out);
             out.endElement();

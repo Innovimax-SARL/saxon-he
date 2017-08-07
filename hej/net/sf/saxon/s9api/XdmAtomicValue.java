@@ -413,6 +413,22 @@ public class XdmAtomicValue extends XdmItem {
     }
 
     /**
+     * For an XdmAtomicValue representing an xs:QName or xs:NOTATION value,
+     * get the value as an instance of QName
+     * @return the corresponding QName if the value is an xs:QName or xs:NOTATION,
+     * or null otherwise
+     */
+
+    public QName getQNameValue() {
+        AtomicValue av = getUnderlyingValue();
+        if (av instanceof QualifiedNameValue) {
+            return new QName(((QualifiedNameValue)av).getStructuredQName());
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Compare values for equality.
      * Two atomic values are considered equal if they are equal according to the
      * rules of the op:is-same-key() operation, used when comparing keys in maps

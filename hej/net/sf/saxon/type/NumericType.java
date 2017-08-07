@@ -624,9 +624,10 @@ public class NumericType implements UnionType, PlainType {
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) {
         return "return SaxonJS.U.Atomic.numeric.matches(item);";
     }
 
@@ -635,13 +636,14 @@ public class NumericType implements UnionType, PlainType {
      * if conversion is possible, or throw an error otherwise.
      *
      * @param errorCode the error to be thrown if conversion is not possible
+     * @param targetVersion
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns the result of conversion to this type, or throws
      * an error if conversion is not possible. The variable "val" will hold the supplied Javascript
      * value.
      */
-    public String generateJavaScriptItemTypeAcceptor(String errorCode) throws XPathException {
-        return BuiltInAtomicType.DOUBLE.generateJavaScriptItemTypeAcceptor(errorCode);
+    public String generateJavaScriptItemTypeAcceptor(String errorCode, int targetVersion) throws XPathException {
+        return BuiltInAtomicType.DOUBLE.generateJavaScriptItemTypeAcceptor(errorCode, targetVersion);
     }
 }
 

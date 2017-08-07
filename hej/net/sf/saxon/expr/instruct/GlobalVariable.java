@@ -873,7 +873,8 @@ public class GlobalVariable extends Actor
         }
 
         if ("JS".equals(presenter.getOption("target"))) {
-            presenter.emitAttribute("jsAcceptor", getRequiredType().getPrimaryType().generateJavaScriptItemTypeAcceptor("XTTE0590"));
+            int targetVersion = presenter.getIntOption("targetVersion", 1);
+            presenter.emitAttribute("jsAcceptor", getRequiredType().getPrimaryType().generateJavaScriptItemTypeAcceptor("XTTE0590", targetVersion));
             presenter.emitAttribute("jsCardCheck", Cardinality.generateJavaScriptChecker(getRequiredType().getCardinality()));
         }
 

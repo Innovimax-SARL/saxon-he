@@ -195,6 +195,28 @@ public class ExpressionPresenter {
     }
 
     /**
+     * Get the value of an integer-valued option
+     *
+     * @param key the option name
+     * @param defaultValue the default value to be used if the option is not present or if it cannot
+     *                be parsed as an integer
+     * @return the option value as an integer, or -1 if the option
+     */
+
+    public int getIntOption(String key, int defaultValue) {
+        String s = options.get(key);
+        if (s != null) {
+            try {
+                return Integer.parseInt(s);
+            } catch (NumberFormatException err) {
+                return defaultValue;
+            }
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
      * Ask whether the package can be deployed to a different location, with a different base URI
      *
      * @return if true then static-base-uri() represents the deployed location of the package,

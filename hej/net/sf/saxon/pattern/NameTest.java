@@ -326,8 +326,9 @@ public class NameTest extends NodeTest implements QNameTest {
      * as the body of a JS function in which the argument name "q" is an
      * XdmQName object holding the name. The XdmQName object has properties
      * uri and local.
+     * @param targetVersion
      */
-    public String generateJavaScriptNameTest() {
+    public String generateJavaScriptNameTest(int targetVersion) {
         computeUriAndLocal();
         return "q.uri==='" + ExpressionPresenter.jsEscape(uri) + "'&&q.local==='" + localName + "'";
     }
@@ -335,6 +336,7 @@ public class NameTest extends NodeTest implements QNameTest {
     /**
      * Generate Javascript code to test whether an item conforms to this item type
      * @param knownToBe NodeTest that the item is known to conform to (no run-time test needed)
+     * @param targetVersion
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
@@ -343,7 +345,7 @@ public class NameTest extends NodeTest implements QNameTest {
      *
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
 
         boolean knownKind = knownToBe.getUType() == this.getUType();
         if (nodeKind == Type.ATTRIBUTE && getNamespaceURI().equals("")) {
@@ -363,7 +365,14 @@ public class NameTest extends NodeTest implements QNameTest {
                 instNode = "SaxonJS.U.isNode(item) && item.nodeType===" + nodeKind + " && ";
             }
         }
-        return "var q=SaxonJS.U.nameOfNode(item); return " + instNode + generateJavaScriptNameTest() + ";";
+        if (targetVersion == 1) {
+            return "var q=SaxonJS.U.nameOfNode(item); return " + instNode + generateJavaScriptNameTest(targetVersion) + ";";
+        } else {
+            computeUriAndLocal();
+            return "return " + instNode +
+                    "SaxonJS.U.hasLocalName(item,'" + localName + "')&&SaxonJS.U.hasURI(item,'" +
+                    ExpressionPresenter.jsEscape(uri) + "')";
+        }
     }
 }
 

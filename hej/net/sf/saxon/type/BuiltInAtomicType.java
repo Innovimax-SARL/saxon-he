@@ -1185,6 +1185,7 @@ public class BuiltInAtomicType implements AtomicType, ItemType.WithSequenceTypeC
     /**
      * Generate Javascript code to test whether an item conforms to this item type
      * @param knownToBe a type that the item is known to conform to
+     * @param targetVersion 1 or 2 depending on the version of Saxon-JS we are targeting
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
@@ -1193,11 +1194,17 @@ public class BuiltInAtomicType implements AtomicType, ItemType.WithSequenceTypeC
      *
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         if (this == BuiltInAtomicType.NOTATION) {
             return "return false;";
         }
-        return "return SaxonJS.U.Atomic." + getName() + ".matches(item);";
+        if (targetVersion == 1) {
+            return "return SaxonJS.U.Atomic." + getName() + ".matches(item);";
+        } else if (targetVersion == 2) {
+            return "return SaxonJS.U.hasAtomicType(item, '" + getName() + "');";
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -1205,13 +1212,20 @@ public class BuiltInAtomicType implements AtomicType, ItemType.WithSequenceTypeC
      * if conversion is possible, or throw an error otherwise.
      *
      * @param errorCode the error to be thrown if conversion is not possible
+     * @param targetVersion 1 or 2 depending on the version of Saxon-JS we are targeting
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns the result of conversion to this type, or throws
      * an error if conversion is not possible. The variable "val" will hold the supplied Javascript
      * value.
      */
-    public String generateJavaScriptItemTypeAcceptor(String errorCode) throws XPathException {
-        return "return SaxonJS.U.Atomic." + getName() + ".cast(val);";
+    public String generateJavaScriptItemTypeAcceptor(String errorCode, int targetVersion) throws XPathException {
+        if (targetVersion == 1) {
+            return "return SaxonJS.U.Atomic." + getName() + ".cast(val);";
+        } else if (targetVersion == 2) {
+            return "return SaxonJS.U.cast(val, '" + getName() + "');";
+        } else {
+            throw new IllegalArgumentException(targetVersion+"");
+        }
     }
 
     //#ifdefined  SCHEMA

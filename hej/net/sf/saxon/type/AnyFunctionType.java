@@ -12,13 +12,9 @@ import net.sf.saxon.expr.ItemChecker;
 import net.sf.saxon.expr.parser.RoleDiagnostic;
 import net.sf.saxon.om.Function;
 import net.sf.saxon.om.Item;
-import net.sf.saxon.query.Annotation;
 import net.sf.saxon.query.AnnotationList;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * An ItemType representing the type function(*). Subtypes represent function items with more specific
@@ -248,9 +244,10 @@ public class AnyFunctionType implements FunctionItemType {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         return "return SaxonJS.U.isMap(item) || SaxonJS.U.isArray(item);";
     }
 
@@ -259,12 +256,13 @@ public class AnyFunctionType implements FunctionItemType {
      * if conversion is possible, or throw an error otherwise.
      *
      * @param errorCode the error to be thrown if conversion is not possible
+     * @param targetVersion
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns the result of conversion to this type, or throws
      * an error if conversion is not possible. The variable "val" will hold the supplied Javascript
      * value.
      */
-    public String generateJavaScriptItemTypeAcceptor(String errorCode) throws XPathException {
+    public String generateJavaScriptItemTypeAcceptor(String errorCode, int targetVersion) throws XPathException {
         return "if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}";
     }
 }

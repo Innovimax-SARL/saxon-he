@@ -300,7 +300,8 @@ public class NamedTemplate extends Actor {
             presenter.emitAttribute("cxt", getRequiredContextItemType().toString());
             if ("JS".equals(presenter.getOption("target"))) {
                 try {
-                    presenter.emitAttribute("jsTest", getRequiredContextItemType().generateJavaScriptItemTypeTest(AnyItemType.getInstance()));
+                    int targetVersion = presenter.getIntOption("targetVersion", 1);
+                    presenter.emitAttribute("jsTest", getRequiredContextItemType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion));
                 } catch (XPathException e) {
                     e.maybeSetLocation(getLocation());
                     throw e;

@@ -380,7 +380,8 @@ public final class ItemChecker extends UnaryExpression {
         out.startElement("treat", this);
         out.emitAttribute("as", requiredItemType.toString());
         if ("JS".equals(out.getOption("target"))) {
-            out.emitAttribute("jsTest", requiredItemType.generateJavaScriptItemTypeTest(getBaseExpression().getItemType()));
+            int targetVersion = out.getIntOption("targetVersion", 1);
+            out.emitAttribute("jsTest", requiredItemType.generateJavaScriptItemTypeTest(getBaseExpression().getItemType(), targetVersion));
         }
         out.emitAttribute("diag", role.save());
         getBaseExpression().export(out);

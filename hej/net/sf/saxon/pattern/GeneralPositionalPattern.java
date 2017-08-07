@@ -376,7 +376,8 @@ public class GeneralPositionalPattern extends Pattern {
         presenter.emitAttribute("type", nodeTest.toString());
         if ("JS".equals(presenter.getOption("target"))) {
             try {
-                presenter.emitAttribute("jsTest", nodeTest.generateJavaScriptItemTypeTest(AnyItemType.getInstance()));
+                int targetVersion = presenter.getIntOption("targetVersion", 1);
+                presenter.emitAttribute("jsTest", nodeTest.generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion));
             } catch (XPathException e) {
                 e.maybeSetLocation(getLocation());
                 throw e;

@@ -628,9 +628,10 @@ public final class ErrorType extends NodeTest implements AtomicType, UnionType, 
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         return "return false;";
     }
 

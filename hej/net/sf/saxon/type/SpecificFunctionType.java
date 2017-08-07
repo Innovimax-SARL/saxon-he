@@ -324,9 +324,10 @@ public class SpecificFunctionType extends AnyFunctionType {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         throw new XPathException("Cannot generate JS code for function type tests", SaxonErrorCode.SXJS0001);
     }
 }

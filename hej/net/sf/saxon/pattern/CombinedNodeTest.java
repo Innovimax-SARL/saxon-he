@@ -404,9 +404,10 @@ public class CombinedNodeTest extends NodeTest {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         FastStringBuffer fsb = new FastStringBuffer(256);
         String conjunctor = null;
         switch (operator) {
@@ -420,8 +421,8 @@ public class CombinedNodeTest extends NodeTest {
                 conjunctor = "&&!";
                 break;
         }
-        fsb.append("function a() {" + nodetest1.generateJavaScriptItemTypeTest(knownToBe) + "};");
-        fsb.append("function b() {" + nodetest2.generateJavaScriptItemTypeTest(knownToBe) + "};");
+        fsb.append("function a() {" + nodetest1.generateJavaScriptItemTypeTest(knownToBe, targetVersion) + "};");
+        fsb.append("function b() {" + nodetest2.generateJavaScriptItemTypeTest(knownToBe, targetVersion) + "};");
         fsb.append("return a()" + conjunctor + "b();");
         return fsb.toString();
     }

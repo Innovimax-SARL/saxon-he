@@ -152,9 +152,10 @@ public class AnyItemType implements ItemType.WithSequenceTypeCache {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         return "return true;";
     }
 
@@ -163,12 +164,13 @@ public class AnyItemType implements ItemType.WithSequenceTypeCache {
      * if conversion is possible, or throw an error otherwise.
      *
      * @param errorCode the error to be thrown if conversion is not possible
+     * @param targetVersion
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns the result of conversion to this type, or throws
      * an error if conversion is not possible. The variable "val" will hold the supplied Javascript
      * value.
      */
-    public String generateJavaScriptItemTypeAcceptor(String errorCode) throws XPathException {
+    public String generateJavaScriptItemTypeAcceptor(String errorCode, int targetVersion) throws XPathException {
         return "return val;";
     }
 

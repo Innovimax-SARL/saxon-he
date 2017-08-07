@@ -142,9 +142,10 @@ public final class AnyChildNodeTest extends NodeTest {
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) {
         return "return SaxonJS.U.isNode(item) && (item.nodeType===1 || item.nodeType===3 || item.nodeType===7 || item.nodeType===8);";
     }
 

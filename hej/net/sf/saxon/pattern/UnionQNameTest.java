@@ -66,9 +66,10 @@ public class UnionQNameTest implements QNameTest {
      * as the body of a JS function in which the argument name "q" is an
      * XdmQName object holding the name. The XdmQName object has properties
      * uri and local.
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptNameTest() {
+    public String generateJavaScriptNameTest(int targetVersion) {
         FastStringBuffer fsb = new FastStringBuffer(256);
         boolean started = false;
         for (QNameTest qt : tests) {
@@ -77,7 +78,7 @@ public class UnionQNameTest implements QNameTest {
             } else {
                 started = true;
             }
-            String test = qt.generateJavaScriptNameTest();
+            String test = qt.generateJavaScriptNameTest(targetVersion);
             fsb.append("(" + test + ")");
         }
         return fsb.toString();

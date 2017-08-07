@@ -302,9 +302,10 @@ public class NodeKindTest extends NodeTest {
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) {
         String instNode = knownToBe instanceof NodeTest ? " " : " SaxonJS.U.isNode(item) && ";
         switch (getNodeKind()) {
             case Type.DOCUMENT:

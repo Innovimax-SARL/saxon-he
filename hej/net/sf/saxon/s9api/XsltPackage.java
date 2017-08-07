@@ -130,6 +130,10 @@ public class XsltPackage {
         ExpressionPresenter out = new ExpressionPresenter();
         if (stylesheetPackage.getTargetEdition().equals("JS")) {
             out.setOption("target", "JS");
+            out.setOption("targetVersion", "1");
+        } else if (stylesheetPackage.getTargetEdition().equals("JS2")) {
+            out.setOption("target", "JS");
+            out.setOption("targetVersion", "2");
         }
         out.init(processor.getUnderlyingConfiguration(), destination, true);
         out.setRelocatable(stylesheetPackage.isRelocatable());
@@ -147,8 +151,8 @@ public class XsltPackage {
      * Save this compiled package to filestore for a particular target environment
      *
      * @param file the file to which the compiled package should be saved
-     * @param target the target environment. The only value currently recognized is "JS", which exports
-     *               the package for running under Saxon-JS.
+     * @param target the target environment. The only values currently recognized are "JS" and "JS2,
+     *               which export the package for running under Saxon-JS 1.0 or 2.0 respectively.
      * @throws SaxonApiException if the compiled package cannot be saved to the specified
      *                           location.
      * @since 9.7.0.5 (experimental and subject to change)
@@ -157,7 +161,13 @@ public class XsltPackage {
     public void save(File file, String target) throws SaxonApiException {
         StreamResult destination = new StreamResult(file);
         ExpressionPresenter out = new ExpressionPresenter();
-        out.setOption("target", target);
+        if (target.equals("JS")) {
+            out.setOption("target", "JS");
+            out.setOption("targetVersion", "1");
+        } else if (target.equals("JS2")) {
+            out.setOption("target", "JS");
+            out.setOption("targetVersion", "2");
+        }
         out.init(processor.getUnderlyingConfiguration(), destination, true);
         out.setRelocatable(stylesheetPackage.isRelocatable());
         try {

@@ -276,19 +276,20 @@ public class ContentTypeTest extends NodeTest {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         if (kind == Type.ELEMENT) {
             if (schemaType == Untyped.getInstance() || schemaType == AnyType.getInstance()) {
-                return NodeKindTest.makeNodeKindTest(getNodeKind()).generateJavaScriptItemTypeTest(AnyItemType.getInstance());
+                return NodeKindTest.makeNodeKindTest(getNodeKind()).generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion);
             } else if (schemaType == BuiltInAtomicType.UNTYPED_ATOMIC || schemaType == BuiltInAtomicType.ANY_ATOMIC) {
                 return "return false;";
             }
         } else if (kind == Type.ATTRIBUTE) {
             if (schemaType == Untyped.getInstance() || schemaType == AnyType.getInstance()
                     || schemaType == BuiltInAtomicType.UNTYPED_ATOMIC || schemaType == BuiltInAtomicType.ANY_ATOMIC) {
-                return NodeKindTest.makeNodeKindTest(getNodeKind()).generateJavaScriptItemTypeTest(AnyItemType.getInstance());
+                return NodeKindTest.makeNodeKindTest(getNodeKind()).generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion);
             }
         }
         throw new XPathException("Cannot generate JS code to test type annotations", SaxonErrorCode.SXJS0001);

@@ -144,8 +144,9 @@ public final class AnyNodeTest extends NodeTest implements QNameTest {
      * as the body of a JS function in which the argument name "q" is an
      * XdmQName object holding the name. The XdmQName object has properties
      * uri and local.
+     * @param targetVersion
      */
-    public String generateJavaScriptNameTest() {
+    public String generateJavaScriptNameTest(int targetVersion) {
         return "true";
     }
 
@@ -158,9 +159,10 @@ public final class AnyNodeTest extends NodeTest implements QNameTest {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         return "return SaxonJS.U.isNode(item);";
     }
 }

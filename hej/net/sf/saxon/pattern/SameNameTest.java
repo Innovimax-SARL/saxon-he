@@ -254,8 +254,9 @@ public class SameNameTest extends NodeTest implements QNameTest {
      * as the body of a JS function in which the argument name "q" is an
      * XdmQName object holding the name. The XdmQName object has properties
      * uri and local.
+     * @param targetVersion
      */
-    public String generateJavaScriptNameTest() {
+    public String generateJavaScriptNameTest(int targetVersion) {
         // Not applicable
         return "false";
     }
@@ -269,9 +270,10 @@ public class SameNameTest extends NodeTest implements QNameTest {
      * @throws XPathException if JS code cannot be generated for this item type, for example because
      *                        the test is schema-aware.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         throw new XPathException("Cannot generate JS code for a SameNameTest", SaxonErrorCode.SXJS0001);
     }
 }

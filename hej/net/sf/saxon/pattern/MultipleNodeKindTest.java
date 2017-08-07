@@ -172,9 +172,10 @@ public final class MultipleNodeKindTest extends NodeTest {
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
      * @param knownToBe
+     * @param targetVersion
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) {
         FastStringBuffer fsb = new FastStringBuffer(256);
         fsb.append("return SaxonJS.U.isNode(item) && (false");
         UType u = uType;

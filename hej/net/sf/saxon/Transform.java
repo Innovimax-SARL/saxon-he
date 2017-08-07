@@ -165,7 +165,7 @@ public class Transform {
                                     "Display version and timing information, and names of output files");
         options.addRecognizedOption("target", CommandLineOptions.TYPE_ENUMERATION | CommandLineOptions.VALUE_REQUIRED,
                                     "Target Saxon edition for execution via -export");
-        options.setPermittedValues("target", new String[]{"EE", "PE", "HE", "JS"}, null);
+        options.setPermittedValues("target", new String[]{"EE", "PE", "HE", "JS", "JS2"}, null);
         options.addRecognizedOption("T", CommandLineOptions.TYPE_CLASSNAME,
                                     "Use named TraceListener class, or standard TraceListener");
         options.addRecognizedOption("TB", CommandLineOptions.TYPE_FILENAME,

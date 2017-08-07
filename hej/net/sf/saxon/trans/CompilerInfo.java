@@ -182,7 +182,7 @@ public class CompilerInfo {
     /**
      * Set the target edition under which the stylesheet will be executed.
      *
-     * @param edition the Saxon edition for the run-time environment. One of "EE", "PE", "HE", or "JS".
+     * @param edition the Saxon edition for the run-time environment. One of "EE", "PE", "HE", "JS", or "JS2".
      * @since 9.7.0.5. Experimental and subject to change.
      */
 
@@ -193,7 +193,7 @@ public class CompilerInfo {
     /**
      * Get the target edition under which the stylesheet will be executed.
      *
-     * @return the Saxon edition for the run-time environment. One of "EE", "PE", "HE", or "JS".
+     * @return the Saxon edition for the run-time environment. One of "EE", "PE", "HE", "JS", or "JS2".
      * @since 9.7.0.5. Experimental and subject to change.
      */
 

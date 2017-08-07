@@ -142,8 +142,9 @@ public class NodeTestPattern extends Pattern {
         presenter.startElement("p.nodeTest");
         presenter.emitAttribute("test", nodeTest.toString());
         if ("JS".equals(presenter.getOption("target"))) {
+            int targetVersion = presenter.getIntOption("targetVersion", 1);
             try {
-                presenter.emitAttribute("jsTest", nodeTest.generateJavaScriptItemTypeTest(AnyItemType.getInstance()));
+                presenter.emitAttribute("jsTest", nodeTest.generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion));
             } catch (XPathException e) {
                 e.maybeSetLocation(getLocation());
                 throw e;

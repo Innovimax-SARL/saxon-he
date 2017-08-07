@@ -417,7 +417,8 @@ public class TemplateRule implements RuleTarget, Location, ExpressionOwner {
         if (getRequiredContextItemType() != AnyItemType.getInstance()) {
             presenter.emitAttribute("cxt", getRequiredContextItemType().toString());
             if ("JS".equals(presenter.getOption("target"))) {
-                presenter.emitAttribute("jsTest", getRequiredContextItemType().generateJavaScriptItemTypeTest(AnyItemType.getInstance()));
+                int targetVersion = presenter.getIntOption("targetVersion", 1);
+                presenter.emitAttribute("jsTest", getRequiredContextItemType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion));
             }
         }
 

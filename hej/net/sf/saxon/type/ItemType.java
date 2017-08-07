@@ -133,6 +133,7 @@ public interface ItemType {
      * Generate Javascript code to test whether an item conforms to this item type
      * @param knownToBe An item type that the supplied item is known to conform to; the generated code
      *                  can assume that the item is an instance of this type.
+     * @param targetVersion The version of Saxon-JS for which code is being generated. Currently either 1 or 2.
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
@@ -141,20 +142,21 @@ public interface ItemType {
      *
      */
 
-    String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException;
+    String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException;
 
 
     /**
      * Generate Javascript code to convert a supplied Javascript value to this item type,
      * if conversion is possible, or throw an error otherwise.
      * @param errorCode the error to be thrown if conversion is not possible
+     * @param targetVersion the version of Saxon-JS for which code is being generated
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns the result of conversion to this type, or throws
      * an error if conversion is not possible. The variable "val" will hold the supplied Javascript
      * value.
      */
 
-    String generateJavaScriptItemTypeAcceptor(String errorCode) throws XPathException;
+    String generateJavaScriptItemTypeAcceptor(String errorCode, int targetVersion) throws XPathException;
 
     /**
      * Extension of the ItemType interface implemented by some item types, to provide

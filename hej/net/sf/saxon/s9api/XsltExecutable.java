@@ -122,6 +122,10 @@ public class XsltExecutable {
         ExpressionPresenter presenter = new ExpressionPresenter();
         if (preparedStylesheet.getTopLevelPackage().getTargetEdition().equals("JS")) {
             presenter.setOption("target", "JS");
+            presenter.setOption("targetVersion", "1");
+        } else if (preparedStylesheet.getTopLevelPackage().getTargetEdition().equals("JS2")) {
+            presenter.setOption("target", "JS");
+            presenter.setOption("targetVersion", "2");
         }
         presenter.init(config, new StreamResult(destination), true);
         presenter.setRelocatable(preparedStylesheet.getTopLevelPackage().isRelocatable());
@@ -146,15 +150,23 @@ public class XsltExecutable {
      *
      * @param destination the destination for the XML document containing the diagnostic representation
      *                    of the compiled stylesheet. The stream will be closed when writing has finished.
-     * @param target the target environment. The only value currently recognized is "JS", which exports
-     *               the package for running under Saxon-JS.
+     * @param target the target environment. The only values currently recognized are "JS" and "JS2,
+     *               which export the package for running under Saxon-JS 1.0 or 2.0 respectively.
      * @since 9.7
      */
 
     public void export(OutputStream destination, String target) throws SaxonApiException {
         Configuration config = processor.getUnderlyingConfiguration();
         ExpressionPresenter presenter = new ExpressionPresenter();
-        presenter.setOption("target", target);
+        if (target.equals("JS")) {
+            presenter.setOption("target", "JS");
+            presenter.setOption("targetVersion", "1");
+        } else if (target.equals("JS2")) {
+            presenter.setOption("target", "JS");
+            presenter.setOption("targetVersion", "2");
+        } else {
+            throw new IllegalArgumentException("target");
+        }
         presenter.init(config, new StreamResult(destination), true);
         presenter.setRelocatable(preparedStylesheet.getTopLevelPackage().isRelocatable());
         try {

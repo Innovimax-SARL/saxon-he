@@ -233,6 +233,7 @@ public class ArrayItemType extends AnyFunctionType {
      * Generate Javascript code to test whether an item conforms to this item type
      *
      * @param knownToBe a type that this item is known to conform to
+     * @param targetVersion
      * @return a Javascript instruction or sequence of instructions, which can be used as the body
      * of a Javascript function, and which returns a boolean indication whether the value of the
      * variable "item" is an instance of this item type.
@@ -240,12 +241,12 @@ public class ArrayItemType extends AnyFunctionType {
      *                        the test is schema-aware.
      */
     @Override
-    public String generateJavaScriptItemTypeTest(ItemType knownToBe) throws XPathException {
+    public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         if (this == ANY_ARRAY_TYPE) {
             return "return SaxonJS.U.isArray(item)";
         }
         FastStringBuffer fsb = new FastStringBuffer(256);
-        fsb.append("function v(item) {" + memberType.getPrimaryType().generateJavaScriptItemTypeTest(AnyItemType.getInstance()) + "};");
+        fsb.append("function v(item) {" + memberType.getPrimaryType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion) + "};");
         fsb.append(Cardinality.generateJavaScriptChecker(memberType.getCardinality()));
         fsb.append("return SaxonJS.U.isArray(item) && " +
                            "SaxonJS.U.ForArray(item.value).every(function(seq){return c(seq.length) && SaxonJS.U.ForArray(seq).every(v)});");

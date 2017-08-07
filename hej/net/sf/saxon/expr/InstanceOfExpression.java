@@ -296,7 +296,8 @@ public final class InstanceOfExpression extends UnaryExpression {
             out.emitAttribute("of", targetType.toString() + Cardinality.getOccurrenceIndicator(targetCardinality));
         }
         if ("JS".equals(out.getOption("target"))) {
-            out.emitAttribute("jsTest", targetType.generateJavaScriptItemTypeTest(getBaseExpression().getItemType()));
+            int targetVersion = out.getIntOption("targetVersion", 1);
+            out.emitAttribute("jsTest", targetType.generateJavaScriptItemTypeTest(getBaseExpression().getItemType(), targetVersion));
         }
         getBaseExpression().export(out);
         out.endElement();

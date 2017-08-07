@@ -1131,8 +1131,9 @@ public final class AxisExpression extends Expression {
             } else if (axis == AxisInfo.NAMESPACE) {
                 known = NodeKindTest.makeNodeKindTest(Type.NAMESPACE);
             }
+            int targetVersion = destination.getIntOption("targetVersion", 1);
             try {
-                destination.emitAttribute("jsTest", test == null ? "return true;" : test.generateJavaScriptItemTypeTest(known));
+                destination.emitAttribute("jsTest", test == null ? "return true;" : test.generateJavaScriptItemTypeTest(known, targetVersion));
             } catch (XPathException e) {
                 e.maybeSetLocation(getLocation());
                 throw e;
