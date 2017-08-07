@@ -74,6 +74,9 @@ public class PackageInspector extends ProxyReceiver {
     }
 
     private VersionedPackageName getNameAndVersion() {
+        if (packageName == null || packageVersion == null) {
+            return null;
+        }
         try {
             return new VersionedPackageName(packageName, packageVersion);
         } catch (XPathException e) {
