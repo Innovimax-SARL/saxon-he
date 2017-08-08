@@ -7,6 +7,8 @@
 
 package net.sf.saxon.pattern;
 
+import com.saxonica.ee.stream.Streamability;
+import com.saxonica.ee.stream.Sweep;
 import net.sf.saxon.expr.*;
 import net.sf.saxon.expr.instruct.SlotManager;
 import net.sf.saxon.expr.parser.ContextItemStaticInfo;
@@ -110,6 +112,14 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
         ContextItemStaticInfo cit = visitor.getConfiguration().getDefaultContextItemStaticInfo();
         expression = expression.optimize(visitor, cit);
         return this;
+    }
+
+    @Override
+    public boolean isMotionless() {
+        ContextItemStaticInfo cio = getConfiguration().makeContextItemStaticInfo(getItemType(), false);
+        cio.setContextPostureStriding();
+        Streamability.getStreamability(expression, cio, null);
+        return Streamability.getSweep(expression) == Sweep.MOTIONLESS;
     }
 
     /**
