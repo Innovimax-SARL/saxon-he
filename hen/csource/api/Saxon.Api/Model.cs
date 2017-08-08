@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Collections;
+using System.Globalization;
 using JConfiguration = net.sf.saxon.Configuration;
 using JNamePool = net.sf.saxon.om.NamePool;
 using JAtomicValue = net.sf.saxon.value.AtomicValue;
@@ -578,7 +579,7 @@ namespace Saxon.Api
 
         public XdmAtomicValue(decimal d)
         {
-            this.value = new JBigDecimalValue(new JBigDecimal(d.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            this.value = new JBigDecimalValue(new JBigDecimal(d.ToString(CultureInfo.InvariantCulture)));
         }
 
         /// <summary>
@@ -828,7 +829,7 @@ namespace Saxon.Api
                 return ((JBooleanValue)av).getBooleanValue() ? 0  : 1;
             } else if (av is JNumericValue) {
                 try {
-                    return Convert.ToDecimal(((JNumericValue)av).getDecimalValue().toString());
+                    return Convert.ToDecimal(((JNumericValue)av).getDecimalValue().toString(), CultureInfo.InvariantCulture);
                 } catch (Exception) {
                     throw new ArgumentException("Cannot cast item to a decimal");
                 }   
@@ -947,7 +948,7 @@ namespace Saxon.Api
                 }
                 else if (value is JDecimalValue)
                 {
-                    return Decimal.Parse(((JDecimalValue)value).getStringValue());
+                    return Decimal.Parse(((JDecimalValue)value).getStringValue(), CultureInfo.InvariantCulture);
                 }
                 else if (value is JBooleanValue)
                 {
