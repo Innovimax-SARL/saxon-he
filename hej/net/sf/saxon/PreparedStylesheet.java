@@ -20,9 +20,9 @@ import net.sf.saxon.style.Compilation;
 import net.sf.saxon.style.StylesheetPackage;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.CompilerInfo;
-import net.sf.saxon.trans.rules.RuleManager;
 import net.sf.saxon.trans.SymbolicName;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.trans.rules.RuleManager;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -132,29 +132,6 @@ public class PreparedStylesheet extends Executable {
         }
         return c;
     }
-
-
-
-
-//    /**
-//     * Get the class that manages accumulator functions
-//     *
-//     * @return the class that manages accumulators. Always null in Saxon-HE
-//     */
-//
-//    public AccumulatorManager getAccumulatorManager() {
-//        return accumulatorManager;
-//    }
-//
-//    /**
-//     * Set the class that manages accumulator functions
-//     *
-//     * @param accumulatorManager the manager of accumulator functions
-//     */
-//
-//    public void setAccumulatorManager(AccumulatorManager accumulatorManager) {
-//        this.accumulatorManager = accumulatorManager;
-//    }
 
     /**
      * Get the parameters that were set at compile time. These will generally be static parameters,

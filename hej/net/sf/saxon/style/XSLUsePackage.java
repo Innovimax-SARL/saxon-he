@@ -285,6 +285,7 @@ public class XSLUsePackage extends StyleElement {
                         for (StructuredQName modeName : modeNames) {
                             SymbolicName symbolicName = new SymbolicName(StandardNames.XSL_MODE, modeName);
                             overrides.add(symbolicName);
+                            overriddenModes.add(symbolicName);
                             Component.M derivedComponent = (Component.M)thisPackage.getComponent(symbolicName);
 
                             if (derivedComponent == null) {
@@ -293,7 +294,7 @@ public class XSLUsePackage extends StyleElement {
                                 continue;
                             }
 
-                            if (derivedComponent.getDeclaringPackage() == thisPackage) {
+                            if (derivedComponent.getBaseComponent() == null) {
                                 ((StyleElement) overridingDeclaration).compileError(
                                         "Mode " + modeName.getDisplayName() +
                                                 " cannot be overridden because it is local to this package", "XTSE3440");

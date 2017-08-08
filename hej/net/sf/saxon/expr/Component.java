@@ -197,11 +197,9 @@ public class Component {
         }
         String refs = listComponentReferences(componentIdMap);
         out.emitAttribute("binds", refs);
-        if (baseComponent != null) {
+        if (baseComponent != null && getActor() == baseComponent.getActor()) {
             int baseId = obtainComponentId(baseComponent, componentIdMap);
             out.emitAttribute("base", ""+baseId);
-        }
-        if (!declaringPackage.equals(containingPackage)) {
             out.emitAttribute("dpack", declaringPackage.getPackageName());
         } else {
             actor.export(out);
