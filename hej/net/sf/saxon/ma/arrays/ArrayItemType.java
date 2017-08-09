@@ -244,13 +244,22 @@ public class ArrayItemType extends AnyFunctionType {
     public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         if (this == ANY_ARRAY_TYPE) {
             return "return SaxonJS.U.isArray(item)";
+        } else if (targetVersion == 1) {
+            FastStringBuffer fsb = new FastStringBuffer(256);
+            fsb.append("function v(item) {" + memberType.getPrimaryType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion) + "};");
+            fsb.append(Cardinality.generateJavaScriptChecker(memberType.getCardinality()));
+            fsb.append("return SaxonJS.U.isArray(item) && " +
+                               "SaxonJS.U.ForArray(item.value).every(function(seq){return c(seq.length) && SaxonJS.U.ForArray(seq).every(v)});");
+            return fsb.toString();
+        } else {
+            // targetVersion == 2
+            FastStringBuffer fsb = new FastStringBuffer(256);
+            fsb.append("function v(item) {" + memberType.getPrimaryType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion) + "};");
+            fsb.append(Cardinality.generateJavaScriptChecker(memberType.getCardinality()));
+            fsb.append("return SaxonJS.U.isConstrainedArray(item, v, c);");
+            return fsb.toString();
+
         }
-        FastStringBuffer fsb = new FastStringBuffer(256);
-        fsb.append("function v(item) {" + memberType.getPrimaryType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion) + "};");
-        fsb.append(Cardinality.generateJavaScriptChecker(memberType.getCardinality()));
-        fsb.append("return SaxonJS.U.isArray(item) && " +
-                           "SaxonJS.U.ForArray(item.value).every(function(seq){return c(seq.length) && SaxonJS.U.ForArray(seq).every(v)});");
-        return fsb.toString();
     }
 }
 

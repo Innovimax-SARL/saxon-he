@@ -178,27 +178,35 @@ public final class MultipleNodeKindTest extends NodeTest {
     public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) {
         FastStringBuffer fsb = new FastStringBuffer(256);
         fsb.append("return SaxonJS.U.isNode(item) && (false");
+        String or = "";
         UType u = uType;
         if (UType.DOCUMENT.overlaps(u)) {
-            fsb.append("||item.nodeType===9||item.nodeType===11");
+            fsb.append(or + "item.nodeType===9||item.nodeType===11");
+            or = "||";
         }
         if (UType.ELEMENT.overlaps(u)) {
-            fsb.append("||item.nodeType===1");
+            fsb.append(or + "item.nodeType===1");
+            or = "||";
         }
         if (UType.ATTRIBUTE.overlaps(u)) {
-            fsb.append("||item.nodeType===2");
+            fsb.append(or + "item.nodeType===2");
+            or = "||";
         }
         if (UType.TEXT.overlaps(u)) {
-            fsb.append("||item.nodeType===3");
+            fsb.append(or + "item.nodeType===3");
+            or = "||";
         }
         if (UType.COMMENT.overlaps(u)) {
-            fsb.append("||item.nodeType===8");
+            fsb.append(or + "item.nodeType===8");
+            or = "||";
         }
         if (UType.PI.overlaps(u)) {
-            fsb.append("||item.nodeType===7");
+            fsb.append(or + "item.nodeType===7");
+            or = "||";
         }
         if (UType.NAMESPACE.overlaps(u)) {
-            fsb.append("||item.nodeType===13");
+            fsb.append(or + "item.nodeType===13");
+            or = "||";
         }
         fsb.append(");");
         return fsb.toString().replace("false||", "");

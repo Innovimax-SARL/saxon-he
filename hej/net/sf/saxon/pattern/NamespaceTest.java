@@ -213,6 +213,11 @@ public final class NamespaceTest extends NodeTest implements QNameTest {
      */
     @Override
     public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
-        return "var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) && item.nodeType===" + nodeKind + "&&" + generateJavaScriptNameTest(targetVersion);
+        if (targetVersion == 1) {
+            return "var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) && item.nodeType===" + nodeKind + "&&" + generateJavaScriptNameTest(targetVersion);
+        } else {
+            return "return SaxonJS.U.isNode(item) && item.nodeType===" + nodeKind + " && SaxonJS.U.hasURI(item, '" +
+                    ExpressionPresenter.jsEscape(uri) + "');";
+        }
     }
 }

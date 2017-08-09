@@ -165,8 +165,12 @@ public class DocumentNodeTest extends NodeTest {
     @Override
     public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) throws XPathException {
         String elTest = "function e(item) {" + elementTest.generateJavaScriptItemTypeTest(NodeKindTest.ELEMENT, targetVersion) + "};";
-        return elTest + "return SaxonJS.U.isNode(item) && (item.nodeType===9 || item.nodeType===11) && " +
-                "SaxonJS.U.Axis.child(item).filter(e).next();"; }
-
+        if (targetVersion == 1) {
+            return elTest + "return SaxonJS.U.isNode(item) && (item.nodeType===9 || item.nodeType===11) && " +
+                    "SaxonJS.U.Axis.child(item).filter(e).next();";
+        } else {
+            return "elTest + SaxonJS.U.isConstrainedDocumentNode(item, e);";
+        }
+    }
 }
 

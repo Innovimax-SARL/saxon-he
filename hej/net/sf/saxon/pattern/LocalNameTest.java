@@ -214,7 +214,7 @@ public final class LocalNameTest extends NodeTest implements QNameTest {
             return "var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) && item.nodeType===" +
                     nodeKind + "&&" + generateJavaScriptNameTest(targetVersion);
         } else {
-            return "return item.nodeType===" + nodeKind + " && SaxonJS.U.hasLocalName(item, '" + localName + "')";
+            return "return SaxonJS.U.isNode(item) && item.nodeType===" + nodeKind + " && SaxonJS.U.hasLocalName(item, '" + localName + "')";
         }
     }
 }

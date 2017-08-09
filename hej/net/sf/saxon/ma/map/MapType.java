@@ -291,7 +291,11 @@ public class MapType extends AnyFunctionType {
         fsb.append("function v(item) {" + valueType.getPrimaryType().generateJavaScriptItemTypeTest(AnyItemType.getInstance(), targetVersion) + "};");
         int card = valueType.getCardinality();
         fsb.append(Cardinality.generateJavaScriptChecker(card));
-        fsb.append("return SaxonJS.U.isMap(item) && item.conforms(k, v, c);");
+        if (targetVersion == 1) {
+            fsb.append("return SaxonJS.U.isMap(item) && item.conforms(k, v, c);");
+        } else {
+            fsb.append("return SaxonJS.U.isConstrainedMap(item, k, v, c);");
+        }
         return fsb.toString();
     }
 }
