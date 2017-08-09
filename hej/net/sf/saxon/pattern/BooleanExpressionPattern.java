@@ -114,6 +114,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
         return this;
     }
 
+    //#ifdefined STREAM
     @Override
     public boolean isMotionless() {
         ContextItemStaticInfo cio = getConfiguration().makeContextItemStaticInfo(getItemType(), false);
@@ -121,6 +122,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
         Streamability.getStreamability(expression, cio, null);
         return Streamability.getSweep(expression) == Sweep.MOTIONLESS;
     }
+    //#endif
 
     /**
      * Determine whether this Pattern matches the given item. This is the main external interface
