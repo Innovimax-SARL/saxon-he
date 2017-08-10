@@ -177,7 +177,7 @@ public final class MultipleNodeKindTest extends NodeTest {
     @Override
     public String generateJavaScriptItemTypeTest(ItemType knownToBe, int targetVersion) {
         FastStringBuffer fsb = new FastStringBuffer(256);
-        fsb.append("return SaxonJS.U.isNode(item) && (false");
+        fsb.append("return SaxonJS.U.isNode(item) && (");
         String or = "";
         UType u = uType;
         if (UType.DOCUMENT.overlaps(u)) {
