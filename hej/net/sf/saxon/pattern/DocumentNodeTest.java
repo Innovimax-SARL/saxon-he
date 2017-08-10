@@ -169,7 +169,7 @@ public class DocumentNodeTest extends NodeTest {
             return elTest + "return SaxonJS.U.isNode(item) && (item.nodeType===9 || item.nodeType===11) && " +
                     "SaxonJS.U.Axis.child(item).filter(e).next();";
         } else {
-            return "elTest + SaxonJS.U.isConstrainedDocumentNode(item, e);";
+            return elTest + "return SaxonJS.U.isConstrainedDocumentNode(item, e);";
         }
     }
 }
