@@ -134,8 +134,12 @@ public abstract class Expression implements IdentityComparable {
         Iterable<Operand> ops = operands();
         for (Operand o : ops) {
             Expression child = o.getChildExpression();
-            if (child.getParentExpression() != this) {
-                String message = "*** Bad parent pointer found in " + child.toShortString() +
+            boolean badOperand = o.getParentExpression() != this;
+            boolean badExpression = child.getParentExpression() != this;
+            if (badOperand || badExpression) {
+                String message = "*** Bad parent pointer found in " +
+                        (badOperand ? "operand " : "expression ") +
+                        child.toShortString() +
                         " at " + child.getLocation().getSystemId() + "#" + child.getLocation().getLineNumber() + " ***";
                 try {
                     Configuration config = getConfiguration();

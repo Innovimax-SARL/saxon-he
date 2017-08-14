@@ -40,6 +40,8 @@ public class ConditionalSorter extends Expression {
     public ConditionalSorter(Expression condition, DocumentSorter sorter) {
         conditionOp = new Operand(this, condition, OperandRole.SINGLE_ATOMIC);
         sorterOp = new Operand(this, sorter, DOC_SORTER_ROLE);
+        adoptChildExpression(condition);
+        adoptChildExpression(sorter);
     }
 
     @Override

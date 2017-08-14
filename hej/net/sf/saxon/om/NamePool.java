@@ -15,21 +15,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A NamePool holds a collection of expanded names, each containing a namespace URI,
- * a namespace prefix, and a local name.
+ * and a local name.
  * <p/>
- * <p>Each expanded name is allocated a unique integer namecode. The namecode enables
- * all three parts of the expanded name to be determined, that is, the prefix, the
- * URI, and the local name.</p>
- * <p/>
- * <p>The equivalence between names depends only on the URI and the local name.
- * The namecode is designed so that if two namecodes represent names with the same
- * URI and local name, the two namecodes are the same in the bottom 20 bits. It is
- * therefore possible to compare two names for equivalence by performing an integer
- * comparison of these 20 bits. The bottom 20 bits of a namecode are referred to as
- * a fingerprint.</p>
- * <p/>
- * <p>The NamePool eliminates duplicate names if they have the same prefix, uri,
- * and local part. It retains duplicates if they have different prefixes</p>
+ * <p>Each expanded name is allocated a unique 20-bit fingerprint. The fingerprint enables
+ * the URI and the local name to be determined. Some subsystems (notably the Tinytree) use
+ * the top 10 bits to represent the prefix, but the NamePool is no longer concerned with
+ * managing prefixes, and prefixes do not have global codes.</p>
  * <p/>
  * <p>The NamePool has been redesigned in Saxon 9.7 to make use of two Java
  * ConcurrentHashMaps, one from QNames to integers, one from integers to QNames.
@@ -129,10 +120,10 @@ public final class NamePool {
     }
 
     /**
-     * Get a QName for a given namecode.
+     * Get a QName for a given fingerprint.
      *
      * @param fingerprint a code identifying an expanded QName, e.g. of an element or attribute
-     * @return a qName containing the URI and local name corresponding to the supplied name code.
+     * @return a qName containing the URI and local name corresponding to the supplied fingerprint.
      * There will be no prefix
      */
 

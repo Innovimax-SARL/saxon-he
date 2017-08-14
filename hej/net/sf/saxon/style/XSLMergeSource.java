@@ -135,14 +135,14 @@ public class XSLMergeSource extends StyleElement {
     public MergeInstr.MergeSource makeMergeSource(MergeInstr mi, Expression select) {
         MergeInstr.MergeSource ms = new MergeInstr.MergeSource(mi);
         if (forEachItem != null) {
-            ms.initForEachItem(forEachItem);
+            ms.initForEachItem(mi, forEachItem);
         }
         if (forEachSource != null) {
-            ms.initForEachStream(forEachSource);
+            ms.initForEachStream(mi, forEachSource);
         }
         if (select != null) {
             this.select = select;
-            ms.initRowSelect(select);
+            ms.initRowSelect(mi, select);
         }
         ms.baseURI = getBaseURI();
         ms.sourceName = sourceName;

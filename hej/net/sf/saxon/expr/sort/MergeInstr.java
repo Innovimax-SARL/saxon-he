@@ -89,32 +89,32 @@ public class MergeInstr extends Instruction {
                            Expression forEachItem, Expression forEachStream, Expression rSelect, String name, SortKeyDefinitionList sKeys, String baseURI) {
             this.instruction = instruction;
             if (forEachItem != null) {
-                initForEachItem(forEachItem);
+                initForEachItem(instruction, forEachItem);
             }
             if (forEachStream != null) {
-                initForEachStream(forEachStream);
+                initForEachStream(instruction, forEachStream);
             }
             if (rSelect != null) {
-                initRowSelect(rSelect);
+                initRowSelect(instruction, rSelect);
             }
             this.sourceName = name;
             this.mergeKeyDefinitions = sKeys;
             this.baseURI = baseURI;
         }
 
-        public void initForEachItem(Expression forEachItem) {
+        public void initForEachItem(MergeInstr instruction, Expression forEachItem) {
             forEachItemOp = new Operand(instruction, forEachItem, OperandRole.INSPECT);
         }
 
-        public void initForEachStream(Expression forEachStream) {
+        public void initForEachStream(MergeInstr instruction, Expression forEachStream) {
             forEachStreamOp = new Operand(instruction, forEachStream, OperandRole.INSPECT);
         }
 
-        public void initRowSelect(Expression rowSelect) {
+        public void initRowSelect(MergeInstr instruction, Expression rowSelect) {
             rowSelectOp = new Operand(instruction, rowSelect, ROW_SELECT);
         }
 
-        public MergeSource copy(RebindingMap rebindings) {
+        public MergeSource copyMergeSource(MergeInstr newInstr, RebindingMap rebindings) {
             SortKeyDefinition[] newKeyDef = new SortKeyDefinition[mergeKeyDefinitions.size()];
 
             for (int i = 0; i < mergeKeyDefinitions.size(); i++) {
@@ -122,7 +122,7 @@ public class MergeInstr extends Instruction {
 
             }
 
-            MergeSource ms = new MergeSource(instruction,
+            MergeSource ms = new MergeSource(newInstr,
                                              copy(getForEachItem(), rebindings), copy(getForEachSource(), rebindings),
                                              copy(getRowSelect(), rebindings), sourceName, new SortKeyDefinitionList(newKeyDef), baseURI);
             ms.validation = validation;
@@ -744,12 +744,13 @@ public class MergeInstr extends Instruction {
 
     /*@NotNull*/
     public Expression copy(RebindingMap rebindings) {
+        MergeInstr newMerge = new MergeInstr();
         MergeSource[] c2 = new MergeSource[mergeSources.length];
         Expression a2 = getAction().copy(rebindings);
         for (int c = 0; c < mergeSources.length; c++) {
-            c2[c] = mergeSources[c].copy(rebindings);
+            c2[c] = mergeSources[c].copyMergeSource(newMerge, rebindings);
         }
-        return new MergeInstr().init(c2, a2);
+        return newMerge.init(c2, a2);
     }
 
     /**
