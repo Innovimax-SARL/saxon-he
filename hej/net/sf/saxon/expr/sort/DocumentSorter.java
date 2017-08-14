@@ -103,6 +103,19 @@ public class DocumentSorter extends UnaryExpression {
             if (!Cardinality.allowsMany(operand.getCardinality())) {
                 return operand;
             }
+            // Bug 3389: try to rewrite sort(conditionalSort($var/child::x) / child::y)
+            // as conditionalSort($var, (child::x/child::y))
+            if (operand instanceof SlashExpression) {
+                SlashExpression slash = (SlashExpression)operand;
+                if (slash.getLhsExpression() instanceof ConditionalSorter &&
+                        (slash.getRhsExpression().getSpecialProperties() & StaticProperty.PEER_NODESET) != 0) {
+                    ConditionalSorter c = (ConditionalSorter)slash.getLhsExpression();
+                    DocumentSorter d = c.getDocumentSorter();
+                    Expression condition = c.getCondition();
+                    SlashExpression s = new SlashExpression(d.getBaseExpression(), slash.getRhsExpression());
+                    return new ConditionalSorter(condition, new DocumentSorter(s));
+                }
+            }
             // Try once more after recomputing the static properties of the expression
             if (tryHarder) {
                 operand.resetLocalStaticProperties();
@@ -214,7 +227,6 @@ public class DocumentSorter extends UnaryExpression {
 
     /*@NotNull*/
     public SequenceIterator iterate(XPathContext context) throws XPathException {
-        //System.err.println("** SORTING **");
         return new DocumentOrderIterator(getBaseExpression().iterate(context), comparer);
     }
 

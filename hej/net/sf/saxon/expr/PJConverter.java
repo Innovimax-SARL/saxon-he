@@ -139,6 +139,7 @@ public abstract class PJConverter {
                 java.lang.reflect.Type collectionType = aType.getRawType();
                 int cardinality = -1;
                 if (collectionType.equals(Sequence.class)) {
+                    // TODO: but Sequence is no longer a generic class...
                     cardinality = StaticProperty.ALLOWS_ZERO_OR_MORE;
                 } else if (collectionType.equals(ZeroOrOne.class)) {
                     cardinality = StaticProperty.ALLOWS_ZERO_OR_ONE;
