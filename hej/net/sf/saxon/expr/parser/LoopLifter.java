@@ -185,6 +185,7 @@ public class LoopLifter {
                     }
                 }
             }
+            //ExpressionTool.validateTree(exp);
             for (Operand o : exp.operands()) {
                 if (!o.getOperandRole().isConstrainedClass()) {
                     loopLift(o.getChildExpression());
@@ -203,6 +204,7 @@ public class LoopLifter {
 
         Expression oldParent = child.getParentExpression();
         Operand oldOperand = ExpressionTool.findOperand(oldParent, child);
+        assert oldOperand != null;
 
         LetExpression let = new LetExpression();
         let.setVariableQName(new StructuredQName("vv", NamespaceConstant.SAXON_GENERATED_VARIABLE, "v" + sequence++));
