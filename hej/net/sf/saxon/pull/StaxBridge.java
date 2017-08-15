@@ -386,7 +386,7 @@ public class StaxBridge implements PullProvider {
             // We keep a cache indexed by local name, on the assumption that most of the time, a given
             // local name will only ever be used with the same prefix and URI
             NodeName cached = nameCache.get(local);
-            if (cached != null && cached.hasURI(uri) && cached.getPrefix().equals(reader.getPrefix())) {
+            if (cached != null && cached.hasURI(uri == null ? "": uri) && cached.getPrefix().equals(reader.getPrefix())) {
                 return cached;
             } else {
                 int fp = namePool.allocateFingerprint(uri, local);
