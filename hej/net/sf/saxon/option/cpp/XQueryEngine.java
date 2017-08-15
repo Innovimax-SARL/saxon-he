@@ -7,6 +7,8 @@
 
 package net.sf.saxon.option.cpp;
 
+import com.saxonica.functions.extfn.cpp.CPPFunctionSet;
+import com.saxonica.functions.extfn.cpp.PHPFunctionSet;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.om.SequenceTool;
 import net.sf.saxon.query.QueryResult;
@@ -53,7 +55,14 @@ public class XQueryEngine extends SaxonCAPI {
         super(license);
         compiler = processor.newXQueryCompiler();
         compiler.setErrorListener(errorListener);
-        schemaAware = processor.getUnderlyingConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XQUERY);
+        Configuration config = processor.getUnderlyingConfiguration();
+        schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
+//#if EE==true || PE==true
+        if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
+        }
+//#endif
     }
 
     /**
@@ -65,7 +74,14 @@ public class XQueryEngine extends SaxonCAPI {
         super(proc);
         compiler = processor.newXQueryCompiler();
         compiler.setErrorListener(errorListener);
-        schemaAware = processor.getUnderlyingConfiguration().isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XQUERY);
+        Configuration config = processor.getUnderlyingConfiguration();
+        schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
+//#if EE==true || PE==true
+        if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
+        }
+//#endif
     }
 
     public XdmNode parseXMLString(String xml) throws SaxonApiException {

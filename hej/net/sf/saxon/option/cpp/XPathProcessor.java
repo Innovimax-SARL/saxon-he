@@ -1,5 +1,8 @@
 package net.sf.saxon.option.cpp;
 
+import com.saxonica.functions.extfn.cpp.CPPFunctionSet;
+import com.saxonica.functions.extfn.cpp.PHPFunctionSet;
+import net.sf.saxon.Configuration;
 import net.sf.saxon.om.SequenceTool;
 import net.sf.saxon.s9api.*;
 
@@ -27,11 +30,25 @@ public class XPathProcessor extends SaxonCAPI {
     public XPathProcessor(boolean l) {
         super(l);
         compiler = processor.newXPathCompiler();
+        Configuration config = processor.getUnderlyingConfiguration();
+//#if EE==true || PE==true
+        if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
+        }
+//#endif
     }
 
     public XPathProcessor(Processor proc) {
         super(proc);
         compiler = processor.newXPathCompiler();
+        Configuration config = processor.getUnderlyingConfiguration();
+//#if EE==true || PE==true
+        if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
+            config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
+        }
+//#endif
     }
 
     /**

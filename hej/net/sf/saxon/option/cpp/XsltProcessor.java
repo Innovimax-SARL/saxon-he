@@ -48,14 +48,19 @@ public class XsltProcessor extends SaxonCAPI {
     public XsltProcessor(Processor proc) {
         super(proc);
         Configuration config = processor.getUnderlyingConfiguration();
-               schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
+        schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
         if (debug) {
             System.err.println("XsltProcessor constructor(proc, l), Processor: " + System.identityHashCode(proc));
         }
+//#if EE==true || PE==true
         if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            if (debug) {
+                System.err.println("XsltProcessor(l), Processor: function libraries added");
+            }
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
         }
+//#endif
     }
 
 
@@ -82,10 +87,15 @@ public class XsltProcessor extends SaxonCAPI {
         if (debug) {
             System.err.println("XsltProcessor(l), Processor: " + System.identityHashCode(processor));
         }
+//#if EE==true || PE==true
         if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+            if (debug) {
+                System.err.println("XsltProcessor(l), Processor: function libraries added");
+            }
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
         }
+//#endif
 
     }
 
