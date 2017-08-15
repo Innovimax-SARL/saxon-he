@@ -24,10 +24,10 @@ import net.sf.saxon.type.SchemaType;
 import net.sf.saxon.type.SimpleType;
 import net.sf.saxon.type.Untyped;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import javax.xml.transform.sax.SAXSource;
-import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 
 /**
  * Implements the fn:analyze-string function defined in XPath 3.0.
@@ -94,22 +94,25 @@ public class AnalyzeStringFn extends RegexFunction {
             boolean schemaAware = context.getController().getExecutable().isSchemaAware();
             Configuration config = context.getConfiguration();
             if (schemaAware && !config.isSchemaAvailable(NamespaceConstant.FN)) {
-                try {
+                //try {
                     StandardEntityResolver resolver = new StandardEntityResolver();
                     resolver.setConfiguration(config);
-                    InputSource is = resolver.resolveEntity(null, "classpath:xpath-functions.xsd");
-                    if(is == null) {
+                    InputStream inputStream = Configuration.locateResource("xpath-functions.xsd", new ArrayList(), new ArrayList());
+                    if (inputStream == null) {
                         throw new XPathException("Failed to load xpath-functions.xsd from the classpath");
                     }
+                    InputSource is = new InputSource(inputStream);
+                    //InputSource is = resolver.resolveEntity(null, "classpath:xpath-functions.xsd");
+
                     if (config.isTiming()) {
                         config.getLogger().info("Loading schema from resources for: " + NamespaceConstant.FN);
                     }
                     config.addSchemaSource(new SAXSource(is));
-                } catch (SAXException e) {
-                    throw new XPathException(e);
-                } catch (IOException e) {
-                    throw new XPathException(e);
-                }
+//                } catch (SAXException e) {
+//                    throw new XPathException(e);
+//                } catch (IOException e) {
+//                    throw new XPathException(e);
+//                }
             }
             init(context.getConfiguration(), schemaAware);
         }
