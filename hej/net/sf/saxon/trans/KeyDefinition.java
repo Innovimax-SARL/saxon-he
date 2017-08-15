@@ -334,6 +334,9 @@ public class KeyDefinition extends Actor implements ContextOriginator {
         if (match.getUType().overlaps(UType.NAMESPACE)) {
             flags += "n";
         }
+        if (composite) {
+            flags += "c";
+        }
         if (reusable) {
             flags += "u";
         }
