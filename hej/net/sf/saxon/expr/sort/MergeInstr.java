@@ -171,6 +171,15 @@ public class MergeInstr extends Instruction {
         public void setMergeKeyDefinitionSet(SortKeyDefinitionList keys) {
             mergeKeyDefinitions = keys;
         }
+
+        public void prepareForStreaming() throws XPathException {
+            //#ifdefined STREAM
+            if (streamable) {
+                MergeInstrAdjunct.checkStreamability(this, instruction.getConfiguration());
+            }
+//#endif
+
+        }
     }
 
     public MergeInstr() {}
@@ -419,11 +428,7 @@ public class MergeInstr extends Instruction {
             } else {
                 inputType = Type.getCommonSuperType(inputType, rowItemType, th);
             }
-//#ifdefined STREAM
-            if (mergeSource.streamable) {
-                MergeInstrAdjunct.checkStreamability(mergeSource, config);
-            }
-//#endif
+            mergeSource.prepareForStreaming();
         }
 
         ContextItemStaticInfo cit = config.makeContextItemStaticInfo(inputType, false);
