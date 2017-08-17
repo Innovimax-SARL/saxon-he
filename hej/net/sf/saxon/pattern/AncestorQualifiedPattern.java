@@ -215,6 +215,9 @@ public final class AncestorQualifiedPattern extends Pattern {
 
     private boolean matchesUpperPattern(NodeInfo node, NodeInfo anchor, XPathContext context) throws XPathException {
         switch (upwardsAxis) {
+            case AxisInfo.SELF:
+                return upperPattern.matchesBeneathAnchor(node, anchor, context);
+
             case AxisInfo.PARENT:
                 NodeInfo par = node.getParent();
                 return par != null && upperPattern.matchesBeneathAnchor(par, anchor, context);

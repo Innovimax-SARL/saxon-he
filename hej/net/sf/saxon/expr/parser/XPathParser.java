@@ -1887,7 +1887,7 @@ public class XPathParser {
             Expression next = parseStepExpression(false);
             if (op == Token.SLASH) {
                 exp = ExpressionTool.makeRawPathExpression(exp, next, true);
-            } else if (op == Token.SLASH_SLASH) {
+            } else /* (op == Token.SLASH_SLASH)*/ {
                 // add implicit descendant-or-self::node() step
                 AxisExpression ae = new AxisExpression(AxisInfo.DESCENDANT_OR_SELF, null);
                 setLocation(ae, offset);
