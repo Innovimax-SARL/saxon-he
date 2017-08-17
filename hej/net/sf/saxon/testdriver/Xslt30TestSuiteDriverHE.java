@@ -19,6 +19,7 @@ import net.sf.saxon.value.AtomicValue;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.SourceLocator;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
@@ -864,7 +865,12 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
             compiledPack.save(exportFile);
             sheet = reloadExportedStylesheet(compiler, exportFile);
         } catch (SaxonApiException e) {
-            System.err.println(e.getMessage());
+            try {
+                compiler.getErrorListener().error(XPathException.makeXPathException(e));
+            } catch (TransformerException te) {
+                assert false;
+            }
+            //System.err.println(e.getMessage());
             //e.printStackTrace();  //temporary, for debugging
             throw e;
         }
@@ -883,7 +889,7 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
                     pack.save(exportFile);
                     return compiler.loadLibraryPackage(exportFile.toURI());
                 } catch (SaxonApiException e) {
-                    System.err.println(e.getMessage());
+                    compiler.getErrorListener().error(XPathException.makeXPathException(e));
                     //e.printStackTrace();  //temporary, for debugging
                     throw e;
                 }

@@ -128,7 +128,6 @@ public interface ItemType {
 
     void visitNamedSchemaComponents(SchemaComponentVisitor visitor) throws XPathException;
 
-
     /**
      * Generate Javascript code to test whether an item conforms to this item type
      * @param knownToBe An item type that the supplied item is known to conform to; the generated code
@@ -198,7 +197,7 @@ public interface ItemType {
          * @since 9.8.0.2
          */
 
-        public SequenceType zeroOrMore();
+        SequenceType zeroOrMore();
 
     }
 
