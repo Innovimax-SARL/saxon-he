@@ -74,6 +74,7 @@ public abstract class Expression implements IdentityComparable {
     private int[] slotsUsed;
     private int evaluationMethod;
     private Map<String, Object> extraProperties;
+    private int cost = -1;
 
 //    public int serial;  // used to identify expressions for internal diagnostics
 //    private static int nextSerial = 0;
@@ -637,11 +638,14 @@ public abstract class Expression implements IdentityComparable {
      */
 
     public int getCost() {
-        int i = getNetCost();
-        for (Operand o : operands()) {
-            i += o.getChildExpression().getCost();
+        if (cost < 0) {
+            int i = getNetCost();
+            for (Operand o : operands()) {
+                i += o.getChildExpression().getCost();
+            }
+            cost = i;
         }
-        return i;
+        return cost;
     }
 
     /**

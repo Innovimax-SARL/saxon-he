@@ -114,6 +114,7 @@ public final class AttributeGetter extends Expression {
             typeError("The context item for @" + attributeName.getDisplayName() +
                                  " is not a node", "XPDY0002", context);
         }
+        assert (item instanceof NodeInfo);
         NodeInfo node = (NodeInfo) item;
         if (node.getNodeKind() == Type.ELEMENT) {
             String val = node.getAttributeValue(attributeName.getURI(), attributeName.getLocalPart());
