@@ -157,10 +157,22 @@ public class SaxonErrorCode {
     public static final String SXJE0053 = "SXJE0053";
 
     /**
+     * SXJM0001: Error in arguments to saxon:send-mail
+     */
+
+    public static final String SXJM0001 = "SXJM0001";
+
+    /**
+     * SXJM0002: Failure in saxon:send-mail reported by mail service
+     */
+
+    public static final String SXJM0002 = "SXJM0002";
+
+    /**
      * SXJX0001: integer in input to octets-to-base64Binary or octets-to-hexBinary is out of range 0-255
      */
 
-    public static final String JXJX0001 = "SXJX0001";
+    public static final String SXJX0001 = "SXJX0001";
 
     /**
      * SXJS0001: Cannot export for Javascript if the stylesheet uses unsupported features
