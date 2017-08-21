@@ -1005,7 +1005,11 @@ public class Transform {
                 outputFile == null ?
                         transformer.newSerializer(System.out) :
                         transformer.newSerializer(outFile);
-        options.setSerializationParams(serializer);
+        try {
+            options.setSerializationParams(serializer);
+        } catch (IllegalArgumentException e) {
+            quit(e.getMessage(), 2);
+        }
 
         transformer.setGlobalContextItem(sourceDoc);
         transformer.applyTemplates(sourceDoc, serializer);
@@ -1175,7 +1179,11 @@ public class Transform {
                     outputFile == null ?
                             transformer.newSerializer(System.out) :
                             transformer.newSerializer(outputFile);
-            options.setSerializationParams(serializer);
+            try {
+                options.setSerializationParams(serializer);
+            } catch (IllegalArgumentException e) {
+                quit(e.getMessage(), 2);
+            }
 
             boolean buildResultTree;
             Properties props = serializer.getCombinedOutputProperties();

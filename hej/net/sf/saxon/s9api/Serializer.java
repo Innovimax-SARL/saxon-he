@@ -476,8 +476,8 @@ public class Serializer implements Destination {
                 throw new IllegalArgumentException(e.getMessage());
             }
             if (uri.equals(NamespaceConstant.SAXON) && property.getLocalName().equals("next-in-chain")) {
-                // ignore the next-in-chain property: it's not relevant to a Serializer
-                return;
+                // reject the next-in-chain property: it's not relevant to a Serializer
+                throw new IllegalArgumentException("saxon:next-in-chain is not a serialization property");
             }
         }
         if (value == null) {

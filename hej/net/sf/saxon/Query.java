@@ -444,7 +444,11 @@ public class Query {
                         out = System.out;
                     }
                     Serializer serializer = processor.newSerializer(out);
-                    options.setSerializationParams(serializer);
+                    try {
+                        options.setSerializationParams(serializer);
+                    } catch (IllegalArgumentException e) {
+                        quit(e.getMessage(), 2);
+                    }
                     if (updating && exp.isUpdateQuery()) {
                         runUpdate(exp, evaluator, serializer);
                     } else {
