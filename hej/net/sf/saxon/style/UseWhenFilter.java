@@ -252,19 +252,19 @@ public class UseWhenFilter extends ProxyReceiver {
         URIResolver resolver = compilation.getCompilerInfo().getURIResolver();
         String baseUriStr = baseUri.toString();
         DocumentURI key = DocumentFn.computeDocumentKey(href, baseUriStr, compilation.getPackageData(), resolver, false);
-        Source source;
-        try {
-            source = resolver.resolve(href, baseUriStr);
-        } catch (TransformerException e) {
-            throw XPathException.makeXPathException(e);
-        }
-        if (source == null) {
-            source = getConfiguration().getSystemURIResolver().resolve(href, baseUriStr);
-        }
         Map<DocumentURI, TreeInfo> map = compilation.getStylesheetModules();
         if (map.containsKey(key)) {
             // No action needed
         } else {
+            Source source;
+            try {
+                source = resolver.resolve(href, baseUriStr);
+            } catch (TransformerException e) {
+                throw XPathException.makeXPathException(e);
+            }
+            if (source == null) {
+                source = getConfiguration().getSystemURIResolver().resolve(href, baseUriStr);
+            }
             NestedIntegerValue newPrecedence = precedence;
             if (isImport) {
                 newPrecedence = precedence.getStem().append(precedence.getLeaf() - 1).append(2 * ++importCount);
