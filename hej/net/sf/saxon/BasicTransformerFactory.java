@@ -13,14 +13,13 @@ import net.sf.saxon.jaxp.SaxonTransformerFactory;
 /**
  * A TransformerFactory instance can be used to create Transformer and Template
  * objects.
+ * <p>This implementation of the JAXP TransformerFactory interface always
+ * creates a Saxon configuration with Saxon-HE capability, even if Saxon-PE or
+ * Saxon-EE are loaded from the classpath; no attempt is made to look for a license
+ * file. This is therefore the recommended factory to use if you want to be sure
+ * that an application will run successfully under Saxon-HE, and will fail if it attempts to
+ * use Saxon-PE or Saxon-EE facilities.</p>
  * <p/>
- * <p>This implementation of the JAXP TransformerFactory interface provides Saxon-HE,
- * Saxon-PE, or Saxon-EE capability, depending on what software has been loaded from
- * the classpath, and what license key is available.</p>
- * <p>An application that explicitly wants Saxon-HE, Saxon-PE, or Saxon-EE capability
- * regardless of what is available at run-time should instantiate <code>BasicTransformerFactory</code>,
- * <code>ProfessionalTransformerFactory</code>, or <code>EnterpriseTransformerFactory</code>
- * as appropriate.</p>
  * <p>The system property that determines which Factory implementation
  * to create is named "javax.xml.transform.TransformerFactory". This
  * property names a concrete subclass of the TransformerFactory abstract
@@ -30,23 +29,22 @@ import net.sf.saxon.jaxp.SaxonTransformerFactory;
  * javax.xml.transform.TransformerFactory and javax.xml.transform.sax.SAXTransformerFactory
  * classes.</p>
  * <p/>
- * <p>Since Saxon 9.6, the JAXP transformation interface is re-implemented as a layer
- * on top of the s9api interface. This will affect applications that attempt to
- * down-cast from JAXP interfaces to the underlying implementation classes.</p>
- * <p/>
  * <p>This class is the "public" implementation of the TransformerFactory
  * interface for Saxon-HE. It is a trivial subclass of the internal class
- * {@link net.sf.saxon.jaxp.SaxonTransformerFactory}, which is in a separate package
+ * {@link SaxonTransformerFactory}, which is in a separate package
  * along with the implementation classes to which it has protected access.</p>
+ * @since 9.8.0.5: see bug 3410
  */
 
-public class TransformerFactoryImpl extends SaxonTransformerFactory {
+public class BasicTransformerFactory extends TransformerFactoryImpl {
 
-    public TransformerFactoryImpl() {
-        super();
+    public BasicTransformerFactory() {
+        Configuration config = new Configuration();
+        config.setProcessor(this);
+        setConfiguration(config);
     }
 
-    public TransformerFactoryImpl(Configuration config) {
+    public BasicTransformerFactory(Configuration config) {
         super(config);
     }
 

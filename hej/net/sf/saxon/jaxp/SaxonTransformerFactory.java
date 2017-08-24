@@ -82,7 +82,8 @@ public class SaxonTransformerFactory extends SAXTransformerFactory {
     /**
      * Get the configuration. This can also be done using the JAXP method
      * getAttribute, with the attribute name {@link net.sf.saxon.lib.FeatureKeys#CONFIGURATION}
-     *
+     * This is a trapdoor method that provides access to underlying implementation details that
+     * may change in subsequent Saxon releases.
      * @return the Saxon configuration
      */
 
@@ -517,6 +518,16 @@ public class SaxonTransformerFactory extends SAXTransformerFactory {
                 throw new TransformerConfigurationException("Unsupported TransformerFactory feature: " + name);
             }
         }
+    }
+
+    /**
+     * Get the underlying s9api Processor. (Trapdoor method providing access to underlying
+     * implementation details which may change in subsequent releases)
+     * @since 9.8.0.5
+     */
+
+    public Processor getProcessor() {
+        return processor;
     }
 
 }
