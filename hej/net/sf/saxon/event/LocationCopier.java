@@ -22,9 +22,7 @@ import net.sf.saxon.om.NodeInfo;
  */
 
 public class LocationCopier implements CopyInformee<Location> {
-
-    private String systemId;
-    private int lineNumber;
+    
     private boolean wholeDocument;
 
     public LocationCopier(boolean wholeDocument) {
@@ -39,28 +37,16 @@ public class LocationCopier implements CopyInformee<Location> {
      */
 
     public Location notifyElementNode(NodeInfo element) {
-        systemId = wholeDocument ? element.getSystemId() : element.getBaseURI();
+        String systemId = wholeDocument ? element.getSystemId() : element.getBaseURI();
         // The logic behind this is that if we are copying the whole document, we will be copying all
         // the relevant xml:base attributes; so retaining the systemId values is sufficient to enable
         // the base URIs of the nodes to be preserved. But if we only copy an element (for example
         // an xsl:import-schema element - see test schema091 - then its base URI might be affected
         // by xml:base attributes that aren't being copied. Ideally we would have two separate properties,
         // but XDM doesn't work that way.
-        lineNumber = element.getLineNumber();
-        return new ExplicitLocation(systemId, lineNumber, -1);
+        int lineNumber = element.getLineNumber();
+        int columnNumber = element.getColumnNumber();
+        return new ExplicitLocation(systemId, lineNumber, columnNumber);
     }
-
-    public String getSystemId(int locationId) {
-        return systemId;
-    }
-
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public int getColumnNumber(int locationId) {
-        return -1;
-    }
-
 }
 

@@ -642,10 +642,10 @@ public final class DocumentImpl extends ParentNodeImpl implements TreeInfo, Muta
 
         // copy the children
 
-        NodeImpl next = (NodeImpl) getFirstChild();
+        NodeImpl next = getFirstChild();
         while (next != null) {
             next.copy(out, copyOptions, locationId);
-            next = (NodeImpl) next.getNextSibling();
+            next = next.getNextSibling();
         }
 
         out.endDocument();
