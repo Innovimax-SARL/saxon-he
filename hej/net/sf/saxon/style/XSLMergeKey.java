@@ -7,7 +7,6 @@
 
 package net.sf.saxon.style;
 
-import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.ItemType;
 
@@ -19,9 +18,9 @@ public class XSLMergeKey extends XSLSortOrMergeKey {
 
 
     @Override
-    protected boolean seesAvuncularVariables() {
-        return false;
-    }
+//    protected boolean seesAvuncularVariables() {
+//        return false;
+//    }
 
 
     public void prepareAttributes() throws XPathException {
@@ -43,9 +42,9 @@ public class XSLMergeKey extends XSLSortOrMergeKey {
      *         or null if no declaration of the variable can be found
      */
 
-    public SourceBinding bindVariable(StructuredQName qName) {
-        return ((StyleElement) this.getParent()).bindVariable(qName);
-    }
+//    public SourceBinding bindVariable(StructuredQName qName) {
+//        return ((StyleElement) this.getParent()).bindVariable(qName);
+//    }
 
     /**
      * Determine the type of item returned by this instruction (only relevant if

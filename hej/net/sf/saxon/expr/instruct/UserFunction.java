@@ -119,7 +119,7 @@ public class UserFunction extends Actor implements Function, ContextOriginator {
         return functionName;
     }
 
-    public SymbolicName getSymbolicName() {
+    public SymbolicName.F getSymbolicName() {
         return new SymbolicName.F(functionName, getArity());
     }
 
@@ -398,7 +398,7 @@ public class UserFunction extends Actor implements Function, ContextOriginator {
     public boolean isUpdating() {
         return isUpdating;
     }
-
+    
     /**
      * Set the declared streamability (XSLT 3.0 attribute)
      *

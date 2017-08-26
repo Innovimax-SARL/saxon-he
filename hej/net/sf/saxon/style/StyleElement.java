@@ -2632,9 +2632,10 @@ public abstract class StyleElement extends ElementImpl {
      * @param qName The name of the variable
      * @return the XSLVariableDeclaration (that is, an xsl:variable or xsl:param instruction) for the variable,
      * or null if no declaration of the variable can be found
+     * @throws XPathException if the variable reference appears within a global variable declaration of the same
      */
 
-    public SourceBinding bindVariable(StructuredQName qName) {
+    public SourceBinding bindVariable(StructuredQName qName) throws XPathException {
 
         SourceBinding decl = bindLocalVariable(qName);
         if (decl != null) {
@@ -2712,7 +2713,7 @@ public abstract class StyleElement extends ElementImpl {
     /**
      * Ask whether variables declared in an "uncle" element are visible.
      *
-     * @return true for all elements except xsl:fallback and saxon:catch
+     * @return true for all elements except xsl:fallback and xsl:catch
      */
 
     protected boolean seesAvuncularVariables() {

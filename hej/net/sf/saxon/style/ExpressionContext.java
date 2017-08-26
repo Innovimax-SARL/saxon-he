@@ -200,7 +200,19 @@ public class ExpressionContext implements XSLTStaticContext {
             // it might have been declared in an imported package or query
             SymbolicName sn = new SymbolicName(StandardNames.XSL_VARIABLE, qName);
             Component comp = element.getCompilation().getPrincipalStylesheetModule().getComponent(sn);
-            if (comp != null && comp.getDeclaringPackage() != element.getContainingPackage()) { // test variable-0118
+            if (comp != null) { // test variable-0118
+                // See tests variable-0118 and variable-0120
+                NodeInfo parent;
+                AxisIterator anc = element.iterateAxis(AxisInfo.ANCESTOR_OR_SELF);
+                while (((parent = anc.next()) != null)) {
+                    if (parent instanceof XSLGlobalVariable && ((XSLGlobalVariable)parent).getVariableQName().equals(qName)) {
+                        XPathException err = new XPathException("Variable " + qName.getDisplayName() +
+                                                                        " cannot be used within its own declaration", "XPST0008");
+                        err.setIsStaticError(true);
+                        throw err;
+                    }
+                }
+
                 GlobalVariable var = (GlobalVariable) comp.getActor();
                 GlobalVariableReference vref = new GlobalVariableReference(var);
                 vref.setStaticType(var.getRequiredType(), null, 0);
@@ -222,8 +234,7 @@ public class ExpressionContext implements XSLTStaticContext {
             }
 
             XPathException err = new XPathException("Variable " + qName.getDisplayName() +
-                                                            " has not been declared (or its declaration is not in scope)");
-            err.setErrorCode("XPST0008");
+                                                            " has not been declared (or its declaration is not in scope)", "XPST0008");
             err.setIsStaticError(true);
             throw err;
         }

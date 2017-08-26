@@ -285,7 +285,12 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
      */
 
     public void declareXQueryFunction(XQueryFunction function) throws XPathException {
-        getStylesheetPackage().getXQueryFunctionLibrary().declareFunction(function);
+        XQueryFunctionLibrary lib = getStylesheetPackage().getXQueryFunctionLibrary();
+        if (getStylesheetPackage().getFunction(function.getUserFunction().getSymbolicName()) != null) {
+            throw new XPathException("Duplication declaration of " +
+                                             function.getUserFunction().getSymbolicName(), "XQST0034");
+        }
+        lib.declareFunction(function);
     }
 
     /**
@@ -1582,13 +1587,20 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
 
     @Override
     public void addGlobalVariable(GlobalVariable variable) {
-        Component component = variable.makeDeclaringComponent(Visibility.PRIVATE, getStylesheetPackage());
+        addGlobalVariable(variable, Visibility.PRIVATE);
+    }
+
+    public void addGlobalVariable(GlobalVariable variable, Visibility visibility) {
+        Component component = variable.makeDeclaringComponent(visibility, getStylesheetPackage());
         if (variable.getPackageData() == null) {
             variable.setPackageData(stylesheetPackage);
         }
-        stylesheetPackage.getComponentIndex().put(
-                new SymbolicName(StandardNames.XSL_VARIABLE, variable.getVariableQName()), component);
-
+        if (visibility == Visibility.HIDDEN) {
+            stylesheetPackage.addHiddenComponent(component);
+        } else {
+            stylesheetPackage.getComponentIndex().put(
+                    new SymbolicName(StandardNames.XSL_VARIABLE, variable.getVariableQName()), component);
+        }
     }
 
 

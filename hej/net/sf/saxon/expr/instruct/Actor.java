@@ -7,6 +7,7 @@
 
 package net.sf.saxon.expr.instruct;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.*;
 import net.sf.saxon.expr.parser.Location;
 import net.sf.saxon.expr.parser.RetainedStaticContext;
@@ -98,7 +99,7 @@ public abstract class Actor implements InstructionInfo, ExpressionOwner {
      */
 
     public void allocateAllBindingSlots(StylesheetPackage pack) {
-        if (getBody() != null && getDeclaringComponent().getDeclaringPackage() == pack) {
+        if (getBody() != null && getDeclaringComponent().getDeclaringPackage() == pack && packageData.getHostLanguage() == Configuration.XSLT) {
             allocateBindingSlotsRecursive(pack, this, getBody(), getDeclaringComponent().getComponentBindings());
         }
     }
