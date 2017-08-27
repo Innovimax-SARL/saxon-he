@@ -15,10 +15,12 @@ import net.sf.saxon.lib.OutputURIResolver;
 import net.sf.saxon.lib.StandardOutputResolver;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.om.StructuredQName;
+import net.sf.saxon.query.QueryLibrary;
 import net.sf.saxon.trans.packages.PackageLibrary;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.URIResolver;
+import java.util.Collection;
 
 /**
  * This class exists to hold information associated with a specific XSLT compilation episode.
@@ -49,6 +51,7 @@ public class CompilerInfo {
     private String targetEdition = "HE";
     private boolean jitFlag = false;
     private boolean relocatable = false;
+    private Collection<QueryLibrary> queryLibraries;
 
     /**
      * Create an empty CompilerInfo object with default settings. (Note, this does not
@@ -636,6 +639,14 @@ public class CompilerInfo {
     /*@Nullable*/
     public FunctionLibrary getExtensionFunctionLibrary() {
         return extensionFunctionLibrary;
+    }
+
+    public void setXQueryLibraries(Collection<QueryLibrary> libraries) {
+        this.queryLibraries = libraries;
+    }
+
+    public Collection<QueryLibrary> getQueryLibraries() {
+        return queryLibraries;
     }
 
 }

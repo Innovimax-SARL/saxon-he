@@ -716,6 +716,10 @@ public class StaticQueryContext {
         return null;
     }
 
+    public Collection<QueryLibrary> getCompiledLibraries() {
+        return Collections.emptySet();
+    }
+
 
     /**
      * Declare a namespace whose prefix can be used in expressions. This is

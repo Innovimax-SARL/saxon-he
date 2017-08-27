@@ -390,20 +390,16 @@ public class XsltCompiler {
     }
 
 
-//    /**
-//     * Import a compiled XQuery function library.
-//     * @param queryCompiler An XQueryCompiler that has been used to compile a library of XQuery functions
-//     * (by using one of the overloaded methods named <code>compileLibrary</code>).
-//     * @param namespace The namespace of the functions that are to be made available to the stylesheet.
-//     * All the global functions with this namespace that are
-//     * defined in libraries that have been compiled using this XQueryCompiler are added to the static context
-//     * of the XSLT stylesheet. The stylesheet does not need to (and should not) contain a call on
-//     * <code>saxon:import-query</code> to import these functions.
-//     */
-//
-//    public void importXQueryLibrary(XQueryCompiler queryCompiler, String namespace) {
-//        compilerInfo.importXQueryLibrary(queryCompiler.)
-//    }
+    /**
+     * Import a compiled XQuery library. This makes pre-compiled XQuery library modules available
+     * to the <code>saxon:import-query</code> declaration.
+     * @param queryCompiler An XQueryCompiler that has been used to compile a library of XQuery functions
+     * (by using one of the overloaded methods named <code>compileLibrary</code>).
+     */
+
+    public void importXQueryEnvironment(XQueryCompiler queryCompiler) {
+        compilerInfo.setXQueryLibraries(queryCompiler.getUnderlyingStaticContext().getCompiledLibraries());
+    }
 
 
     /**
