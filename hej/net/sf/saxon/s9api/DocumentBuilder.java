@@ -327,7 +327,9 @@ public class DocumentBuilder {
         if (source instanceof AugmentedSource) {
             throw new IllegalArgumentException("AugmentedSource not accepted");
         }
-        if (!(whitespacePolicy == WhitespaceStrippingPolicy.UNSPECIFIED || whitespacePolicy == WhitespaceStrippingPolicy.IGNORABLE)) {
+        if (!(whitespacePolicy == WhitespaceStrippingPolicy.UNSPECIFIED
+                      || whitespacePolicy == WhitespaceStrippingPolicy.IGNORABLE
+                      || whitespacePolicy.ordinal() == Whitespace.XSLT)) {
             if (dtdValidation) {
                 throw new SaxonApiException("When DTD validation is used, the whitespace stripping policy must be IGNORABLE");
             }

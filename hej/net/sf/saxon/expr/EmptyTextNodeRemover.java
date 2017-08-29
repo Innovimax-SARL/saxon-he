@@ -18,8 +18,8 @@ import net.sf.saxon.type.Type;
 
 
 /**
- * This class performs the first phase of processing in "constructing simple content":
- * it takes an input sequence, eliminates empty text nodes, and combines adjacent text nodes
+ * This class performs part of the processing in "constructing simple content":
+ * it takes an input sequence and eliminates empty text nodes
  * into one.
  *
  * @since 9.3
