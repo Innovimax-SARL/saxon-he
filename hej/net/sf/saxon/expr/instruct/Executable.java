@@ -582,7 +582,8 @@ public class Executable {
         }
         if (contextItem == null) {
             if (!globalContextRequirement.isMayBeOmitted()) {
-                throw new XPathException("A global context item is required, but none has been supplied");
+                // Bug 30173 allocates an error code
+                throw new XPathException("A global context item is required, but none has been supplied", "XTDE3086");
             }
             if (globalContextRequirement.getDefaultValue() != null) {
                 // XQuery only

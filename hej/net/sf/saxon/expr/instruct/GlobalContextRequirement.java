@@ -9,7 +9,6 @@ package net.sf.saxon.expr.instruct;
 
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.trace.ExpressionPresenter;
-import net.sf.saxon.trans.SaxonErrorCode;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.AnyItemType;
 import net.sf.saxon.type.ItemType;
@@ -60,9 +59,6 @@ public class GlobalContextRequirement {
     }
 
     public void export(ExpressionPresenter out) throws XPathException {
-        if ("JS".equals(out.getOption("target"))) {
-            throw new XPathException("xsl:global-context-item is not supported in Saxon-JS", SaxonErrorCode.SXJS0001);
-        }
         out.startElement("glob");
         String use;
         if (isMayBeOmitted()) {
@@ -77,6 +73,12 @@ public class GlobalContextRequirement {
         out.emitAttribute("use", use);
         if (!getRequiredItemType().equals(AnyItemType.getInstance())) {
             out.emitAttribute("type", getRequiredItemType().toString());
+        }
+        if ("JS".equals(out.getOption("target"))) {
+            int targetVersion = out.getIntOption("targetVersion", 1);
+            out.emitAttribute("jsTest", getRequiredItemType().generateJavaScriptItemTypeTest(
+                    AnyItemType.getInstance(), targetVersion));
+
         }
         exportAccumulatorUsages(out);
         out.endElement();
