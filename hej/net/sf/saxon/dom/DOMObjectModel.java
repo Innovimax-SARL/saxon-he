@@ -410,14 +410,10 @@ public class DOMObjectModel extends TreeModel implements ExternalObjectModel {
                 Object o = ((VirtualNode) item).getRealNode();
                 if (o instanceof Node) {
                     nodes.add((Node) o);
-                } else {
-                    if (requireDOM) {
-                        throw new XPathException(
-                                "Cannot convert XPath value to Java object: required class is " + target.getName() +
-                                        "; supplied value has type " + Type.displayTypeName(item));
-                    }
+                    continue;
                 }
-            } else if (requireDOM) {
+            }
+            if (requireDOM) {
                 if (item instanceof NodeInfo) {
                     nodes.add(NodeOverNodeInfo.wrap((NodeInfo) item));
                 } else {
