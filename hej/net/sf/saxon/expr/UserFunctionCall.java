@@ -30,9 +30,7 @@ import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.Whitespace;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -504,17 +502,6 @@ public class UserFunctionCall extends FunctionCall implements UserFunctionResolv
         XPathContextMajor c2 = context.newCleanContext();
         c2.setOrigin(this);
         function.callUpdating(actualArgs, c2, pul);
-    }
-
-    // KILROY
-    public static Map<String, Integer> counters = new HashMap<String, Integer>();
-
-    public static void showCounters() {
-        for (Map.Entry<String, Integer> entry : counters.entrySet()) {
-            if (entry.getValue() > 100) {
-                System.err.println(entry.getKey() + " :  " + entry.getValue());
-            }
-        }
     }
 
     /**
