@@ -51,18 +51,45 @@ class XdmValue;*/
 extern zend_module_entry saxon_module_entry;
 #define phpext_saxon_ptr &saxon_module_entry;
 
+#ifdef PHP_WIN32
+#	define PHP_SAXON_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_SAXON_API __attribute__ ((visibility("default")))
+#else
+#	define PHP_SAXON_API
+#endif
+
+#define SAXON_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(saxon, v)
+
+#if defined(ZTS) && defined(COMPILE_DL_SAXON)
+ZEND_TSRMLS_CACHE_EXTERN()
+#endif
+
+#if PHP_MAJOR_VERSION < 7
+#define _ZVAL_STRING(str, len) ZVAL_STRING(str, len, 0)
+#define _RETURN_STRING(str) RETURN_STRING(str, 0)
+#else
+#define _ZVAL_STRING(str, len) ZVAL_STRING(str, len)
+#define _RETURN_STRING(str) RETURN_STRING(str)
+#endif
+
+
+
+
 struct zvalArr {
     zval * _val;
 };
 
 struct saxonProcessor_object {
-    zend_object std;
+
     SaxonProcessor * saxonProcessor;
+    zend_object std;
 };
 
 struct xsltProcessor_object {
-    zend_object std;
+
     XsltProcessor *xsltProcessor;
+    zend_object std;
 };
 
 struct xqueryProcessor_object {
@@ -71,33 +98,39 @@ struct xqueryProcessor_object {
 };
 
 struct xpathProcessor_object {
-    zend_object std;
+    
     XPathProcessor *xpathProcessor;
+    zend_object std;
 };
 
 struct schemaValidator_object {
-    zend_object std;
+
     SchemaValidator * schemaValidator;
+    zend_object std;
 };
 
 struct xdmValue_object {
-    zend_object std;
+
     XdmValue * xdmValue;
+    zend_object std;
 };
 
 struct xdmItem_object {
-    zend_object std;
+
     XdmItem * xdmItem;
+    zend_object std;
 };
 
 struct xdmNode_object {
-    zend_object std;
+
     XdmNode * xdmNode;
+    zend_object std;
 };
 
 struct xdmAtomicValue_object {
-    zend_object std;
+
     XdmAtomicValue * xdmAtomicValue;
+    zend_object std;
 };
 
 
