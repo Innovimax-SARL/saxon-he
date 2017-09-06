@@ -1309,6 +1309,9 @@ public class RECompiler {
         if (op1 instanceof Operation.OpBOL || op1 instanceof Operation.OpEOL) {
             return true;
         }
+        if (op1 instanceof Operation.OpRepeat && ((Operation.OpRepeat)op1).min == 0) {
+            return false; //Bug 3429
+        }
         CharacterClass c0 = op0.getInitialCharacterClass(caseBlind);
         CharacterClass c1 = op1.getInitialCharacterClass(caseBlind);
         return c0.isDisjoint(c1);
