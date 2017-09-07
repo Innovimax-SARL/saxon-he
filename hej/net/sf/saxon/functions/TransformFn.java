@@ -643,8 +643,8 @@ public class TransformFn extends SystemFunction implements Callable {
                         break;
                     }
                 }
-            } else if (name.equals("global-context-item")) {
-                globalContextItem = (XdmItem) options.get(name).head();
+            } else if (name.equals("global-context-item") && useXslt30Processor) {
+                globalContextItem = (XdmItem)XdmValue.wrap(options.get(name).head());
             } else if (name.equals("template-params")) {
                 MapItem params = (MapItem) options.get(name).head();
                 AtomicIterator paramIterator = params.keys();
@@ -716,10 +716,13 @@ public class TransformFn extends SystemFunction implements Callable {
             transformer.setInitialTemplateParameters(templateParams, false);
             transformer.setInitialTemplateParameters(tunnelParams, true);
 
+            if (sourceNode != null && globalContextItem == null) {
+                transformer.setGlobalContextItem(new XdmNode(sourceNode.getRoot()));
+            }
+            if (globalContextItem != null) {
+                transformer.setGlobalContextItem(globalContextItem);
+            }
             if (initialTemplate != null) {
-                if (sourceNode != null) {
-                    transformer.setGlobalContextItem(new XdmNode(sourceNode));
-                }
                 if (deliveryFormat.equals("raw")) {
                     result = transformer.callTemplate(initialTemplate).getUnderlyingValue();
                     result = deliverer.postProcess(principalResultKey, result);
@@ -728,12 +731,6 @@ public class TransformFn extends SystemFunction implements Callable {
                     result = deliverer.getPrimaryResult();
                 }
             } else if (initialFunction != null) {
-                /*if (globalContextItem != null) {
-                    transformer.setGlobalContextItem(globalContextItem);
-                } else*/ //TODO is this right? then what about sourceNode?
-                if (sourceNode != null) {
-                    transformer.setGlobalContextItem(new XdmNode(sourceNode));
-                }
                 if (deliveryFormat.equals("raw")) {
                     result = transformer.callFunction(initialFunction, functionParams).getUnderlyingValue();
                     result = deliverer.postProcess(principalResultKey, result);

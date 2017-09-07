@@ -16,6 +16,7 @@ import net.sf.saxon.event.TreeReceiver;
 import net.sf.saxon.expr.instruct.GlobalContextRequirement;
 import net.sf.saxon.expr.instruct.GlobalParameterSet;
 import net.sf.saxon.lib.*;
+import net.sf.saxon.om.Item;
 import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.om.StructuredQName;
@@ -221,7 +222,13 @@ public class XsltTransformer implements Destination {
 
     /**
      * Set the initial context node for the transformation.
-     * <p>This is ignored in the case where the {@link XsltTransformer} is used as the
+     * <p>In XSLT 3.0 terms, this sets the initial match selection (the sequence to which the
+     * initial implicit call of xsl:applyTemplates is applied). It also determines how the
+     * global context item for evaluating global variables is set: following the XSLT 1.0 and 2.0 rules
+     * (XSLT 2.0 section 9.5): "For a global variable or the default value of a stylesheet parameter,
+     * the expression or sequence constructor specifying the variable value is evaluated with a singleton
+     * focus based on the root node of the tree containing the initial context node." </p>
+     * <p>This value is ignored in the case where the {@link XsltTransformer} is used as the
      * {@link Destination} of another process. In that case the initial context node will always
      * be the document node of the document that is being streamed to this destination.</p>
      * <p>Calling this method has the side-effect of setting the initial source to null.</p>
@@ -235,7 +242,7 @@ public class XsltTransformer implements Destination {
             controller.setGlobalContextItem(null);
         } else {
             initialSource = node.getUnderlyingNode();
-            controller.setGlobalContextItem(node.getUnderlyingNode());
+            controller.setGlobalContextItem(node.getUnderlyingNode().getRoot());
         }
     }
 
@@ -564,15 +571,15 @@ public class XsltTransformer implements Destination {
             GlobalContextRequirement gcr = controller.getExecutable().getGlobalContextRequirement();
             if ((gcr == null || !gcr.isAbsentFocus()) && initialSource != null) {
                 if (initialSource instanceof NodeInfo) {
-                    controller.setGlobalContextItem((NodeInfo)initialSource);
+                    maybeSetGlobalContextItem((NodeInfo)initialSource);
                 } else if (initialSource instanceof DOMSource) {
                     NodeInfo node = controller.prepareInputTree(initialSource);
-                    controller.setGlobalContextItem(node, true);
+                    maybeSetGlobalContextItem(node);
                     initialSource = node;
                 } else {
                     boolean close = (initialSource instanceof AugmentedSource && ((AugmentedSource)initialSource).isPleaseCloseAfterUse());
                     NodeInfo node = controller.makeSourceTree(initialSource, close, getSchemaValidationMode().getNumber());
-                    controller.setGlobalContextItem(node, true);
+                    maybeSetGlobalContextItem(node);
                     initialSource = node;
                 }
             }
@@ -597,6 +604,12 @@ public class XsltTransformer implements Destination {
                 }
             }
             throw new SaxonApiException(e);
+        }
+    }
+
+    private void maybeSetGlobalContextItem(Item item) {
+        if (controller.getGlobalContextItem() == null) {
+            controller.setGlobalContextItem(item, true);
         }
     }
 
@@ -686,6 +699,7 @@ public class XsltTransformer implements Destination {
             if (doc != null) {
                 Receiver result = getDestinationReceiver();
                 try {
+                    controller.setGlobalContextItem(doc);
                     controller.transformDocument(doc, result);
                 } catch (TransformerException e) {
                     throw new SaxonApiException(e);

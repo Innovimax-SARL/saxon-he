@@ -1961,6 +1961,9 @@ public class Controller implements ContextOriginator {
                 }
             }
             if (!streaming) {
+                if (globalContextItem == null) {
+                    globalContextItem = startNode;
+                }
                 transformDocument(startNode, receiver);
             }
 
@@ -2283,7 +2286,7 @@ public class Controller implements ContextOriginator {
 
             if (startNode != null) {
 
-                globalContextItem = startNode.getRoot();
+                //globalContextItem = startNode.getRoot();   // bug 3432
 
                 if (startNode.getConfiguration() == null) {
                     // must be a non-standard document implementation
