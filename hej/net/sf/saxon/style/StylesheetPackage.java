@@ -608,7 +608,7 @@ public class StylesheetPackage extends PackageData {
 
             Visibility newV = null;
 
-            if (overrides.contains(name)) {
+            if (overrides.contains(name) && !(oldC.getActor() instanceof Mode)) {
                 newV = Visibility.HIDDEN;
             } else {
                 Visibility acceptedVisibility = explicitAcceptedVisibility(name, acceptors);
@@ -649,22 +649,7 @@ public class StylesheetPackage extends PackageData {
                 if (newV != Visibility.ABSTRACT) {
                     abstractComponents.remove(name);
                 }
-            } else {
-//                if (newV != Visibility.HIDDEN) {
-//                    for (XSLAccept acceptor : acceptors) {
-//                        acceptor.acceptComponent(newC);
-//                    }
-//                }
-//                if (oldV == Visibility.ABSTRACT) {
-//                    for (XSLAccept acceptor : acceptors) {
-//                        acceptor.acceptComponent(newC);
-//                    }
-//                    if (newC.getVisibility() == Visibility.ABSTRACT) {
-//                        abstractComponents.put(name, newC);
-//                    }
-//                }
             }
-
             if (newC.getVisibility() == Visibility.HIDDEN) {
                 hiddenComponents.add(newC);
             } else if (componentIndex.get(name) != null) {
@@ -683,34 +668,67 @@ public class StylesheetPackage extends PackageData {
                 }
             }
 
-
-            addCompletionAction(new Action() {
-                @Override
-                public void doAction() throws XPathException {
-                    List<ComponentBinding> oldBindings = newC.getBaseComponent().getComponentBindings();
-                    List<ComponentBinding> newBindings = new ArrayList<ComponentBinding>(oldBindings.size());
-                    for (ComponentBinding oldBinding : oldBindings) {
-                        SymbolicName name = oldBinding.getSymbolicName();
-                        Component target;
-                        if (overrides.contains(name)) {
-                            // if there is an override in this package, we bind to it
-                            target = getComponent(name);
-                            if (target==null) {
-                                throw new AssertionError("We know there's an override for " + name + ", but we can't find it");
+            if (newC.getActor() instanceof Mode && overrides.contains(name)) {
+                addCompletionAction(new Action() {
+                    @Override
+                    public void doAction() throws XPathException {
+                        trace("Doing mode completion for " + newC.getActor().getSymbolicName());
+                        List<ComponentBinding> oldBindings = newC.getBaseComponent().getComponentBindings();
+                        List<ComponentBinding> newBindings = newC.getComponentBindings();
+                        for (int i=0; i<oldBindings.size(); i++) {
+                            SymbolicName name = oldBindings.get(i).getSymbolicName();
+                            Component target;
+                            if (overrides.contains(name)) {
+                                // if there is an override in this package, we bind to it
+                                target = getComponent(name);
+                                if (target == null) {
+                                    throw new AssertionError("We know there's an override for " + name + ", but we can't find it");
+                                }
+                            } else {
+                                // otherwise we bind to the component in this package that corresponds to the component in the used package
+                                target = correspondence.get(oldBindings.get(i).getTarget());
+                                if (target == null) {
+                                    throw new AssertionError("Saxon can't find the new component corresponding to " + name);
+                                }
                             }
-                        } else {
-                            // otherwise we bind to the component in this package that corresponds to the component in the used package
-                            target = correspondence.get(oldBinding.getTarget());
-                            if (target==null) {
-                                throw new AssertionError("Saxon can't find the new component corresponding to " + name);
-                            }
+                            ComponentBinding newBinding = new ComponentBinding(name, target);
+                            newBindings.set(i, newBinding);
                         }
-                        ComponentBinding newBinding = new ComponentBinding(name, target);
-                        newBindings.add(newBinding);
+
                     }
-                    newC.setComponentBindings(newBindings);
-                }
-            });
+                });
+            } else {
+
+                addCompletionAction(new Action() {
+                    @Override
+                    public void doAction() throws XPathException {
+                        trace("Doing normal completion for " + newC.getActor().getSymbolicName());
+                        List<ComponentBinding> oldBindings = newC.getBaseComponent().getComponentBindings();
+                        List<ComponentBinding> newBindings = new ArrayList<ComponentBinding>(oldBindings.size());
+                        for (ComponentBinding oldBinding : oldBindings) {
+                            SymbolicName name = oldBinding.getSymbolicName();
+                            Component target;
+                            if (overrides.contains(name)) {
+                                // if there is an override in this package, we bind to it
+                                target = getComponent(name);
+                                if (target == null) {
+                                    throw new AssertionError("We know there's an override for " + name + ", but we can't find it");
+                                }
+                            } else {
+                                // otherwise we bind to the component in this package that corresponds to the component in the used package
+                                target = correspondence.get(oldBinding.getTarget());
+                                if (target == null) {
+                                    throw new AssertionError("Saxon can't find the new component corresponding to " + name);
+                                }
+                            }
+                            ComponentBinding newBinding = new ComponentBinding(name, target);
+                            newBindings.add(newBinding);
+                        }
+                        newC.setComponentBindings(newBindings);
+
+                    }
+                });
+            }
 
         }
 

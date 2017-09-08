@@ -223,6 +223,11 @@ public class XSLUsePackage extends StyleElement {
                         SymbolicName name = ((StylesheetComponent) overridingDeclaration).getSymbolicName();
                         if (name != null) {
                             overrides.add(name);
+                        } else if (overridingDeclaration instanceof XSLTemplate && overridingDeclaration.getAttributeValue("", "match") != null) {
+                            StructuredQName[] modeNames = ((XSLTemplate)overridingDeclaration).getModeNames();
+                            for (StructuredQName m : modeNames) {
+                                overrides.add(new SymbolicName(StandardNames.XSL_MODE, m));
+                            }
                         }
                     }
                 }
@@ -265,8 +270,7 @@ public class XSLUsePackage extends StyleElement {
      * @throws XPathException in the event of an error.
      */
 
-    public void gatherRuleOverrides(PrincipalStylesheetModule module,
-                                    List<XSLAccept> acceptors, Set<SymbolicName> overrides)
+    public void gatherRuleOverrides(PrincipalStylesheetModule module, Set<SymbolicName> overrides)
             throws XPathException {
         StylesheetPackage thisPackage = module.getStylesheetPackage();
         RuleManager ruleManager = module.getRuleManager();
@@ -323,8 +327,7 @@ public class XSLUsePackage extends StyleElement {
                                 newCompoundMode.setDeclaringComponent(derivedComponent);
                                 ruleManager.registerMode(newCompoundMode);
                                 derivedComponent.setActor(newCompoundMode);
-                                newCompoundMode.allocateAllBindingSlots(thisPackage);
-                            }       // TODO: surely too early to allocate slots, until we've done all the overrides
+                            }   
                         }
                     }
 

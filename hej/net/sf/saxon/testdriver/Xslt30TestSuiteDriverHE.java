@@ -840,7 +840,7 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
         try {
             if (export) {
                 sheet = exportStylesheet(testName, testSetName, compiler, sheet, styleSource);
-            } else {
+            } else if (sheet == null) {
                 sheet = compiler.compile(styleSource);
             }
         } catch (SaxonApiException err) {

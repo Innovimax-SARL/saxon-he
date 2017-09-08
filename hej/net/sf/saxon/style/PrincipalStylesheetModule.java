@@ -515,17 +515,12 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
 
         // Third pass: process the overriding template rules, creating new mode objects
         for (XSLUsePackage use : useDeclarations) {
-            List<XSLAccept> acceptors = use.getAcceptors();
-            use.gatherRuleOverrides(this, acceptors, overrides);
+            use.gatherRuleOverrides(this, overrides);
         }
-
-        // Next pass: process any non-overridden non-private modes in the used package
-
 
         // Now process the declarations contained within this package, both in the top-level module
         // and within its included and imported modules
         spliceIncludes();
-
     }
 
 
