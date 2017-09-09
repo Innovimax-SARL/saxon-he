@@ -401,26 +401,21 @@ public class UseWhenFilter extends ProxyReceiver {
             systemId = getSystemId();
         }
         URI baseUri;
+        if (systemId == null || systemId.equals(systemIdStack.peek())) {
+            baseUri = baseUriStack.peek();
+        } else {
+            try {
+                baseUri = new URI(systemId);
+            } catch (URISyntaxException e) {
+                throw new XPathException("Invalid URI for stylesheet entity: " + systemId);
+            }
+        }
         String baseUriAtt = startTag.getAttribute(NamespaceConstant.XML, "base");
         if (baseUriAtt != null) {
-            if (systemId.equals(systemIdStack.peek())) {
-                baseUri = baseUriStack.peek().resolve(baseUriAtt);
-            } else {
-                try {
-                    baseUri = new URI(systemId).resolve(baseUriAtt);
-                } catch (URISyntaxException e) {
-                    throw new XPathException("Invalid URI for stylesheet entity: " + systemId);
-                }
-            }
-        } else {
-            if (systemId==null || systemId.equals(systemIdStack.peek())) {
-                baseUri = baseUriStack.peek();
-            } else {
-                try {
-                    baseUri = new URI(systemId);
-                } catch (URISyntaxException e) {
-                    throw new XPathException("Invalid URI for stylesheet entity: " + systemId);
-                }
+            try {
+                baseUri = baseUri.resolve(baseUriAtt);
+            } catch (IllegalArgumentException iae) {
+                throw new XPathException("Invalid URI in xml:base attribute: " + baseUriAtt + ". " + iae.getMessage());
             }
         }
         baseUriStack.push(baseUri);
