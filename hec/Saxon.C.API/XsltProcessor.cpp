@@ -38,8 +38,8 @@ XsltProcessor::XsltProcessor(SaxonProcessor * p, std::string curr) {
 #ifdef DEBUG
 	jmethodID debugMID = SaxonProcessor::sxn_environ->env->GetStaticMethodID(cppClass, "setDebugMode", "(Z)V");
 	SaxonProcessor::sxn_environ->env->CallStaticVoidMethod(cppClass, debugMID, (jboolean)true);
-#endif    
-
+    
+#endif
 	nodeCreated = false;
 	proc->exception = NULL;
 	outputfile1 = "";
@@ -501,6 +501,7 @@ jobjectArray results = (jobjectArray)(
 
 const char * XsltProcessor::transformFileToString(const char* source,
 		const char* stylesheet) {
+
 	if(source == NULL && stylesheet == NULL && !stylesheetObject){
 		cerr<< "Error: The most recent StylesheetObject failed. Please check exceptions"<<endl;
 		return NULL;
@@ -552,7 +553,10 @@ const char * XsltProcessor::transformFileToString(const char* source,
 #ifdef DEBUG
 				string s1 = typeid(iter->second).name();
 				cerr<<"Type of itr:"<<s1<<endl;
+
+
 				jobject xx = (iter->second)->getUnderlyingValue(proc);
+
 				if(xx == NULL) {
 					cerr<<"value failed"<<endl;
 				} else {
@@ -563,6 +567,7 @@ const char * XsltProcessor::transformFileToString(const char* source,
 					cerr<<"(iter->second)->getUnderlyingValue() is NULL"<<endl;
 				}
 #endif
+
 				SaxonProcessor::sxn_environ->env->SetObjectArrayElement(objectArray, i,
 						(iter->second)->getUnderlyingValue(proc));
 
@@ -598,12 +603,12 @@ const char * XsltProcessor::transformFileToString(const char* source,
 			SaxonProcessor::sxn_environ->env->DeleteLocalRef(objectArray);
 		}
 		if (result) {
-			
 			const char * str = SaxonProcessor::sxn_environ->env->GetStringUTFChars(result,
 					NULL);
 			//return "result should be ok";
 			return str;
 		} else if(exceptionOccurred()) {
+
 			if(proc->exception != NULL) {
 				delete proc->exception;
 			}
@@ -612,7 +617,6 @@ const char * XsltProcessor::transformFileToString(const char* source,
 	   		
      		}
 	}
-
 	return NULL;
 }
 
@@ -622,6 +626,7 @@ const char * XsltProcessor::transformFileToString(const char* source,
 		cerr<< "Error: The most recent Stylesheet Object failed or has not been set."<<endl;
 		return NULL;
 	}
+std::cerr<<"transformToString cp0"<<std::endl;
 	return transformFileToString(NULL, NULL);
    }
 

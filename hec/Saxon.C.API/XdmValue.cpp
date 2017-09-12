@@ -68,7 +68,7 @@
 	}
 
 	jobject XdmValue::getUnderlyingValue(SaxonProcessor * proci){
-
+std::cerr<<"xdmValue gwtunderlyingValue cp0"<<std::endl;
 		if(jValues == NULL) {	
 			proc = proci;	
 			jValues;

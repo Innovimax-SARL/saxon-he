@@ -19,7 +19,7 @@
 #include "XdmValue.cpp"*/
 //#include "php_saxon.cpp"
 #endif
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #include <signal.h>
 #endif
@@ -57,7 +57,7 @@ SaxonApiException * SaxonProcessor::checkForExceptionCPP(JNIEnv* env, jclass cal
 	string result1 = "";
 	string errorCode = "";
 	jthrowable exc = env->ExceptionOccurred();
-       //env->ExceptionDescribe();
+
 #ifdef DEBUG	
 	env->ExceptionDescribe();
 #endif
@@ -174,6 +174,10 @@ SaxonProcessor::SaxonProcessor(bool l){
 	}
 
     xdmAtomicClass = lookForClass(SaxonProcessor::sxn_environ->env, "net/sf/saxon/s9api/XdmAtomicValue");
+#ifdef DEBUG
+jmethodID debugMID = SaxonProcessor::sxn_environ->env->GetStaticMethodID(saxonCAPIClass, "setDebugMode", "(Z)V");
+	SaxonProcessor::sxn_environ->env->CallStaticVoidMethod(saxonCAPIClass, debugMID, (jboolean)true);
+#endif
 }
 
 SaxonProcessor::SaxonProcessor(const char * configFile){
@@ -238,9 +242,7 @@ SaxonProcessor::SaxonProcessor(const char * configFile){
 
 
 void SaxonProcessor::applyConfigurationProperties(){
-std::cerr<<"SaxonProc applyConfig p1"<<std::endl;
 	if(configProperties.size()>0) {
-std::cerr<<"SaxonProc applyConfig p2"<<std::endl;
 		int size = configProperties.size();
 		jclass stringClass = lookForClass(SaxonProcessor::sxn_environ->env, "java/lang/String");
 		jobjectArray stringArray1 = SaxonProcessor::sxn_environ->env->NewObjectArray( (jint)size, stringClass, 0 );
@@ -255,19 +257,16 @@ std::cerr<<"SaxonProc applyConfig p2"<<std::endl;
 				return;
 			}
 		}
-std::cerr<<"SaxonProc applyConfig p3"<<std::endl;
 		int i=0;
 		for(map<std::string, std::string >::iterator iter=configProperties.begin(); iter!=configProperties.end(); ++iter, i++) {
 	     		SaxonProcessor::sxn_environ->env->SetObjectArrayElement( stringArray1, i, SaxonProcessor::sxn_environ->env->NewStringUTF( (iter->first).c_str()  ));
 	     		SaxonProcessor::sxn_environ->env->SetObjectArrayElement( stringArray2, i, SaxonProcessor::sxn_environ->env->NewStringUTF((iter->second).c_str()) );
 	   }
-		std::cerr<<"SaxonProc applyConfig b1"<<std::endl;
 		SaxonProcessor::sxn_environ->env->CallStaticObjectMethod(saxonCAPIClass, mIDappConfig,proc, stringArray1,stringArray2);
 		if (exceptionOccurred()) {
 	   		exception= checkForExceptionCPP(SaxonProcessor::sxn_environ->env, saxonCAPIClass, NULL);
 			exceptionClear();
       		 }
-   std::cerr<<"SaxonProc applyConfig b2"<<std::endl;
  	  SaxonProcessor::sxn_environ->env->DeleteLocalRef(stringArray1);
 	  SaxonProcessor::sxn_environ->env->DeleteLocalRef(stringArray2);
 		
@@ -276,7 +275,6 @@ std::cerr<<"SaxonProc applyConfig p3"<<std::endl;
 
 
 SaxonProcessor& SaxonProcessor::operator=( const SaxonProcessor& other ){
-std::cerr<<"SaxonProcesso = called"<<std::endl;
 	versionClass = other.versionClass;
 	procClass = other.procClass;
 	saxonCAPIClass = other.saxonCAPIClass;
@@ -318,9 +316,7 @@ SchemaValidator * SaxonProcessor::newSchemaValidator(){
 
 
 const char * SaxonProcessor::version() {
-std::cerr<<"SaxonProc version p1"<<std::endl;
      if(versionStr == NULL) {
-std::cerr<<"SaxonProc version p2"<<std::endl;
      	static jmethodID MID_version = (jmethodID)SaxonProcessor::sxn_environ->env->GetStaticMethodID(saxonCAPIClass, "getProductVersion", "(Lnet/sf/saxon/s9api/Processor;)Ljava/lang/String;");
     	if (!MID_version) {
         	std::cerr<<"\nError: MyClassInDll "<<"SaxonCAPI.getProductVersion()"<<" not found"<<std::endl;
@@ -456,7 +452,7 @@ XdmNode * SaxonProcessor::parseXmlFromUri(const char* source){
      * @param value of the property
      */
     void SaxonProcessor::setConfigurationProperty(const char * name, const char * value){
-	std::cerr<<"setConfig called"<<std::endl;
+	std::cerr<<"setConfig called:"<<"name = "<<name<<" value="<<value<<std::endl;
 	configProperties.insert(std::pair<std::string, std::string>(std::string(name), std::string(value)));
     }
 

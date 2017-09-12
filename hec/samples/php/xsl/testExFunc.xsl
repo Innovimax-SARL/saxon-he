@@ -19,19 +19,19 @@
   
   <xsl:template match="*">
     <output>
-      
+    <!--  <b>Is licensed=<xsl:value-of select="f:is-licensed-EE()"/></b>-->
       <xsl:variable name="args" select="['param1-data', .]"/>
       <xsl:variable name="phpCall" select="php:function('userFunction', $args)" />
-      <extension-function-test>Call to saxon:php-call:
-        <xsl:if test="true()">
-          Result from phpCall:
-          ﻿<xsl:value-of select="$phpCall/testdoc/@name" /> 
-        </xsl:if>
-        <xsl:if test="empty($phpCall)">
-          Empty result FOUND:
-          ﻿<xsl:value-of select="$phpCall" /> 
-        </xsl:if>
-      </extension-function-test>  
+     <extension-function-test>Call to saxon:php-call:
+           <xsl:if test="not(empty($phpCall))">
+		Result from phpCall:
+                ﻿<xsl:value-of select="$phpCall/*" /> 
+            </xsl:if>
+	    <xsl:if test="empty($phpCall)">
+		Empty result FOUND-----:
+                ﻿<xsl:value-of select="$phpCall" /> 
+            </xsl:if>
+</extension-function-test>
       <!--<xsl:value-of select="normalize-unicode('Eisbär', 'NFKD')" />-->
       <xsl:for-each select="person" >
         <out><xsl:value-of select="."/></out>

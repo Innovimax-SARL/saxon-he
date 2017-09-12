@@ -525,7 +525,7 @@ int main()
    processor->setConfigurationProperty("http://saxon.sf.net/feature/generateByteCode","false");
 
     XsltProcessor * trans = processor->newXsltProcessor();
-  /*  exampleSimple1Err(trans);
+   exampleSimple1Err(trans);
    exampleSimple1(trans);
     exampleSimple2(trans);
     exampleSimple3(processor, trans);
@@ -552,7 +552,7 @@ int main()
 
     testXdmNodeOutput(trans);
 
-    exampleParam(processor, trans);*/
+    exampleParam(processor, trans);
 
 testTransformToStringExtensionFunc(processor, trans);
 

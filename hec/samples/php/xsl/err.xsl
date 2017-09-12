@@ -1,5 +1,5 @@
 <xsl:stylesheet 
-      xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='2.0'
+      xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='3.0'
       xmlns:bar="http://apache.org/bar"
       exclude-result-prefixes="bar"
       >
@@ -18,7 +18,7 @@
   <xsl:template match="bar:element">
     <bar>
       <param-val>
-        <xsl:value-of /><xsl:text>, </xsl:text>
+        <xsl:value-of xx="value1" /><xsl:text>, </xsl:text>
         <xsl:value-of select="$my-var"/>
       </param-val>
       <data><xsl:apply-templates/></data>

@@ -39,6 +39,7 @@ public:
     XsltProcessor(SaxonProcessor* proc, std::string cwd="");
 
      ~XsltProcessor(){
+std::cerr<<"xsltProc destructor called in c++"<<std::endl;
 	clearProperties();
 	clearParameters();
      }
