@@ -193,7 +193,7 @@ public class ArrayFunctionSet extends BuiltInFunctionSet {
             List<Sequence> list = new ArrayList<Sequence>(1);
             int i;
             for (i=0; i < array.arrayLength(); i++) {
-                if (((BooleanValue) fn.call(context, new Sequence[]{array.get(i)}).head()).getBooleanValue()) {
+                if (((BooleanValue) dynamicCall(fn, context, new Sequence[]{array.get(i)}).head()).getBooleanValue()) {
                     list.add(array.get(i));
                 }
             }
@@ -241,7 +241,7 @@ public class ArrayFunctionSet extends BuiltInFunctionSet {
             Function fn = (Function) arguments[2].head();
             int i;
             for (i=0; i < arraySize; i++) {
-                zero = fn.call(context, new Sequence[]{zero, array.get(i)});
+                zero = dynamicCall(fn, context, new Sequence[]{zero, array.get(i)});
             }
             return zero;
         }
@@ -260,7 +260,7 @@ public class ArrayFunctionSet extends BuiltInFunctionSet {
             Function fn = (Function) arguments[2].head();
             int i;
             for (i = array.arrayLength() - 1; i >= 0; i--) {
-                zero = fn.call(context, new Sequence[]{array.get(i), zero});
+                zero = dynamicCall(fn, context, new Sequence[]{array.get(i), zero});
             }
             return zero;
         }
@@ -279,7 +279,7 @@ public class ArrayFunctionSet extends BuiltInFunctionSet {
             List<Sequence> list = new ArrayList<Sequence>(1);
             int i;
             for (i=0; i < array.arrayLength(); i++) {
-                list.add(fn.call(context, new Sequence[]{array.get(i)}));
+                list.add(dynamicCall(fn, context, new Sequence[]{array.get(i)}));
             }
             return new SimpleArrayItem(list);
         }
@@ -301,7 +301,7 @@ public class ArrayFunctionSet extends BuiltInFunctionSet {
             List<Sequence> list = new ArrayList<Sequence>(1);
             int i;
             for (i=0; i < array1.arrayLength() && i < array2.arrayLength(); i++) {
-                list.add(fn.call(context, new Sequence[]{array1.get(i), array2.get(i)}));
+                list.add(dynamicCall(fn, context, new Sequence[]{array1.get(i), array2.get(i)}));
             }
             return new SimpleArrayItem(list);
         }

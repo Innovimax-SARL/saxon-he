@@ -313,7 +313,7 @@ public class MapFunctionSet extends BuiltInFunctionSet {
             Function fn = (Function) arguments[1].head();
             List<GroundedValue> results = new ArrayList<GroundedValue>();
             for (KeyValuePair pair : map) {
-                Sequence seq = fn.call(context, new Sequence[]{pair.key, pair.value});
+                Sequence seq = dynamicCall(fn, context, new Sequence[]{pair.key, pair.value});
                 results.add(SequenceTool.toGroundedValue(seq));
             }
             return new Chain(results);

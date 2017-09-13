@@ -8,6 +8,7 @@
 package net.sf.saxon.functions;
 
 import net.sf.saxon.expr.*;
+import net.sf.saxon.expr.instruct.UserFunction;
 import net.sf.saxon.expr.parser.ContextItemStaticInfo;
 import net.sf.saxon.expr.parser.ExpressionVisitor;
 import net.sf.saxon.expr.parser.RetainedStaticContext;
@@ -436,6 +437,23 @@ public abstract class SystemFunction extends AbstractFunction {
             return (NodeInfo) item;
         }
     }
+
+    /**
+     * Make a dynamic call to a supplied argument function (convenience method for use by implementations)
+     *
+     * @param context the XPath dynamic evaluation context
+     * @param args    the actual arguments to be supplied
+     * @return the result of invoking the function
+     * @throws XPathException if a dynamic error occurs within the function
+     */
+
+    public static Sequence dynamicCall(Function f, XPathContext context, Sequence[] args) throws XPathException {
+        if (f instanceof UserFunction) {
+            context = ((UserFunction)f).makeNewContext(context);
+        }
+        return f.call(context, args);
+    }
+
 
     /**
      * Diagnostic print of expression structure. The abstract expression tree

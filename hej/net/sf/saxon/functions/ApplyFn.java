@@ -9,7 +9,6 @@ package net.sf.saxon.functions;
 
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.XPathContext;
-import net.sf.saxon.expr.instruct.UserFunction;
 import net.sf.saxon.expr.parser.ContextItemStaticInfo;
 import net.sf.saxon.expr.parser.ExplicitLocation;
 import net.sf.saxon.expr.parser.ExpressionVisitor;
@@ -157,11 +156,7 @@ public class ApplyFn extends SystemFunction  {
                 argArray[i] = SequenceTool.makeRepeatable(converted);
             }
         }
-        XPathContext c2 = context;
-        if (function instanceof UserFunction) {
-            c2 = ((UserFunction)function).makeNewContext(context);
-        }
-        Sequence rawResult = function.call(c2, argArray);
+        Sequence rawResult = dynamicCall(function, context, argArray);
         if (function.isTrustedResultType()) {
             // trust system functions to return a result of the correct type
             return rawResult;

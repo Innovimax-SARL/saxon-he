@@ -8,6 +8,7 @@
 package net.sf.saxon.ma.json;
 
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.functions.SystemFunction;
 import net.sf.saxon.om.Function;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.Sequence;
@@ -230,7 +231,7 @@ public class JsonHandler {
         if (fallbackFunction != null) {
             Sequence[] args = new Sequence[1];
             args[0] = new StringValue(s);
-            Sequence result = fallbackFunction.call(context, args).head();
+            Sequence result = SystemFunction.dynamicCall(fallbackFunction, context, args).head();
             Item first = result.head();
             return first == null ? "" : first.getStringValue();
         } else {

@@ -65,7 +65,7 @@ public class ArraySort extends SystemFunction {
             member.value = seq;
             member.originalPosition = i++;
             if (key != null) {
-                member.sortKey = SequenceTool.toGroundedValue(key.call(context, new Sequence[]{seq}));
+                member.sortKey = SequenceTool.toGroundedValue(dynamicCall(key, context, new Sequence[]{seq}));
             } else {
                 member.sortKey = atomize(seq);
             }
