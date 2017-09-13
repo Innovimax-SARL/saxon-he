@@ -180,6 +180,7 @@ public class NextMatch extends ApplyNextMatchingTemplate {
 
         public TailCall processLeavingTail() throws XPathException {
             TemplateRule nh = (TemplateRule) rule.getAction();
+            nh.initialize();
             XPathContextMajor c2 = evaluationContext.newContext();
             c2.setOrigin(NextMatch.this);
             //c2.setOriginatingConstructType(LocationKind.TEMPLATE);

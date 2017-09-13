@@ -23,7 +23,7 @@ import net.sf.saxon.trans.XPathException;
 
 
 /**
- * An xsl:apply-imports element in the stylesheet. NOTE: NextMatch is a subclass
+ * An xsl:apply-imports element in the stylesheet.
  */
 
 public class ApplyImports extends ApplyNextMatchingTemplate implements ITemplateCall {
