@@ -648,8 +648,10 @@ public class Xslt30Transformer {
      *
      * @param selection   the initial value to which templates are to be applied (equivalent to the <code>select</code>
      *                    attribute of <code>xsl:apply-templates</code>)
-     * @param destination the destination of the result document produced by wrapping the result of the apply-templates
-     *                    call in a document node.
+     * @param destination the destination for the result document. In most cases this causes the raw result of
+     *                     the transformation to be wrapped in a document node. However, if the destination
+     *                     is a Serializer and the output method is "json" or "adaptive", then
+     *                     no wrapping takes place.
      * @throws SaxonApiException if the transformation fails
      * @since 9.6. Changed in 9.7.0.1 so that if a Serializer is supplied as the Destination, it will not
      * be modified by this method to set output properties from the stylesheet; instead, the Serializer
@@ -722,8 +724,10 @@ public class Xslt30Transformer {
      * @param templateName the name of the initial template. This must match the name of a
      *                     public named template in the stylesheet. If the value is null,
      *                     the QName <code>xsl:initial-template</code> is used.
-     * @param destination  the destination of the result document produced by wrapping the result of the apply-templates
-     *                     call in a document node.
+     * @param destination  the destination for the result document. In most cases this causes the raw result of
+     *                     the transformation to be wrapped in a document node. However, if the destination
+     *                     is a Serializer and the output method is "json" or "adaptive", then
+     *                     no wrapping takes place.
      * @throws SaxonApiException if there is no named template with this name, or if any dynamic
      *                           error occurs during the transformation
      * @since 9.6. Changed in 9.7.0.1 so that if a Serializer is supplied as the Destination, it will not
@@ -764,6 +768,8 @@ public class Xslt30Transformer {
             if ("json".equals(method) || "adaptive".equals(method)) {
                 controller.setBuildTree(false);
             }
+        } else {
+            controller.setBuildTree(true);
         }
     }
 
