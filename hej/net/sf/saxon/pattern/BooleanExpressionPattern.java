@@ -33,7 +33,8 @@ import net.sf.saxon.type.UType;
 
 public class BooleanExpressionPattern extends Pattern implements PatternWithPredicate {
 
-    private Expression expression;
+    private Operand expressionOp;
+    //private Expression expression;
 
     /**
      * Create a BooleanExpressionPattern
@@ -42,13 +43,13 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
      */
 
     public BooleanExpressionPattern(Expression expression) {
-        this.expression = expression;
+        this.expressionOp = new Operand(this, expression, OperandRole.SINGLE_ATOMIC);
         setPriority(1);
     }
 
     @Override
     public Expression getPredicate() {
-        return expression;
+        return expressionOp.getChildExpression();
     }
 
     /**
@@ -64,7 +65,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
      */
     @Override
     public Iterable<Operand> operands() {
-        return new Operand(this, expression, OperandRole.SINGLE_ATOMIC);
+        return expressionOp;
     }
 
     /**
@@ -74,8 +75,8 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
      */
     @Override
     public UType getUType() {
-        if (expression instanceof InstanceOfExpression) {
-            return ((InstanceOfExpression) expression).getRequiredItemType().getUType();
+        if (getPredicate() instanceof InstanceOfExpression) {
+            return ((InstanceOfExpression) getPredicate()).getRequiredItemType().getUType();
         } else {
             return UType.ANY;
         }
@@ -89,7 +90,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
      */
 
     public int allocateSlots(SlotManager slotManager, int nextFree) {
-        return ExpressionTool.allocateSlots(expression, nextFree, slotManager);
+        return ExpressionTool.allocateSlots(getPredicate(), nextFree, slotManager);
     }
 
     /**
@@ -103,14 +104,14 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
     @Override
     public Pattern typeCheck(ExpressionVisitor visitor, ContextItemStaticInfo contextItemType) throws XPathException {
         ContextItemStaticInfo cit = visitor.getConfiguration().getDefaultContextItemStaticInfo();
-        expression = expression.typeCheck(visitor, cit);
+        expressionOp.setChildExpression(getPredicate().typeCheck(visitor, cit));
         return this;
     }
 
     @Override
     public Pattern optimize(ExpressionVisitor visitor, ContextItemStaticInfo contextInfo) throws XPathException {
         ContextItemStaticInfo cit = visitor.getConfiguration().getDefaultContextItemStaticInfo();
-        expression = expression.optimize(visitor, cit);
+        expressionOp.setChildExpression(getPredicate().optimize(visitor, cit));
         return this;
     }
 
@@ -119,8 +120,8 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
     public boolean isMotionless() {
         ContextItemStaticInfo cio = getConfiguration().makeContextItemStaticInfo(getItemType(), false);
         cio.setContextPostureStriding();
-        Streamability.getStreamability(expression, cio, null);
-        return Streamability.getSweep(expression) == Sweep.MOTIONLESS;
+        Streamability.getStreamability(getPredicate(), cio, null);
+        return Streamability.getSweep(getPredicate()) == Sweep.MOTIONLESS;
     }
     //#endif
 
@@ -142,7 +143,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
 //            if (comp != null) {
 //                return comp.effectiveBooleanValue(c2);
 //            }
-            return expression.effectiveBooleanValue(c2);
+            return getPredicate().effectiveBooleanValue(c2);
         } catch (XPathException e) {
             return false;
         }
@@ -172,7 +173,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
      */
 
     public String toString() {
-        return ".[" + expression.toString() + "]";
+        return ".[" + getPredicate().toString() + "]";
     }
 
     /**
@@ -183,7 +184,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
 
     public boolean equals(/*@NotNull*/ Object other) {
         return (other instanceof BooleanExpressionPattern) &&
-                ((BooleanExpressionPattern) other).expression.equals(expression);
+                ((BooleanExpressionPattern) other).getPredicate().equals(getPredicate());
     }
 
     /**
@@ -191,7 +192,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
      */
 
     public int hashCode() {
-        return 0x7aeffea9 ^ expression.hashCode();
+        return 0x7aeffea9 ^ getPredicate().hashCode();
     }
 
     /**
@@ -203,7 +204,7 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
 
     /*@NotNull*/
     public Pattern copy(RebindingMap rebindings) {
-        BooleanExpressionPattern n = new BooleanExpressionPattern(expression.copy(rebindings));
+        BooleanExpressionPattern n = new BooleanExpressionPattern(getPredicate().copy(rebindings));
         ExpressionTool.copyLocationInfo(this, n);
         return n;
     }
@@ -213,26 +214,10 @@ public class BooleanExpressionPattern extends Pattern implements PatternWithPred
         /*if (comp != null) {
             comp.export(presenter);
         } else { */
-            expression.export(presenter);
+            getPredicate().export(presenter);
         //}
         presenter.endElement();
     }
-
-
-
-//    CompiledExpression comp;
-//
-//    public CompiledExpression compileToByteCode() {
-//        CompilerService cs = new CompilerService(expression.getConfiguration());
-//        comp = cs.compileToByteCode(expression, this.getClass().getSimpleName(), Expression.EFFECTIVE_BOOLEAN_VALUE);
-//        return comp;
-//    }
-
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-
+    
 }
 

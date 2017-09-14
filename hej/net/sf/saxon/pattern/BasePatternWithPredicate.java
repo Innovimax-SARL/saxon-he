@@ -30,21 +30,21 @@ import net.sf.saxon.type.UType;
  */
 public class BasePatternWithPredicate extends Pattern implements PatternWithPredicate {
 
-    private Pattern basePattern;
-    private Expression predicate;
+    Operand basePatternOp;
+    Operand predicateOp;
 
     public BasePatternWithPredicate(Pattern basePattern, Expression predicate) {
-        this.basePattern = basePattern;
-        this.predicate = predicate;
-        adoptChildExpression(basePattern);
-        adoptChildExpression(predicate);
+        basePatternOp = new Operand(this, basePattern, OperandRole.ATOMIC_SEQUENCE);
+        predicateOp = new Operand(this, basePattern, OperandRole.ATOMIC_SEQUENCE);
+        adoptChildExpression(getBasePattern());
+        adoptChildExpression(getPredicate());
     }
 
     public Expression getPredicate() {
-        return predicate;
+        return predicateOp.getChildExpression();
     }
     public Pattern getBasePattern() {
-        return basePattern;
+        return (Pattern)basePatternOp.getChildExpression();
     }
 
     /**
@@ -52,12 +52,13 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public void bindCurrent(LocalBinding binding) {
+        Expression predicate = getPredicate();
         if (predicate.isCallOn(Current.class)) {
-            predicate = new LocalVariableReference(binding);
+            predicateOp.setChildExpression(new LocalVariableReference(binding));
         } else if (ExpressionTool.callsFunction(predicate, Current.FN_CURRENT, false)) {
             replaceCurrent(predicate, binding);
         }
-        basePattern.bindCurrent(binding);
+        getBasePattern().bindCurrent(binding);
     }
 
     /**
@@ -69,7 +70,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
 
     public boolean matchesCurrentGroup() {
-        return basePattern.matchesCurrentGroup();
+        return getBasePattern().matchesCurrentGroup();
     }
 
     /**
@@ -85,9 +86,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public Iterable<Operand> operands() {
-        return operandList(
-                new Operand(this, basePattern, OperandRole.ATOMIC_SEQUENCE),
-                new Operand(this, predicate, OperandRole.FOCUS_CONTROLLED_ACTION));
+        return operandList(basePatternOp, predicateOp);
     }
 
     /**
@@ -98,8 +97,8 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
 
     public int allocateSlots(SlotManager slotManager, int nextFree) {
-        int n = ExpressionTool.allocateSlots(predicate, nextFree, slotManager);
-        return basePattern.allocateSlots(slotManager, n);
+        int n = ExpressionTool.allocateSlots(getPredicate(), nextFree, slotManager);
+        return getBasePattern().allocateSlots(slotManager, n);
     }
 
     /**
@@ -112,7 +111,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public boolean matches(Item item, XPathContext context) throws XPathException {
-        if (!basePattern.matches(item, context)) {
+        if (!getBasePattern().matches(item, context)) {
             return false;
         }
         return matchesPredicate(item, context);
@@ -123,7 +122,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
         ManualIterator si = new ManualIterator(item);
         c2.setCurrentIterator(si);
         try {
-            return predicate.effectiveBooleanValue(c2);
+            return getPredicate().effectiveBooleanValue(c2);
         } catch (XPathException.Circularity e) {
             throw e;
         } catch (XPathException ex) {
@@ -142,7 +141,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
 
     @Override
     public boolean matchesBeneathAnchor(NodeInfo node, NodeInfo anchor, XPathContext context) throws XPathException {
-        return basePattern.matchesBeneathAnchor(node, anchor, context) &&
+        return getBasePattern().matchesBeneathAnchor(node, anchor, context) &&
                 matchesPredicate(node, context);
     }
 
@@ -153,7 +152,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public UType getUType() {
-        return basePattern.getUType();
+        return getBasePattern().getUType();
     }
 
     /**
@@ -165,7 +164,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public int getFingerprint() {
-        return basePattern.getFingerprint();
+        return getBasePattern().getFingerprint();
     }
 
     /**
@@ -176,7 +175,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
     /*@Nullable*/
     @Override
     public ItemType getItemType() {
-        return basePattern.getItemType();
+        return getBasePattern().getItemType();
     }
 
     /**
@@ -187,7 +186,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public int getDependencies() {
-        return predicate.getDependencies();
+        return getPredicate().getDependencies();
     }
 
     /**
@@ -200,9 +199,10 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public Pattern typeCheck(ExpressionVisitor visitor, ContextItemStaticInfo contextItemType) throws XPathException {
-        basePattern = basePattern.typeCheck(visitor, contextItemType);
-        ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(basePattern.getItemType(), false);
-        predicate = predicate.typeCheck(visitor, cit);
+        basePatternOp.setChildExpression(getBasePattern().typeCheck(visitor, contextItemType));
+        ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(
+                getBasePattern().getItemType(), false);
+        predicateOp.setChildExpression(getPredicate().typeCheck(visitor, cit));
         return this;
     }
 
@@ -224,10 +224,11 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public Pattern optimize(ExpressionVisitor visitor, ContextItemStaticInfo contextInfo) throws XPathException {
-        basePattern = basePattern.optimize(visitor, contextInfo);
-        ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(basePattern.getItemType(), false);
-        predicate = predicate.optimize(visitor, cit);
-        predicate = visitor.getConfiguration().obtainOptimizer().eliminateCommonSubexpressions(predicate);
+        basePatternOp.setChildExpression(getBasePattern().optimize(visitor, contextInfo));
+        ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(
+                getBasePattern().getItemType(), false);
+        predicateOp.setChildExpression(getPredicate().optimize(visitor, cit));
+        predicateOp.setChildExpression(visitor.getConfiguration().obtainOptimizer().eliminateCommonSubexpressions(getPredicate()));
         return this;
     }
 
@@ -242,11 +243,11 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
     @Override
     public Pattern convertToTypedPattern(String val) throws XPathException {
-        Pattern b2 = basePattern.convertToTypedPattern(val);
-        if (b2 == basePattern) {
+        Pattern b2 = getBasePattern().convertToTypedPattern(val);
+        if (b2 == getBasePattern()) {
             return this;
         } else {
-            return new BasePatternWithPredicate(b2, predicate);
+            return new BasePatternWithPredicate(b2, getPredicate());
         }
     }
 
@@ -255,9 +256,9 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
     public boolean isMotionless() {
         ContextItemStaticInfo cio = getConfiguration().makeContextItemStaticInfo(getItemType(), false);
         cio.setContextPostureStriding();
-        Streamability.getStreamability(predicate, cio, null);
-        return basePattern.isMotionless() &&
-                Streamability.getSweep(predicate) == Sweep.MOTIONLESS;
+        Streamability.getStreamability(getPredicate(), cio, null);
+        return getBasePattern().isMotionless() &&
+                Streamability.getSweep(getPredicate()) == Sweep.MOTIONLESS;
     }
 
     //#endif
@@ -267,12 +268,12 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
      */
 
     public String toString() {
-        return basePattern.toString() + "[" + predicate.toString() + "]";
+        return getBasePattern().toString() + "[" + getPredicate().toString() + "]";
     }
 
     @Override
     public String toShortString() {
-        return basePattern.toShortString() + "[" + predicate.toShortString() + "]";
+        return getBasePattern().toShortString() + "[" + getPredicate().toShortString() + "]";
     }
 
 
@@ -285,7 +286,8 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
 
     /*@NotNull*/
     public Pattern copy(RebindingMap rebindings) {
-        BasePatternWithPredicate n = new BasePatternWithPredicate(basePattern.copy(rebindings), predicate.copy(rebindings));
+        BasePatternWithPredicate n = new BasePatternWithPredicate(
+                getBasePattern().copy(rebindings), getPredicate().copy(rebindings));
         ExpressionTool.copyLocationInfo(this, n);
         return n;
     }
@@ -293,19 +295,19 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
     @Override
     public boolean equals(Object obj) {
         return obj instanceof BasePatternWithPredicate &&
-                ((BasePatternWithPredicate)obj).basePattern.equals(basePattern) &&
-                ((BasePatternWithPredicate) obj).predicate.equals(predicate);
+                ((BasePatternWithPredicate)obj).getBasePattern().equals(getBasePattern()) &&
+                ((BasePatternWithPredicate) obj).getPredicate().equals(getPredicate());
     }
 
     @Override
     public int hashCode() {
-        return basePattern.hashCode() ^ predicate.hashCode();
+        return getBasePattern().hashCode() ^ getPredicate().hashCode();
     }
 
     public void export(ExpressionPresenter presenter) throws XPathException {
         presenter.startElement("p.withPredicate");
-        basePattern.export(presenter);
-        predicate.export(presenter);
+        getBasePattern().export(presenter);
+        getPredicate().export(presenter);
         presenter.endElement();
     }
 
