@@ -126,7 +126,7 @@ public class QName {
     }
 
     /**
-     * Protected constructor accepting a StructuredQName
+     * Construct a QName from a StructuredQName
      *
      * @param sqName the StructuredQName
      */
@@ -213,7 +213,10 @@ public class QName {
      * Validate the QName against the XML 1.0 or XML 1.1 rules for valid names.
      *
      * @param processor The Processor in which the name is to be validated.
-     *                  This determines whether the XML 1.0 or XML 1.1 rules for forming names are used.
+     *                  This was at one time used to determine whether the
+     *                  XML 1.0 or XML 1.1 rules for forming names are used. However,
+     *                  the XML 1.0 and 1.1 rules are now aligned, so this argument
+     *                  is no longer used.
      * @return true if the name is valid, false if not
      */
 
@@ -284,8 +287,8 @@ public class QName {
 
 
   /*
-   * The expanded name, as a string using the notation devised by EQName.
-   * If the name is in a namespace, the resulting string takes the form <code>{uri}local</code>.
+   * The expanded name, as a string using the notation defined by the EQName production in XPath 3.0.
+   * If the name is in a namespace, the resulting string takes the form <code>Q{uri}local</code>.
    * Otherwise, the value is the local part of the name.
    *
    */
@@ -591,7 +594,7 @@ public class QName {
     /**
      * QName denoting the schema type xs:dateTimeStamp *
      */
-    /*@NotNull*/ public static final QName XS_DATE_TIME_STAMP =
+    public static final QName XS_DATE_TIME_STAMP =
             new QName("xs", NamespaceConstant.SCHEMA, "dateTimeStamp");
 
 }
