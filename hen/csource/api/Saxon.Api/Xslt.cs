@@ -2365,6 +2365,7 @@ namespace Saxon.Api
 
             try
             {
+                SetBuildTreeConditionally(destination);
                 JReceiver outi = GetDestinationReceiver(destination);// destination.GetReceiver(controller.makePipelineConfiguration());
                 controller.initializeController(globalParameterSet);
                 controller.transform(streamSource, outi);
@@ -2372,6 +2373,24 @@ namespace Saxon.Api
             catch (net.sf.saxon.trans.XPathException exp)
             {
                 throw new DynamicError(exp);
+            }
+
+        }
+
+
+        /// <summary>
+        /// Added this  method to address bug issue #3445. For the next major  release we should look at adding a method at the API
+        /// level  as suggested in the bug issue.
+        /// </summary>
+        private void SetBuildTreeConditionally(XmlDestination destination) {
+            if (destination is Serializer) {
+                String method = (String)((Serializer)destination).GetOutputProperties().get(Serializer.METHOD);
+                if (method == null) {
+                    method = controller.getExecutable().getDefaultOutputProperties().getProperty("method");
+                }
+                if ("json".Equals(method) || "adaptive".Equals(method)) {
+                    controller.setBuildTree(false);
+                }
             }
 
         }
@@ -2426,6 +2445,7 @@ namespace Saxon.Api
             prime();
             try
             {
+                SetBuildTreeConditionally(destination);
                 JReceiver outi = GetDestinationReceiver(destination);
                 if (baseOutputUriWasSet)
                 {
@@ -2504,6 +2524,7 @@ namespace Saxon.Api
             }*/
             try
             {
+                SetBuildTreeConditionally(destination);
                 JReceiver outi = GetDestinationReceiver(destination);
                 if (baseOutputUriWasSet)
                 {
@@ -2616,6 +2637,7 @@ namespace Saxon.Api
         public void CallFunction(QName function, XdmValue[] arguments, XmlDestination destination)
         {
             XdmValue result = CallFunction(function, arguments);
+            SetBuildTreeConditionally(destination);
             if (destination is Serializer)
             {
                 // TODO: call the function in push mode, avoiding creation of the result in memory
