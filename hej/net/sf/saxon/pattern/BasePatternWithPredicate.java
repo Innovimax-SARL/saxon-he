@@ -35,7 +35,7 @@ public class BasePatternWithPredicate extends Pattern implements PatternWithPred
 
     public BasePatternWithPredicate(Pattern basePattern, Expression predicate) {
         basePatternOp = new Operand(this, basePattern, OperandRole.ATOMIC_SEQUENCE);
-        predicateOp = new Operand(this, basePattern, OperandRole.ATOMIC_SEQUENCE);
+        predicateOp = new Operand(this, predicate, OperandRole.ATOMIC_SEQUENCE);
         adoptChildExpression(getBasePattern());
         adoptChildExpression(getPredicate());
     }
