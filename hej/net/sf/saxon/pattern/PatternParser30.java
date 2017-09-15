@@ -18,7 +18,6 @@ import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.om.AxisInfo;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trans.XPathException;
-import net.sf.saxon.type.AnyItemType;
 import net.sf.saxon.type.ItemType;
 import net.sf.saxon.type.NumericType;
 import net.sf.saxon.type.TypeHierarchy;
@@ -122,7 +121,12 @@ public class PatternParser30 extends XPathParser implements PatternParser {
             }
             ExpressionVisitor visitor = ExpressionVisitor.make(env);
             ContextItemStaticInfo cit = visitor.getConfiguration().makeContextItemStaticInfo(AnyNodeTest.getInstance(), true);
-            Pattern pat = PatternMaker.fromExpression(exp.simplify().typeCheck(visitor, cit), env.getConfiguration(), true);
+            Pattern pat;
+            try {
+                pat = PatternMaker.fromExpression(exp.simplify().typeCheck(visitor, cit), env.getConfiguration(), true);
+            } catch (XPathException e) {
+                pat = PatternMaker.fromExpression(exp.simplify(), env.getConfiguration(), true);
+            }
             if (exp instanceof FilterExpression && ((FilterExpression)exp).getBase() instanceof ContextItemExpression) {
                 grumble("A predicatePattern can appear only at the outermost level (parentheses not allowed)");
             }
