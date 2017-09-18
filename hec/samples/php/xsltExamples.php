@@ -421,7 +421,7 @@ $proc->clearProperties();
             echo '<br/>';                    
            exampleXMLFilterChain2($saxonProc, $proc, $foo_xml, $foo_xsl, $foo2_xsl, $foo3_xsl);       
             echo '<br/>';  
-	    userFunctionExample($saxonProc, $proc,  $foo_xml, 'xsl/testExFunc.xsl');
+	    //userFunctionExample($saxonProc, $proc,  $foo_xml, 'xsl/testExFunc.xsl'); //corruption in memory
             echo '<br/>';
             unset($proc);
 	    unset($saxonproc);

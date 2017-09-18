@@ -13,12 +13,16 @@ extern "C" {
 #endif
 
     #include "php.h"
-	//#include "php_ini.h"
+	#include "php_ini.h"
 	#include "ext/standard/info.h"
 	#include "Zend/zend_exceptions.h"
 	
 
 
+#include "zend_interfaces.h"
+#include "zend_ini.h"
+#include "zend_closures.h"
+#include "SAPI.h"
 #ifdef PHP_WIN32
 	#define _ALLOW_KEYWORD_MACROS
 #endif

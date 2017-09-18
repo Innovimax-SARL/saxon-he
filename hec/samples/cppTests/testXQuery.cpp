@@ -120,6 +120,7 @@ void testDefaultNamespace(SaxonProcessor * processor, XQueryProcessor * queryPro
 void testReusability(SaxonProcessor * processor, XQueryProcessor * queryProc){
 	cout<<endl<<"Test test XQuery reusability:"<<endl;
 	XQueryProcessor * queryProc2 = processor->newXQueryProcessor();
+
 	queryProc->clearProperties();
 	queryProc->clearParameters(true);
 

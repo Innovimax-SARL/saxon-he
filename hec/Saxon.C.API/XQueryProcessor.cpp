@@ -24,7 +24,7 @@
 #endif
 
     proc->exception = NULL;
-    outputfile1 = "";
+   // outputfile1 = "";
 	if(!(proc->cwd.empty()) && curr.empty()){
 		cwdXQ = proc->cwd;
 	} else {
@@ -88,7 +88,7 @@ std::map<std::string,std::string>& XQueryProcessor::getProperties(){
      * Set the output file where the result is sent
     */
     void XQueryProcessor::setOutputFile(const char* ofile){
-       outputfile1 = std::string(ofile); 
+      // outputfile1 = std::string(ofile); 
        setProperty("o", ofile);
     }
 
@@ -144,12 +144,21 @@ std::map<std::string,std::string>& XQueryProcessor::getProperties(){
 			}
         	}
 		parameters.clear();
+	} else {
+
+		for(std::map<std::string, XdmValue*>::iterator itr = parameters.begin(); itr != parameters.end(); itr++){
+			XdmValue * value = itr->second;
+			value->decrementRefCount();
+
+        	}
 	}
+
+
     }
 
    void XQueryProcessor::clearProperties(){
 	properties.clear();
-        outputfile1.clear();
+        //outputfile1.clear();
    }
 
 
@@ -384,13 +393,13 @@ std::map<std::string,std::string>& XQueryProcessor::getProperties(){
    }
 
     void XQueryProcessor::setQueryFile(const char * ofile){
-	   outputfile1 = std::string(ofile); 
+	   //outputfile1 = std::string(ofile); 
 	   setProperty("q", ofile);
 	    queryFileExists = true;
     }
 
    void XQueryProcessor::setQueryContent(const char* content){
-	   outputfile1 = std::string(content); 
+	  // outputfile1 = std::string(content); 
 	   setProperty("qs", content);
 	    queryFileExists = false;
   }

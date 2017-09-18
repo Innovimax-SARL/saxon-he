@@ -63,8 +63,8 @@
                 $queryProc->declareNamespace("", "http://one.uri/");
 	        $queryProc->setQueryContent("declare variable \$p as xs:boolean external; exists(/foo) = \$p");
 
-		$queryProc2->declareNamespace("", "http://two.uri");
-		$queryProc2->setQueryContent("declare variable \$p as xs:integer external; /*/bar + \$p");
+		//$queryProc2->declareNamespace("", "http://two.uri");
+		//$queryProc2->setQueryContent("declare variable \$p as xs:integer external; /*/bar + \$p");
 
 		$value1 = $saxonProc->createAtomicValue(true);
 
@@ -89,8 +89,8 @@
 		}
 		unset($value1);
 		unset($sourceNode);
+		//unset($queryProc2);
 		unset($queryProc);
-		unset($queryProc2);
 
 	    }
 
@@ -113,10 +113,9 @@
             echo '<br/>';
             exampleSimple2($proc, $xqueryProc);
             echo '<br/>';
-	   exampleSimple3($proc);
+	    exampleSimple3($proc); //give seg error
             echo '<br/>';               
 
-//	    $proc->close();
 	    unset($xqueryProc);            
             unset($proc);
 	

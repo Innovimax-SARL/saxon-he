@@ -38,7 +38,7 @@ public:
 
     ~XQueryProcessor(){
 	clearProperties();
-	clearParameters(false);
+	clearParameters();
     }
 
     //!Set the initial context item for the query
@@ -251,7 +251,7 @@ private:
 	SaxonProcessor * proc;
 	jclass  cppClass;
 	jobject cppXQ;
-	std::string outputfile1; /*!< output file where result will be saved */
+	//std::string outputfile1; /*!< output file where result will be saved */
 	bool queryFileExists;
 	std::string failure; //for testing
 	std::map<std::string,XdmValue*> parameters; /*!< map of parameters used for the transformation as (string, value) pairs */
