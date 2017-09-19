@@ -113,7 +113,7 @@ public abstract class CollatingFunctionFixed extends SystemFunction {
             return;
         }
 
-        if (NaNequalsNaN) {
+        if (NaNequalsNaN) { // TODO: always false?
             atomicComparer = AtomicSortComparer.makeSortComparer(
                     collation, type0.getPrimitiveType(), env.makeEarlyEvaluationContext());
         } else {
