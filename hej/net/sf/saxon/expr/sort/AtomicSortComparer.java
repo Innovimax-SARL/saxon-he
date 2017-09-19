@@ -149,11 +149,15 @@ public class AtomicSortComparer implements AtomicComparer {
 
         // System.err.println("Comparing " + a.getClass() + "(" + a + ") with " + b.getClass() + "(" + b + ") using " + collator);
 
+        // Delete the following five lines to fix bug 3450
         if (a instanceof UntypedAtomicValue) {
             return ((UntypedAtomicValue) a).compareTo(b, collator, context);
         } else if (b instanceof UntypedAtomicValue) {
             return -((UntypedAtomicValue) b).compareTo(a, collator, context);
-        } else if (a.isNaN()) {
+        } else
+        // End of fix for 3450
+
+        if (a.isNaN()) {
             return b.isNaN() ? 0 : -1;
         } else if (b.isNaN()) {
             return +1;
@@ -170,7 +174,18 @@ public class AtomicSortComparer implements AtomicComparer {
             if (ac == null || bc == null) {
                 return compareNonComparables(a, b);
             } else {
-                return ac.compareTo(bc);
+                try {
+                    return ac.compareTo(bc);
+                } catch (ClassCastException e) {
+                    String message = "Cannot compare " + a.getPrimitiveType().getDisplayName() +
+                            " with " + b.getPrimitiveType().getDisplayName();
+                    // Direct users to bug 3450 which explains a 2017 bug fix that may cause previously
+                    // working applications to fail
+                    if (a instanceof UntypedAtomicValue || b instanceof UntypedAtomicValue) {
+                        message += ". Further information: see http://saxonica.plan.io/issues/3450";
+                    }
+                    throw new ClassCastException(message);
+                }
             }
         }
     }
