@@ -133,7 +133,11 @@ public class PrincipalStylesheetModule extends StylesheetModule implements Globa
         ruleManager = new RuleManager(stylesheetPackage, compilerInfo);
         ruleManager.getUnnamedMode().makeDeclaringComponent(Visibility.PRIVATE, stylesheetPackage);
         stylesheetPackage.setRuleManager(ruleManager);
+        StructuredQName defaultMode = sourceElement.getDefaultMode();
         stylesheetPackage.setDefaultMode(sourceElement.getDefaultMode());
+        if (defaultMode != null) {
+            ruleManager.obtainMode(defaultMode, true);
+        }
         stylesheetPackage.setDeclaredModes(declaredModes);
 
         characterMapIndex = new CharacterMapIndex();

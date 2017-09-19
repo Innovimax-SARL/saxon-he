@@ -291,25 +291,28 @@ public class Controller implements ContextOriginator {
         if (expandedModeName == null || expandedModeName.equals(Mode.UNNAMED_MODE_NAME)) {
             Mode initial = ((PreparedStylesheet) executable).getRuleManager().obtainMode(Mode.UNNAMED_MODE_NAME, true);
             initialMode = initial.getDeclaringComponent();
-        } else if (expandedModeName.equals(Mode.DEFAULT_MODE_NAME)) {
-            StructuredQName defaultModeName = ((StylesheetPackage) executable.getTopLevelPackage()).getDefaultMode();
-            if (!expandedModeName.equals(defaultModeName)) {
-                setInitialMode(defaultModeName);
-            }
         } else {
-            //initialMode = ((PreparedStylesheet) executable).getRuleManager().obtainMode(expandedModeName, false);
-            boolean declaredModes = ((StylesheetPackage) executable.getTopLevelPackage()).isDeclaredModes();
-            SymbolicName sn = new SymbolicName(StandardNames.XSL_MODE, expandedModeName);
-            Component c = ((StylesheetPackage) executable.getTopLevelPackage()).getComponent(sn);
-            if (c == null) {
-                throw new XPathException("Requested initial mode " + expandedModeName + " is not defined in the stylesheet", "XTDE0045");
-            }
-            if (declaredModes && c.getVisibility() == Visibility.PRIVATE) {
-                throw new XPathException("Requested initial mode " + expandedModeName + " is private in the top-level package", "XTDE0045");
-            }
-            initialMode = (Component.M)c;
-            if (!declaredModes && initialMode.getActor().isEmpty()) {
-                throw new XPathException("Requested initial mode " + expandedModeName + " contains no template rules", "XTDE0045");
+            StylesheetPackage topLevelPackage = (StylesheetPackage) executable.getTopLevelPackage();
+            if (expandedModeName.equals(Mode.DEFAULT_MODE_NAME)) {
+                StructuredQName defaultModeName = topLevelPackage.getDefaultMode();
+                if (!expandedModeName.equals(defaultModeName)) {
+                    setInitialMode(defaultModeName);
+                }
+            } else {
+                //initialMode = ((PreparedStylesheet) executable).getRuleManager().obtainMode(expandedModeName, false);
+                boolean declaredModes = topLevelPackage.isDeclaredModes();
+                SymbolicName sn = new SymbolicName(StandardNames.XSL_MODE, expandedModeName);
+                Component c = topLevelPackage.getComponent(sn);
+                if (c == null) {
+                    throw new XPathException("Requested initial mode " + expandedModeName + " is not defined in the stylesheet", "XTDE0045");
+                }
+                if (declaredModes && c.getVisibility() == Visibility.PRIVATE) {
+                    throw new XPathException("Requested initial mode " + expandedModeName + " is private in the top-level package", "XTDE0045");
+                }
+                initialMode = (Component.M)c;
+                if (!declaredModes && initialMode.getActor().isEmpty() && !expandedModeName.equals(topLevelPackage.getDefaultMode())) {
+                    throw new XPathException("Requested initial mode " + expandedModeName + " contains no template rules", "XTDE0045");
+                }
             }
         }
     }
