@@ -137,7 +137,13 @@ public class XSLAccumulator extends StyleElement implements StylesheetComponent 
                 accumulator.setInitialValueExpression(makeExpression(exp, a));
             } else if (f.equals("as")) {
                 String asAtt = atts.getValue(a);
-                accumulator.setType(makeSequenceType(asAtt));
+                try {
+                    SequenceType requiredType = makeSequenceType(asAtt);
+                    accumulator.setType(requiredType);
+                } catch (XPathException e) {
+                    compileErrorInAttribute(e.getMessage(), e.getErrorCodeLocalPart(), "as");
+                }
+
             } else {
                 checkUnknownAttribute(atts.getNodeName(a));
             }

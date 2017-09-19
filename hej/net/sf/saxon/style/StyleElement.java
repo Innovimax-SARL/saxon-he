@@ -910,21 +910,15 @@ public abstract class StyleElement extends ElementImpl {
     public SequenceType makeSequenceType(String sequenceType)
             throws XPathException {
         getStaticContext();
-        try {
-            XPathParser parser =
-                    getConfiguration().newExpressionParser("XP", false, 31);
-            QNameParser qp = new QNameParser(staticContext.getNamespaceResolver());
-            qp.setAcceptEQName(staticContext.getXPathVersion() >= 30);
-            qp.setDefaultNamespace("");
-            qp.setErrorOnBadSyntax("XPST0003");
-            qp.setErrorOnUnresolvedPrefix("XPST0081");
-            parser.setQNameParser(qp);
-            return parser.parseSequenceType(sequenceType, staticContext);
-        } catch (XPathException err) {
-            compileError(err);
-            // recovery path after reporting an error, e.g. undeclared namespace prefix
-            return SequenceType.ANY_SEQUENCE;
-        }
+        XPathParser parser =
+                getConfiguration().newExpressionParser("XP", false, 31);
+        QNameParser qp = new QNameParser(staticContext.getNamespaceResolver());
+        qp.setAcceptEQName(staticContext.getXPathVersion() >= 30);
+        qp.setDefaultNamespace("");
+        qp.setErrorOnBadSyntax("XPST0003");
+        qp.setErrorOnUnresolvedPrefix("XPST0081");
+        parser.setQNameParser(qp);
+        return parser.parseSequenceType(sequenceType, staticContext);
     }
 
     /**

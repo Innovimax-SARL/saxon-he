@@ -53,7 +53,7 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
     private NamedTemplate compiledNamedTemplate;
     // A set of compiled template rules exists if the template has a match pattern: one TemplateRule for each mode
     private Map<StructuredQName, TemplateRule> compiledTemplateRules = new HashMap<StructuredQName, TemplateRule>();
-    private SequenceType requiredType = null;
+    private SequenceType requiredType = SequenceType.ANY_SEQUENCE;
     private boolean hasRequiredParams = false;
     private boolean isTailRecursive = false;
     private Visibility visibility = Visibility.PRIVATE;
@@ -370,7 +370,11 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
             compileError("xsl:template must have a name or match attribute (or both)", "XTSE0500");
         }
         if (asAtt != null) {
-            requiredType = makeSequenceType(asAtt);
+            try {
+                requiredType = makeSequenceType(asAtt);
+            } catch (XPathException e) {
+                compileErrorInAttribute(e.getMessage(), e.getErrorCodeLocalPart(), "as");
+            }
         }
 
         if (visibilityAtt != null) {

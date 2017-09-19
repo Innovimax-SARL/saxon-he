@@ -16,6 +16,7 @@ import net.sf.saxon.tree.iter.AxisIterator;
 import net.sf.saxon.type.AnyItemType;
 import net.sf.saxon.type.ItemType;
 import net.sf.saxon.type.Type;
+import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.Whitespace;
 
 
@@ -51,7 +52,13 @@ public class XSLContextItem extends StyleElement {
             }
         }
         if (asAtt != null) {
-            net.sf.saxon.value.SequenceType st = makeSequenceType(asAtt);
+            SequenceType st;
+            try {
+                st = makeSequenceType(asAtt);
+            } catch (XPathException e) {
+                st = SequenceType.SINGLE_ITEM;
+                compileErrorInAttribute(e.getMessage(), e.getErrorCodeLocalPart(), "as");
+            }
             if (st.getCardinality() != StaticProperty.EXACTLY_ONE) {
                 compileError("The xsl:context-item/@use attribute must be an item type (no occurrence indicator allowed)", "XTSE0020");
                 return;

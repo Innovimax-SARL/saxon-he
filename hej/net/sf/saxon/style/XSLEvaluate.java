@@ -128,6 +128,11 @@ public class XSLEvaluate extends StyleElement {
 
         if (asAtt != null) {
             requiredType = makeSequenceType(asAtt);
+            try {
+                requiredType = makeSequenceType(asAtt);
+            } catch (XPathException e) {
+                compileErrorInAttribute(e.getMessage(), e.getErrorCodeLocalPart(), "as");
+            }
         }
 
         if (contextItemAtt == null) {

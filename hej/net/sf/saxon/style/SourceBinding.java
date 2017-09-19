@@ -156,7 +156,11 @@ public class SourceBinding {
         }
 
         if (asAtt != null) {
-            declaredType = sourceElement.makeSequenceType(asAtt);
+            try {
+                declaredType = sourceElement.makeSequenceType(asAtt);
+            } catch (XPathException e) {
+                sourceElement.compileErrorInAttribute(e.getMessage(), e.getErrorCodeLocalPart(), "as");
+            }
         }
 
         if (visibilityAtt != null) {

@@ -42,7 +42,7 @@ public class XSLFunction extends StyleElement implements StylesheetComponent {
     private boolean doneAttributes = false;
     /*@Nullable*/ private String nameAtt = null;
     private String asAtt = null;
-    private SequenceType resultType;
+    private SequenceType resultType = SequenceType.ANY_SEQUENCE;
     private SlotManager stackFrameMap;
     private boolean memoFunction = false;
     private String overrideExtensionFunctionAtt = null;
@@ -157,10 +157,12 @@ public class XSLFunction extends StyleElement implements StylesheetComponent {
             nameAtt = "xsl:unnamed-function-" + generateId();
         }
 
-        if (asAtt == null) {
-            resultType = SequenceType.ANY_SEQUENCE;
-        } else {
-            resultType = makeSequenceType(asAtt);
+        if (asAtt != null) {
+            try {
+                resultType = makeSequenceType(asAtt);
+            } catch (XPathException e) {
+                compileErrorInAttribute(e.getMessage(), e.getErrorCodeLocalPart(), "as");
+            }
         }
 
         if (visibilityAtt == null) {
