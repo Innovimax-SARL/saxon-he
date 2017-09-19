@@ -30,11 +30,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * ElementImpl implements an element with no attributes or namespace declarations.<P>
- * This class is an implementation of NodeInfo. For elements with attributes or
- * namespace declarations, class ElementWithAttributes is used.
- *
- * @author Michael H. Kay
+ * ElementImpl implements an element node in the Linked tree model. Subclasses of ElementImpl,
+ * for holding particular kinds of element, can be defined by using a {@link NodeFactory}
+ * registered with the {@link LinkedTreeBuilder} used to construct the tree.
  */
 
 
@@ -43,7 +41,7 @@ public class ElementImpl extends ParentNodeImpl implements NamespaceResolver {
     private NodeName nodeName;
     private SchemaType type = Untyped.getInstance();
     private AttributeCollection attributeList;      // this excludes namespace attributes
-    /*@Nullable*/ private NamespaceBinding[] namespaceList = null;             // list of namespace codes
+    private NamespaceBinding[] namespaceList = null;             // list of namespace codes
 
     /**
      * Construct an empty ElementImpl
