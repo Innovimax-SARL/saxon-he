@@ -72,7 +72,7 @@ public class REFlags {
                     allowWhitespace = true;
                     break;
                 default:
-                    throw new RESyntaxException("unrecognized flag '" + c + "'");
+                    throw new RESyntaxException("Unrecognized flag '" + c + "'");
             }
         }
         for (int i = semi + 1; i < flags.length(); i++) {

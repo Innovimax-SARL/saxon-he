@@ -107,17 +107,23 @@ public class XSLAnalyzeString extends StyleElement {
                 }
             } catch (XPathException err) {
                 if ("FORX0001".equals(err.getErrorCodeLocalPart())) {
-                    invalidRegex("Error in regular expression flags: " + err, "XTDE1145");
+                    invalidFlags("Error in regular expression flags: " + err.getMessage());
                 } else {
-                    invalidRegex("Error in regular expression: " + err, "XTDE1140");
+                    invalidRegex("Error in regular expression: " + err.getMessage());
                 }
             }
         }
 
     }
 
-    private void invalidRegex(String message, String errorCode) throws XPathException {
-        compileErrorInAttribute(message, errorCode, "regex");
+    private void invalidRegex(String message) throws XPathException {
+        compileErrorInAttribute(message, "XTDE1140", "regex");
+        // prevent it being reported more than once
+        pattern = Version.platform.compileRegularExpression(getConfiguration(), "x", "", "XP20", null);
+    }
+
+    private void invalidFlags(String message) throws XPathException {
+        compileErrorInAttribute(message, "XTDE1145", "flags");
         // prevent it being reported more than once
         pattern = Version.platform.compileRegularExpression(getConfiguration(), "x", "", "XP20", null);
     }

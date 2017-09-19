@@ -42,7 +42,7 @@ public class RESyntaxException extends RuntimeException {
      * @param s Further description of the syntax error
      */
     public RESyntaxException(String s) {
-        super("Syntax error in regular expression: " + s);
+        super(s);
     }
 
     /**

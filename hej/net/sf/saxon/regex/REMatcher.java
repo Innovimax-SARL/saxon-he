@@ -635,12 +635,12 @@ public class REMatcher {
                         if (ch == '\\' || ch == '$') {
                             sb.append((char) ch);
                         } else {
-                            throw new RESyntaxException("Invalid escape in replacement string");
+                            throw new RESyntaxException("Invalid escape '" + ch + "' in replacement string");
                         }
                     } else if (ch == '$') {
                         ch = replacement.uCharAt(++i);
                         if (!(ch >= '0' && ch <= '9')) {
-                            throw new RESyntaxException("$ in replacement must be followed by a digit");
+                            throw new RESyntaxException("$ in replacement string must be followed by a digit");
                         }
                         int n = ch - '0';
                         if (maxCapture <= 9) {
