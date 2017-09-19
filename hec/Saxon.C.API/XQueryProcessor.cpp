@@ -143,7 +143,7 @@ std::map<std::string,std::string>& XQueryProcessor::getProperties(){
 	        		delete value;
 			}
         	}
-		parameters.clear();
+		
 	} else {
 
 		for(std::map<std::string, XdmValue*>::iterator itr = parameters.begin(); itr != parameters.end(); itr++){
@@ -153,7 +153,7 @@ std::map<std::string,std::string>& XQueryProcessor::getProperties(){
         	}
 	}
 
-
+	parameters.clear();
     }
 
    void XQueryProcessor::clearProperties(){

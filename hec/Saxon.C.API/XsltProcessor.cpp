@@ -129,6 +129,14 @@ void XsltProcessor::clearParameters(bool delValues) {
 			}
         	}
 		
+	} else {
+for(std::map<std::string, XdmValue*>::iterator itr = parameters.begin(); itr != parameters.end(); itr++){
+		
+			XdmValue * value = itr->second;
+			value->decrementRefCount();
+		
+        	}
+
 	}
 	parameters.clear();
 }
