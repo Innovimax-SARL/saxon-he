@@ -462,7 +462,9 @@ public class XSLFunction extends StyleElement implements StylesheetComponent {
         if (streamability.isStreaming()) {
             compiledFunction.prepareForStreaming();
         } else if (visitor.getConfiguration().isDeferredByteCode(Configuration.XSLT)) {
-            compiledFunction.setBody(getConfiguration().obtainOptimizer().makeByteCodeCandidate(compiledFunction, compiledFunction.getBody(), nameAtt));
+            int evaluationModes = Expression.ITERATE_METHOD | Expression.PROCESS_METHOD;
+            compiledFunction.setBody(getConfiguration().obtainOptimizer().makeByteCodeCandidate(
+                    compiledFunction, compiledFunction.getBody(), nameAtt, evaluationModes));
         }
 
         if (isExplaining()) {

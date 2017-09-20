@@ -364,7 +364,7 @@ public class CallTemplate extends Instruction implements ITemplateCall, Componen
 
     /**
      * Process this instruction. If the called template contains a tail call (which may be
-     * an xsl:call-template of xsl:apply-templates instruction) then the tail call will not
+     * an xsl:call-template or xsl:apply-templates instruction) then the tail call will not
      * actually be evaluated, but will be returned in a TailCall object for the caller to execute.
      *
      * @param context the dynamic context for this transformation

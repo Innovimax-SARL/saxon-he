@@ -93,6 +93,10 @@ public class Statistics {
 
     }
 
+    public String toString() {
+        return treesCreated + "(" + averageNodes + "," + averageAttributes + "," + averageNamespaces + "," + averageCharacters + ")";
+    }
+
 }
 
 

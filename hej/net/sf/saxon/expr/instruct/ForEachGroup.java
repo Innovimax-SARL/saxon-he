@@ -634,7 +634,7 @@ public class ForEachGroup extends Instruction
             return CodepointCollator.getInstance();
         }
     }
-
+    // TODO: unused method?
     public AtomicComparer getAtomicComparer(XPathContext context) throws XPathException {
         StringCollator coll = collator;
         if (coll == null) {

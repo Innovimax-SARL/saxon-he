@@ -423,7 +423,7 @@ public class Optimizer {
         return null;
     }
 
-    public Expression makeByteCodeCandidate(ExpressionOwner owner, Expression expr, String objectName) {
+    public Expression makeByteCodeCandidate(ExpressionOwner owner, Expression expr, String objectName, int requiredEvaluationModes) {
         return null;
     }
 

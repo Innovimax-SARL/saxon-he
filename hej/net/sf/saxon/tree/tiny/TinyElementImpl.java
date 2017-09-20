@@ -216,6 +216,29 @@ public final class TinyElementImpl extends TinyParentNodeImpl {
 
     public void copy(/*@NotNull*/ Receiver receiver, int copyOptions, Location location) throws XPathException {
 
+        boolean typed = CopyOptions.includes(copyOptions, CopyOptions.TYPE_ANNOTATIONS);
+
+        // Fast path for copying to another TinyTree
+//        boolean copyTypes = typed;
+//        Receiver r1 = receiver;
+//        if (r1 instanceof SkipValidator) {
+//            copyTypes = false;
+//            r1 = ((SkipValidator)r1).getUnderlyingReceiver();
+//        }
+//        if (r1 instanceof ComplexContentOutputter) {
+//            Receiver r2 = ((ComplexContentOutputter)r1).getReceiver();
+//            if (r2 instanceof NamespaceReducer) {
+//                Receiver r3 = ((NamespaceReducer) r2).getUnderlyingReceiver();
+//                if (r3 instanceof TinyBuilder) {
+//                    ((ComplexContentOutputter) r1).beforeBulkCopy();
+//                    TinyBuilder target = (TinyBuilder)r3;
+//                    target.bulkCopy(getTree(), nodeNr, copyTypes);
+//                    ((ComplexContentOutputter) r1).afterBulkCopy();
+//                    return;
+//                }
+//            }
+//        }
+
         // control vars
         short level = -1;
         boolean closePending = false;
@@ -229,7 +252,6 @@ public final class TinyElementImpl extends TinyParentNodeImpl {
         NamePool pool = config.getNamePool();
         int next = nodeNr;
         CopyInformee<Location> informee = (CopyInformee<Location>) receiver.getPipelineConfiguration().getComponent(CopyInformee.class.getName());
-        boolean typed = CopyOptions.includes(copyOptions, CopyOptions.TYPE_ANNOTATIONS);
         SchemaType elementType = Untyped.getInstance();
         SimpleType attributeType = BuiltInAtomicType.UNTYPED_ATOMIC;
 

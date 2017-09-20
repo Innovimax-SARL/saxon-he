@@ -264,6 +264,8 @@ public class UserFunction extends Actor implements Function, ContextOriginator {
             // the caller needs to know whether a tail call was returned or not: if we
             // return a Closure, the tail call escapes into the wild and can reappear anywhere...
             evaluationMode = ExpressionTool.eagerEvaluationMode(getBody());
+//        } else if ((getBody().getSpecialProperties() & StaticProperty.ALL_NODES_NEWLY_CREATED) != 0) {
+//            evaluationMode = ExpressionTool.PROCESS;
         } else {
             evaluationMode = ExpressionTool.lazyEvaluationMode(getBody());
         }
@@ -568,6 +570,8 @@ public class UserFunction extends Actor implements Function, ContextOriginator {
         return c2;
     }
 
+    //private static int pullCalls = 0, pushCalls = 0;
+
 
     /**
      * Call this function to return a value.
@@ -585,6 +589,9 @@ public class UserFunction extends Actor implements Function, ContextOriginator {
 
     public Sequence call(XPathContext context, Sequence[] actualArgs)
             throws XPathException {
+//        if (pullCalls++ % 1000 == 0) {
+//            System.err.println(pullCalls + " pull function calls");
+//        }
 //        if(onFirstCall != null) {
 //                if(callsUntilOptimize-- <=0) {
 //                    synchronized (this){
@@ -636,6 +643,9 @@ public class UserFunction extends Actor implements Function, ContextOriginator {
 
     public void process(Sequence[] actualArgs, XPathContextMajor context)
             throws XPathException {
+//        if (pushCalls++ % 1000 == 0) {
+//            System.err.println(pushCalls + " push function calls");
+//        }
         context.setStackFrame(getStackFrameMap(), actualArgs);
         getBody().process(context);
     }

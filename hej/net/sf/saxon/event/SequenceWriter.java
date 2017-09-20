@@ -43,7 +43,6 @@ public abstract class SequenceWriter extends SequenceReceiver {
 
     public SequenceWriter(/*@NotNull*/ PipelineConfiguration pipe) {
         super(pipe);
-        //System.err.println("SequenceWriter init");
     }
 
     /**

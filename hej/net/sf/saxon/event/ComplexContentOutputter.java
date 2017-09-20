@@ -735,5 +735,17 @@ public final class ComplexContentOutputter extends SequenceReceiver {
     public boolean usesTypeAnnotations() {
         return nextReceiver.usesTypeAnnotations();
     }
+
+    public void beforeBulkCopy() throws XPathException {
+        level++;
+        if (pendingStartTagDepth >= 0) {
+            startContent();
+        }
+    }
+
+    public void afterBulkCopy() {
+        level--;
+        previousAtomic = false;
+    }
 }
 

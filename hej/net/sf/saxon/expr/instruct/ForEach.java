@@ -401,6 +401,10 @@ public class ForEach extends Instruction implements ContextMappingFunction, Cont
         return p;
     }
 
+    @Override
+    public boolean alwaysCreatesNewNodes() {
+        return (getAction() instanceof Instruction) && ((Instruction)getAction()).alwaysCreatesNewNodes();
+    }
 
     /**
      * An implementation of Expression must provide at least one of the methods evaluateItem(), iterate(), or process().

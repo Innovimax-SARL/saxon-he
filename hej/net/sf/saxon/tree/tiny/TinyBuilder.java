@@ -488,5 +488,18 @@ public class TinyBuilder extends Builder {
     public BuilderMonitor getBuilderMonitor() {
         return new TinyBuilderMonitor(this);
     }
+
+    public void bulkCopy(TinyTree source, int nodeNr, boolean preserveTypes) {
+        int newNodeNr = tree.numberOfNodes;
+        tree.bulkCopy(source, nodeNr, currentDepth, preserveTypes);
+        int prev = prevAtDepth[currentDepth];
+        if (prev > 0) {
+            tree.next[prev] = newNodeNr;
+        }
+        tree.next[newNodeNr] = prevAtDepth[currentDepth - 1];   // *O* owner pointer in last sibling
+        prevAtDepth[currentDepth] = newNodeNr;
+        siblingsAtDepth[currentDepth]++;
+        //tree.diagnosticDump();
+    }
 }
 

@@ -27,10 +27,10 @@ import java.util.*;
  * A data structure to hold the contents of a tree. As the name implies, this implementation
  * of the data model is optimized for size, and for speed of creation: it minimizes the number
  * of Java objects used.
- *
+ * <p>
  * <p>It can be used to represent a tree that is rooted at a document node, or one that is rooted
  * at an element node.</p>
- *
+ * <p>
  * <p>From Saxon 9.7, as a consequence of bug 2220, it is used only to hold a single tree, whose
  * root is always node number zero.</p>
  */
@@ -175,8 +175,6 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      */
 
     public TinyTree(/*@NotNull*/ Configuration config, Statistics statistics) {
-        //System.err.println("TinyTree.new() (initial size " + nodes + ", treesCreated = " + treesCreated + ")");
-
         super(config);
 
         int nodes = (int) statistics.getAverageNodes() + 1;
@@ -219,10 +217,10 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
         addNamespace(0, NamespaceBinding.XML);
     }
 
-    private void ensureNodeCapacity(short kind) {
-        if (nodeKind.length < numberOfNodes + 1) {
+    private void ensureNodeCapacity(short kind, int needed) {
+        if (nodeKind.length < numberOfNodes + needed) {
             //System.err.println("Number of nodes = " + numberOfNodes);
-            int k = kind == Type.STOPPER ? numberOfNodes + 1 : numberOfNodes * 2;
+            int k = kind == Type.STOPPER ? numberOfNodes + 1 : Math.max(numberOfNodes * 2, numberOfNodes + needed);
 
             nodeKind = Arrays.copyOf(nodeKind, k);
             next = Arrays.copyOf(next, k);
@@ -246,11 +244,11 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
         }
     }
 
-    private void ensureAttributeCapacity() {
-        if (attParent.length < numberOfAttributes + 1) {
-            int k = numberOfAttributes * 2;
+    private void ensureAttributeCapacity(int needed) {
+        if (attParent.length < numberOfAttributes + needed) {
+            int k = Math.max(numberOfAttributes + needed, numberOfAttributes * 2);
             if (k == 0) {
-                k = 10;
+                k = 10 + needed;
             }
 
             attParent = Arrays.copyOf(attParent, k);
@@ -267,9 +265,9 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
         }
     }
 
-    private void ensureNamespaceCapacity() {
-        if (namespaceParent.length < numberOfNamespaces + 1) {
-            int k = numberOfNamespaces * 2;
+    private void ensureNamespaceCapacity(int needed) {
+        if (namespaceParent.length < numberOfNamespaces + needed) {
+            int k = Math.max(numberOfNamespaces * 2, numberOfNamespaces + needed);
             if (k == 0) {
                 k = 10;
             }
@@ -280,6 +278,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     /**
      * Get the prefix pool
+     *
      * @return the prefix pool
      */
 
@@ -290,6 +289,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     /**
      * Declare that this tree was produced as a copy of another tree, and identify
      * the root node of that tree
+     *
      * @param copiedFrom the root of the tree from which this one was copied
      */
 
@@ -335,7 +335,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      */
     int addNode(short kind, int depth, int alpha, int beta, int nameCode) {
 
-        ensureNodeCapacity(kind);
+        ensureNodeCapacity(kind, 1);
         nodeKind[numberOfNodes] = (byte) kind;
         this.depth[numberOfNodes] = (short) depth;
         this.alpha[numberOfNodes] = alpha;
@@ -393,8 +393,9 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      * Condense the tree: release unused memory. This is done after the full tree has been built.
      * The method makes a pragmatic judgement as to whether it is worth reclaiming space; this is
      * only done when the constructed tree is very small compared with the space allocated.
+     *
      * @param statistics represents the family of trees to which this tree belongs; statistics for the
-     * size of the tree are recorded in this Statistics object
+     *                   size of the tree are recorded in this Statistics object
      */
 
     void condense(Statistics statistics) {
@@ -466,8 +467,8 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     /**
      * Set the type annotation of an element node
      *
-     * @param nodeNr   the node whose type annotation is to be set
-     * @param type the type annotation
+     * @param nodeNr the node whose type annotation is to be set
+     * @param type   the type annotation
      */
 
     void setElementAnnotation(int nodeNr, SchemaType type) {
@@ -516,9 +517,8 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      *
      * @param element the element node
      * @return the typed value of the node (a Value whose items are AtomicValue instances)
-     * @throws net.sf.saxon.trans.XPathException
-     *          if a dynamic error occurs, for example if the node is
-     *          an element annotated with a type that has element-only content
+     * @throws net.sf.saxon.trans.XPathException if a dynamic error occurs, for example if the node is
+     *                                           an element annotated with a type that has element-only content
      */
 
     /*@Nullable*/
@@ -558,8 +558,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      *
      * @param nodeNr the node number of the element node
      * @return the typed value of the node
-     * @throws net.sf.saxon.trans.XPathException
-     *          if the eement has no typed value
+     * @throws net.sf.saxon.trans.XPathException if the eement has no typed value
      */
 
     /*@Nullable*/
@@ -602,8 +601,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      *               will be materialized only if it is needed.
      * @param nodeNr the node number of the attribute node
      * @return the typed value of the node
-     * @throws net.sf.saxon.trans.XPathException
-     *          if an error is found
+     * @throws net.sf.saxon.trans.XPathException if an error is found
      */
 
     public AtomicSequence getTypedValueOfAttribute(/*@Nullable*/ TinyAttributeImpl att, int nodeNr) throws XPathException {
@@ -679,17 +677,18 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     }
 
 
-
     /**
      * Get the prefix for a given element node
+     *
      * @param nodeNr the node number
-     * @return the prefix
+     * @return the prefix. Return "" for an unprefixed element node. Result is
+     * undefined for a non-element node.
      */
 
     public String getPrefix(int nodeNr) {
         int code = nameCode[nodeNr] >> 20;
-        if (code == 0) {
-            return "";
+        if (code <= 0) {
+            return code == 0 ? "" : null;
         }
         return prefixPool.getPrefix(code);
     }
@@ -729,7 +728,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
 
     void addAttribute(/*@NotNull*/ NodeInfo root, int parent, int nameCode, SimpleType type, CharSequence attValue, int properties) {
-        ensureAttributeCapacity();
+        ensureAttributeCapacity(1);
         attParent[numberOfAttributes] = parent;
         attCode[numberOfAttributes] = nameCode;
         this.attValue[numberOfAttributes] = attValue.toString();
@@ -832,6 +831,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     /**
      * Mark an attribute as resulting from expansion of attribute defaults
+     *
      * @param attNr the attribute number
      */
 
@@ -844,6 +844,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     /**
      * Ask whether an attribute results from expansion of attribute defaults
+     *
      * @param attNr the attribute number
      * @return true if this attribute resulted from expansion of default or fixed values defined
      * in a schema. Note that this property will only be set if both the configuration properties
@@ -858,8 +859,8 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     /**
      * Index an element of type xs:ID
      *
-     * @param root    the root node of the document
-     * @param nodeNr  the element of type xs:ID
+     * @param root   the root node of the document
+     * @param nodeNr the element of type xs:ID
      */
 
     public void indexIDElement(/*@NotNull*/ NodeInfo root, int nodeNr) {
@@ -878,7 +879,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     public boolean hasXmlSpacePreserveAttribute() {
         for (int i = 0; i < numberOfAttributes; i++) {
-            if ((attCode[i]&NamePool.FP_MASK) == StandardNames.XML_SPACE && "preserve".equals(attValue[i].toString())) {
+            if ((attCode[i] & NamePool.FP_MASK) == StandardNames.XML_SPACE && "preserve".equals(attValue[i].toString())) {
                 return true;
             }
         }
@@ -893,7 +894,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      */
     void addNamespace(int parent, /*@NotNull*/ NamespaceBinding binding) {
 
-        ensureNamespaceCapacity();
+        ensureNamespaceCapacity(1);
         namespaceParent[numberOfNamespaces] = parent;
         namespaceBinding[numberOfNamespaces] = binding;
 
@@ -916,7 +917,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     public final TinyNodeImpl getNode(int nr) {
         switch (nodeKind[nr]) {
             case Type.DOCUMENT:
-                return (TinyDocumentImpl)getRootNode();
+                return (TinyDocumentImpl) getRootNode();
             case Type.ELEMENT:
                 return new TinyElementImpl(this, nr);
             case Type.TEXT:
@@ -1245,6 +1246,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     /**
      * Set an element node to be marked as nilled
+     *
      * @param nodeNr the node number to be marked as nilled
      */
 
@@ -1371,14 +1373,22 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      * Produce diagnostic print of main tree arrays
      */
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void diagnosticDump() {
         NamePool pool = getNamePool();
         System.err.println("    node    kind   depth    next   alpha    beta    name    type");
         for (int i = 0; i < numberOfNodes; i++) {
+            String eqName = "";
+            if (nameCode[i] != -1) {
+                try {
+                    eqName = pool.getEQName(nameCode[i]);
+                } catch (Exception err) {
+                    eqName = "#" + nameCode[1];
+                }
+            }
             System.err.println(n8(i) + n8(nodeKind[i]) + n8(depth[i]) + n8(next[i]) +
-                    n8(alpha[i]) + n8(beta[i]) + n8(nameCode[i]) +
-                    n8(getTypeAnnotation(i)) +
-                    (nameCode[i] == -1 ? "" : " " + pool.getEQName(nameCode[i])));
+                                       n8(alpha[i]) + n8(beta[i]) + n8(nameCode[i]) +
+                                       n8(getTypeAnnotation(i)) + " " + eqName);
         }
         System.err.println("    attr  parent    name    value");
         for (int i = 0; i < numberOfAttributes; i++) {
@@ -1425,7 +1435,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     public void showSize() {
         System.err.println("Tree size: " + numberOfNodes + " nodes, " + charBuffer.length() + " characters, " +
-                numberOfAttributes + " attributes");
+                                   numberOfAttributes + " attributes");
     }
 
     /**
@@ -1523,7 +1533,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      * Get the array holding alpha information
      *
      * @return an array of integers, whose meaning depends on the node kind. For elements it is a pointer
-     *         to the first attribute, for text, comment, and processing instruction nodes it is a pointer to the content
+     * to the first attribute, for text, comment, and processing instruction nodes it is a pointer to the content
      */
 
     public int[] getAlphaArray() {
@@ -1534,7 +1544,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
      * Get the array holding beta information
      *
      * @return an array of integers, whose meaning depends on the node kind. For elements it is a pointer
-     *         to the first namespace declaration
+     * to the first namespace declaration
      */
 
     public int[] getBetaArray() {
@@ -1626,6 +1636,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
 
     /**
      * Ask whether the tree contains any namespace declarations
+     *
      * @return true if there is a namespace declaration (other than the XML namespace) anywhere
      * in the tree
      */
@@ -1634,6 +1645,132 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
         return usesNamespaces;
     }
 
+    /**
+     * Bulk copy an element node from another TinyTree
+     *
+     * @param source        the source tree
+     * @param nodeNr        the element node to be deep-copied
+     * @param preserveTypes true if type information is to be preserved
+     */
+
+    public void bulkCopy(TinyTree source, int nodeNr, int currentDepth, boolean preserveTypes) {
+        //System.err.println(" **** doing bulk copy **** ");
+        int end = source.next[nodeNr];
+        while (end < nodeNr && end >= 0) {
+            end = source.next[end];
+        }
+        if (end == -1) {
+            end = source.numberOfNodes - 1;
+        }
+        int length = end - nodeNr;
+        ensureNodeCapacity(Type.ELEMENT, length);
+        System.arraycopy(source.nodeKind, nodeNr, nodeKind, numberOfNodes, length);
+        //System.arraycopy(source.nameCode, nodeNr, nameCode, numberOfNodes, length); // TODO: adjust prefix codes
+        int depthDiff = currentDepth - source.depth[nodeNr];
+        //int alphaDiff = alpha[numberOfNodes] = source.alpha[nodeNr];
+        //int betaDiff = beta[numberOfNodes] = source.beta[nodeNr];
+        //int charOffset = charBuffer.length();
+        //int commentOffset = commentBuffer.length();
+        for (int i = 0; i < length; i++) {
+            int from = nodeNr + i;
+            int to = numberOfNodes + i;
+            depth[to] = (short) (source.depth[from] + depthDiff);
+            next[to] = source.next[from] + (to - from);
+            switch (source.nodeKind[from]) {
+                case Type.ELEMENT: {
+                    nameCode[to] = (source.nameCode[from] & NamePool.FP_MASK) |
+                            (prefixPool.obtainPrefixCode(source.getPrefix(from)) << 20);
+                    int firstAtt = source.alpha[from];
+                    if (firstAtt >= 0) {
+                        int lastAtt = firstAtt;
+                        while (lastAtt < source.numberOfAttributes && source.attParent[lastAtt] == from) {
+                            lastAtt++;
+                        }
+                        int atts = lastAtt - firstAtt;
+                        ensureAttributeCapacity(atts);
+                        int aFrom = source.alpha[from];
+                        int aTo = numberOfAttributes;
+                        alpha[to] = aTo;
+                        System.arraycopy(source.attValue, firstAtt, attValue, aTo, atts);
+                        Arrays.fill(attParent, aTo, aTo + atts, to);
+                        for (int a = 0; a < atts; a++, aFrom++, aTo++) {
+                            attCode[aTo] = source.attCode[aFrom]; // TODO: prefix
+                        }
+                        numberOfAttributes += atts;
+                    } else {
+                        alpha[to] = -1;
+                    }
+                    int firstNS = source.beta[from];
+                    if (firstNS >= 0) {
+                        int lastNS = firstNS;
+                        while (lastNS < source.numberOfNamespaces && source.namespaceParent[lastNS] == from) {
+                            lastNS++;
+                        }
+                        int nrOfNamespaces = lastNS - firstNS;
+                        ensureNamespaceCapacity(nrOfNamespaces);
+                        int nTo = numberOfNamespaces;
+                        beta[to] = nTo;
+                        System.arraycopy(source.namespaceBinding, firstNS, namespaceBinding, nTo, nrOfNamespaces);
+                        Arrays.fill(namespaceParent, nTo, nTo + nrOfNamespaces, to);
+                        numberOfNamespaces += nrOfNamespaces;
+                    } else {
+                        beta[to] = -1;
+                    }
+                    // TODO: namespaces
+                    break;
+                }
+                case Type.TEXT: {
+                    int start = source.alpha[from];
+                    int len = source.beta[from];
+                    nameCode[to] = -1;
+                    alpha[to] = charBuffer.length();
+                    appendChars(source.charBuffer.subSequence(start, start + len));
+                    beta[to] = len;
+                    break;
+                }
+                case Type.WHITESPACE_TEXT: {
+                    nameCode[to] = -1;
+                    alpha[to] = source.alpha[from];
+                    beta[to] = source.beta[from];
+                    break;
+                }
+                case Type.COMMENT: {
+                    int start = source.alpha[from];
+                    int len = source.beta[from];
+                    nameCode[to] = -1;
+                    CharSequence text = source.commentBuffer.subSequence(start, start+len);
+                    if (commentBuffer == null) {
+                        commentBuffer = new FastStringBuffer(FastStringBuffer.C256);
+                    }
+                    alpha[to] = commentBuffer.length();
+                    commentBuffer.append(text);
+                    beta[to] = len;
+                    break;
+                }
+                case Type.PROCESSING_INSTRUCTION:
+                    int start = source.alpha[from];
+                    int len = source.beta[from];
+                    nameCode[to] = source.nameCode[from];
+                    CharSequence text = source.commentBuffer.subSequence(start, start + len);
+                    if (commentBuffer == null) {
+                        commentBuffer = new FastStringBuffer(FastStringBuffer.C256);
+                    }
+                    alpha[to] = commentBuffer.length();
+                    commentBuffer.append(text);
+                    beta[to] = len;
+                    break;
+
+                case Type.PARENT_POINTER:
+                    nameCode[to] = -1;
+                    alpha[to] = source.alpha[from] + (to - from);
+                    beta[to] = -1;
+                    break;
+                default:
+                    break;
+            }
+        }
+        numberOfNodes += length;
+    }
 
 }
 
