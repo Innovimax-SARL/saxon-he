@@ -159,17 +159,21 @@ public class UseWhenFilter extends ProxyReceiver {
                 processShadowAttributes(elemName, location, baseUri);
             }
 
-            String useWhen = ignore ? "false()" : startTag.getAttribute(stdAttUri, "use-when");
-
             boolean isStylesheetElement = inXsltNamespace &&
                     (elemName.getLocalPart().equals("stylesheet") || elemName.getLocalPart().equals("transform") || elemName.getLocalPart().equals("package"));
 
-            if (useWhen != null) {
-                AttributeCollection allAtts = startTag.getAllAttributes();
-                NodeName attName = allAtts.getNodeName(allAtts.getIndex(stdAttUri, "use-when"));
-                AttributeLocation attLoc = new AttributeLocation(elemName.getStructuredQName(), attName.getStructuredQName(), location);
-                boolean use = evaluateUseWhen(useWhen, attLoc, baseUri.toString());
-                if (!use) {
+            if (!ignore) {
+                String useWhen = startTag.getAttribute(stdAttUri, "use-when");
+
+                if (useWhen != null) {
+                    AttributeCollection allAtts = startTag.getAllAttributes();
+                    NodeName attName = allAtts.getNodeName(allAtts.getIndex(stdAttUri, "use-when"));
+                    AttributeLocation attLoc = new AttributeLocation(elemName.getStructuredQName(), attName.getStructuredQName(), location);
+                    boolean use = evaluateUseWhen(useWhen, attLoc, baseUri.toString());
+                    ignore = !use;
+                }
+
+                if (ignore) {
                     if (isStylesheetElement) {
                         emptyStylesheetElement = true;
                     } else {
