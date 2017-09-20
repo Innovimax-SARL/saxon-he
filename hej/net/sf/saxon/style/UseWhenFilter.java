@@ -23,6 +23,7 @@ import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.om.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.trans.packages.UsePack;
+import net.sf.saxon.tree.AttributeLocation;
 import net.sf.saxon.tree.linked.DocumentImpl;
 import net.sf.saxon.tree.util.AttributeCollectionImpl;
 import net.sf.saxon.type.*;
@@ -155,7 +156,7 @@ public class UseWhenFilter extends ProxyReceiver {
             }
 
             if (inXsltNamespace && !ignore) {
-                processShadowAttributes(location, baseUri);
+                processShadowAttributes(elemName, location, baseUri);
             }
 
             String useWhen = ignore ? "false()" : startTag.getAttribute(stdAttUri, "use-when");
@@ -164,21 +165,17 @@ public class UseWhenFilter extends ProxyReceiver {
                     (elemName.getLocalPart().equals("stylesheet") || elemName.getLocalPart().equals("transform") || elemName.getLocalPart().equals("package"));
 
             if (useWhen != null) {
-                try {
-                    boolean use = evaluateUseWhen(useWhen, location, baseUri.toString());
-                    if (!use) {
-                        if (isStylesheetElement) {
-                            emptyStylesheetElement = true;
-                        } else {
-                            depthOfHole = 1;
-                            return;
-                        }
+                AttributeCollection allAtts = startTag.getAllAttributes();
+                NodeName attName = allAtts.getNodeName(allAtts.getIndex(stdAttUri, "use-when"));
+                AttributeLocation attLoc = new AttributeLocation(elemName.getStructuredQName(), attName.getStructuredQName(), location);
+                boolean use = evaluateUseWhen(useWhen, attLoc, baseUri.toString());
+                if (!use) {
+                    if (isStylesheetElement) {
+                        emptyStylesheetElement = true;
+                    } else {
+                        depthOfHole = 1;
+                        return;
                     }
-                } catch (XPathException e) {
-                    XPathException err = createXPathException(
-                            "Error in use-when expression. " + e.getMessage(), e.getErrorCodeLocalPart(), location);
-                    err.setErrorCodeQName(e.getErrorCodeQName());
-                    throw err;
                 }
             }
 
@@ -297,6 +294,8 @@ public class UseWhenFilter extends ProxyReceiver {
 
         UseWhenStaticContext staticContext = new UseWhenStaticContext(compilation, startTag);
         staticContext.setBaseURI(baseUri.toString());
+        staticContext.setContainingLocation(
+                new AttributeLocation(elemName.getStructuredQName(), new StructuredQName("", "", "as"), location));
         SequenceType requiredType = SequenceType.ANY_SEQUENCE;
         if (asStr != null) {
             XPathParser parser = new XPathParser();
@@ -315,11 +314,14 @@ public class UseWhenFilter extends ProxyReceiver {
         boolean isVariable = elemName.getLocalPart().equals("variable");
         boolean isParam = elemName.getLocalPart().equals("param");
         boolean isSupplied = isParam && compilation.getParameters().containsKey(varName);
+        AttributeLocation attLoc =
+                new AttributeLocation(elemName.getStructuredQName(), new StructuredQName("", "", "select"), location);
+
         if (isParam) {
             if (isRequired && !isSupplied) {
                 String selectStr = startTag.getAttribute("", "select");
                 if (selectStr != null) {
-                    throw createXPathException("Cannot supply a default value when required='yes'", "XTSE0010", location);
+                    throw createXPathException("Cannot supply a default value when required='yes'", "XTSE0010", attLoc);
                 } else {
                     throw createXPathException(
                             "No value was supplied for the required static parameter $" + varName.getDisplayName(),
@@ -353,33 +355,35 @@ public class UseWhenFilter extends ProxyReceiver {
 
             } else {
                 try {
+                    staticContext.setContainingLocation(attLoc);
                     Sequence seq = evaluateStatic(selectStr, location, staticContext);
                     value = SequenceTool.toGroundedValue(seq);
                 } catch (XPathException e) {
                     throw createXPathException("Error in " + elemName.getLocalPart() + " expression. " + e.getMessage(),
-                            e.getErrorCodeLocalPart(), location);
+                            e.getErrorCodeLocalPart(), attLoc);
                 }
             }
             RoleDiagnostic role = new RoleDiagnostic(RoleDiagnostic.VARIABLE, varName.getDisplayName(), 0);
             role.setErrorCode("XTDE0050");
             TypeHierarchy th = getConfiguration().getTypeHierarchy();
-            Sequence seq = th.applyFunctionConversionRules(value, requiredType, role, location);
+            Sequence seq = th.applyFunctionConversionRules(value, requiredType, role, attLoc);
             value = SequenceTool.toGroundedValue(seq);
             try {
                 compilation.declareStaticVariable(varName, value, precedence, isParam);
             } catch (XPathException e) {
-                throw createXPathException(e.getMessage(), e.getErrorCodeLocalPart(), location);
+                throw createXPathException(e.getMessage(), e.getErrorCodeLocalPart(), attLoc);
             }
         }
     }
 
-    private void processShadowAttributes(Location location, URI baseUri) throws XPathException {
+    private void processShadowAttributes(NodeName elemName, Location location, URI baseUri) throws XPathException {
         AttributeCollection atts = startTag.getAllAttributes();
         for (int a=0; a<atts.getLength(); a++) {
             String local = atts.getLocalName(a);
             if (local.startsWith("_") && atts.getURI(a).equals("") && local.length() >= 2) {
                 String value = atts.getValue(a);
-                String newValue = processShadowAttribute(value, baseUri.toString(), location.getLineNumber());
+                AttributeLocation attLocation = new AttributeLocation(elemName.getStructuredQName(), atts.getNodeName(a).getStructuredQName(), location);
+                String newValue = processShadowAttribute(value, baseUri.toString(), attLocation);
                 String plainName = local.substring(1);
                 NodeName newName = new NoNamespaceName(plainName);
                 // if a corresponding attribute exists with no underscore, overwrite it. The attribute()
@@ -436,9 +440,10 @@ public class UseWhenFilter extends ProxyReceiver {
         }
     }
 
-    private String processShadowAttribute(String expression, String baseUri, int lineNumber) throws XPathException {
+    private String processShadowAttribute(String expression, String baseUri, AttributeLocation loc) throws XPathException {
         UseWhenStaticContext staticContext = new UseWhenStaticContext(compilation, startTag);
         staticContext.setBaseURI(baseUri);
+        staticContext.setContainingLocation(loc);
         setNamespaceBindings(staticContext);
         Expression expr = AttributeValueTemplate.make(expression, staticContext);
         expr = typeCheck(expr, staticContext);
@@ -554,15 +559,16 @@ public class UseWhenFilter extends ProxyReceiver {
      * Evaluate a use-when attribute
      *
      * @param expression the expression to be evaluated
-     * @param locationId identifies the location of the expression in case error need to be reported
+     * @param location identifies the location of the expression in case error need to be reported
      * @param baseUri the base URI of the element containing the expression
      * @return the effective boolean value of the result of evaluating the expression
      * @throws XPathException if evaluation of the expression fails
      */
 
-    public boolean evaluateUseWhen(String expression, Location locationId, String baseUri) throws XPathException {
+    public boolean evaluateUseWhen(String expression, AttributeLocation location, String baseUri) throws XPathException {
         UseWhenStaticContext staticContext = new UseWhenStaticContext(compilation, startTag);
         staticContext.setBaseURI(baseUri);
+        staticContext.setContainingLocation(location);
         setNamespaceBindings(staticContext);
         Expression expr = ExpressionTool.make(expression, staticContext,
             0, Token.EOF, null);

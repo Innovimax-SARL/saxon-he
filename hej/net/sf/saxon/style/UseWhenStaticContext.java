@@ -44,7 +44,7 @@ public class UseWhenStaticContext extends AbstractStaticContext implements XSLTS
      * Create a static context for evaluating use-when expressions
      *
      * @param compilation      the package compilation episode
-     * @param namespaceContext the namespace context in which the use-when expression appears
+     * @param namespaceContext the namespace context in which the static expression appears
      */
 
     public UseWhenStaticContext(Compilation compilation, NamespaceResolver namespaceContext) {
