@@ -1669,8 +1669,7 @@ Z_ADDREF_P(oth);
 	//xdmNode_object* ooth = (xdmNode_object*)Z_OBJ_P(oth TSRMLS_CC);
         if(ooth != NULL) {
             XdmNode * value = ooth->xdmNode;
-            if(value != NULL) {
-Z_ADDREF(*oth);	
+            if(value != NULL) {	
 	        xqueryProcessor->setContextItem((XdmItem *)value);
 	        return;
             }
