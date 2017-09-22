@@ -248,6 +248,15 @@ public class SameNameTest extends NodeTest implements QNameTest {
     }
 
     /**
+     * Generate an equivalent NameTest
+     * @return a NameTest that matches the same node kind and name
+     */
+
+    public NameTest getEquivalentNameTest() {
+        return new NameTest(origin.getNodeKind(), origin.getURI(), origin.getLocalPart(), origin.getConfiguration().getNamePool());
+    }
+
+    /**
      * Generate Javascript code to test if a name matches the test.
      *
      * @return JS code as a string. The generated code will be used

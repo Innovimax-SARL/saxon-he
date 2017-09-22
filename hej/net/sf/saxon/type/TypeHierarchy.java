@@ -15,9 +15,7 @@ import net.sf.saxon.lib.ConversionRules;
 import net.sf.saxon.lib.FunctionAnnotationHandler;
 import net.sf.saxon.ma.map.MapType;
 import net.sf.saxon.om.*;
-import net.sf.saxon.pattern.AnyNodeTest;
-import net.sf.saxon.pattern.DocumentNodeTest;
-import net.sf.saxon.pattern.NodeTest;
+import net.sf.saxon.pattern.*;
 import net.sf.saxon.query.Annotation;
 import net.sf.saxon.query.AnnotationList;
 import net.sf.saxon.trans.XPathException;
@@ -302,6 +300,8 @@ public class TypeHierarchy {
         if (t1 == null) {
             throw new NullPointerException();
         }
+        t1 = stabilize(t1);
+        t2 = stabilize(t2);
         if (t1.equals(t2)) {
             return SAME_TYPE;
         }
@@ -325,6 +325,23 @@ public class TypeHierarchy {
             map.put(pair, result);
         }
         return result;
+    }
+
+    /**
+     * Replace an item type, where necessary, by one that can safely be stored in the cache
+     * without causing garbage collection problems. Specifically, a SameNameTest cannot be stored
+     * in the cache because it contains a reference to a node in a document.
+     * @param in the supplied item type
+     * @return either the supplied item type, or an equivalent that can safely be cached.
+     */
+
+    private static ItemType stabilize(ItemType in) {
+        if (in instanceof SameNameTest) {
+            // we don't want to put a SameNameTest in the cache because it locks down the referenced document
+            return ((SameNameTest)in).getEquivalentNameTest();
+        } else {
+            return in;
+        }
     }
 
     /**
