@@ -68,6 +68,9 @@ void XsltProcessor::setSourceFromXdmValue(XdmItem * value) {
 }
 
 void XsltProcessor::setSourceFromFile(const char * ifile) {
+	if(ifile == NULL) {
+		std::cerr<<"XSLTProc setSourceFromFile is NULL before:"<<std::endl;
+	}
 	setProperty("s", ifile);
 }
 
@@ -77,7 +80,7 @@ void XsltProcessor::setOutputFile(const char * ofile) {
 }
 
 void XsltProcessor::setParameter(const char* name, XdmValue * value) {
-	if(value != NULL){
+	if(value != NULL && name != NULL){
 		value->incrementRefCount();
 		parameters["param:"+std::string(name)] = value;
 	} 
@@ -96,11 +99,15 @@ bool XsltProcessor::removeParameter(const char* name) {
 }
 
 void XsltProcessor::setProperty(const char* name, const char* value) {
-#ifdef DEBUG	
-	if(value == NULL) {
-		std::cerr<<"XSLTProc setProperty is NULL"<<std::endl;
+//#ifdef DEBUG	
+	if(name == NULL) {
+		std::cerr<<"XSLTProc setProperty-name is NULL"<<std::endl;
 	}
-#endif
+	if(value == NULL) {
+		std::cerr<<"XSLTProc setProperty-value is NULL"<<std::endl;
+	}
+//#endif
+std::cerr<<"name="<<name<<", value="<<value<<std::endl;
 	properties.insert(std::pair<std::string, std::string>(std::string(name), std::string((value == NULL ? "" : value))));
 
 }

@@ -97,8 +97,8 @@ struct xsltProcessor_object {
 };
 
 struct xqueryProcessor_object {
-    zend_object std;
     XQueryProcessor *xqueryProcessor;
+    zend_object std;
 };
 
 struct xpathProcessor_object {
