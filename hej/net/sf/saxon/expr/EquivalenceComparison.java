@@ -14,7 +14,6 @@ import net.sf.saxon.expr.sort.CodepointCollator;
 import net.sf.saxon.lib.StringCollator;
 import net.sf.saxon.om.GroundedValue;
 import net.sf.saxon.om.SequenceTool;
-import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.*;
@@ -66,8 +65,7 @@ public class EquivalenceComparison extends BinaryExpression implements Compariso
         if (collation == null) {
             collation = CodepointCollator.getInstance();
         }
-        comparer = new EquivalenceComparer(
-                collation, StandardNames.XS_ANY_ATOMIC_TYPE, config.getConversionContext());
+        comparer = new EquivalenceComparer(collation, config.getConversionContext());
 
         Expression oldOp0 = getLhsExpression();
         Expression oldOp1 = getRhsExpression();
@@ -236,8 +234,9 @@ public class EquivalenceComparison extends BinaryExpression implements Compariso
             return (v0 == v1);
         }
 
+        AtomicComparer comp2 = comparer.provideContext(context);
         return (knownToBeComparable || Type.isGuaranteedComparable(v0.getPrimitiveType(), v1.getPrimitiveType(), false))
-                && comparer.comparesEqual(v0, v1);
+                && comp2.comparesEqual(v0, v1);
 
     }
 
