@@ -3253,15 +3253,7 @@ zend_object *xdmNode_create_handler(zend_class_entry *type)
 PHP_METHOD(XdmNode, __construct)
 {
 php_error(E_WARNING,"XdmNode constructor");
-    XdmNode *xdmNode = NULL;
-    bool bVal;
-    char * sVal;
-    int len;
-    long iVal;
-    double dVal;
-    zval *zvalue;
-
-    SaxonProcessor *proc= NULL;
+   
     //xdmNode_object *obj = (xdmNode_object *) Z_OBJ_P(getThis() TSRMLS_CC);
 }
 
