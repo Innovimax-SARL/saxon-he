@@ -100,6 +100,13 @@ public final class ValueOf extends SimpleNodeConstructor {
         return noNodeIfEmpty;
     }
 
+    public String toShortString() {
+        if (getSelect() instanceof StringLiteral) {
+            return "text{" + Err.depict(((StringLiteral)getSelect()).getValue()).toString() + "}";
+        } else {
+            return super.toShortString();
+        }
+    }
     /**
      * Get the name of this instruction for diagnostic and tracing purposes
      *
