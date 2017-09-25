@@ -35,11 +35,11 @@ XsltProcessor::XsltProcessor(SaxonProcessor * p, std::string curr) {
 	cppXT = createSaxonProcessor2(SaxonProcessor::sxn_environ->env, cppClass,
 			"(Lnet/sf/saxon/s9api/Processor;)V", proc->proc);
 
-#ifdef DEBUG
+//#ifdef DEBUG
 	jmethodID debugMID = SaxonProcessor::sxn_environ->env->GetStaticMethodID(cppClass, "setDebugMode", "(Z)V");
 	SaxonProcessor::sxn_environ->env->CallStaticVoidMethod(cppClass, debugMID, (jboolean)true);
     
-#endif
+//#endif
 	nodeCreated = false;
 	proc->exception = NULL;
 	outputfile1 = "";

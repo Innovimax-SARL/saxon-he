@@ -70,31 +70,19 @@ zend_object *saxonProcessor_create_handler(zend_class_entry *type)
 {
     zval *tmp;
     zend_object retval;
-    //std::cerr<<"SaxonProcessorhandler created"<<std::endl;
-    //php_error(E_WARNING,"SaxonProcessorhandler created");
     saxonProcessor_object *obj = (saxonProcessor_object *)ecalloc(1, sizeof(saxonProcessor_object) + zend_object_properties_size(type));
-  //obj->saxonProcessor = (SaxonProcessor *)emalloc(sizeof(SaxonProcessor));
-    //memset(obj, 0, sizeof(saxonProcessor_object) + zend_object_properties_size(type));
-    //obj->std.ce = type;
-
-    //ALLOC_HASHTABLE(obj->std.properties);
-    //zend_hash_init(obj->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+ 
 
     zend_object_std_init(&obj->std, type); /* take care of the zend_object also ! */
     object_properties_init(&obj->std, type);
 
-
-    //retval.handle = zend_objects_store_put(obj, NULL, SaxonProcessor_free_storage, NULL TSRMLS_CC);
-    //retval.handlers = &saxonProcessor_object_handlers;
     obj->std.handlers = &saxonProcessor_object_handlers;
-//php_error(E_WARNING,"SaxonProcessorhandler created end");
+
     return &obj->std;
 }
 
 PHP_METHOD(SaxonProcessor, __construct)
 {
-
-//php_error(E_WARNING,"SaxonProcessor constructor");
     if (ZEND_NUM_ARGS()>2) {
         WRONG_PARAM_COUNT;
     }
@@ -103,13 +91,11 @@ PHP_METHOD(SaxonProcessor, __construct)
    bool license = false;
     size_t len1;
     if (ZEND_NUM_ARGS()==1 && zend_parse_parameters(ZEND_NUM_ARGS(), "b", &license) == FAILURE) {
-        php_error(E_WARNING,"Wrong SaxonProcessor argument");
         RETURN_NULL();
     } 
 
 
     if (ZEND_NUM_ARGS()>1 && zend_parse_parameters(ZEND_NUM_ARGS(), "bs", &license, &cwdi, &len1) == FAILURE) {
-        php_error(E_WARNING,"Wrong SaxonProcessor arguments");
         RETURN_NULL();
     }
 //std::cerr<<"SaxonProcessorConstructor cp0"<<std::endl;
@@ -150,7 +136,7 @@ PHP_METHOD(SaxonProcessor, __construct)
 	    if(cwd == NULL) {
 	     //php_error(E_WARNING,"cwd is nullXXXXXXXXXXXXXXXXXXXXXXX");
 	   }else {
-             php_error(E_WARNING,cwd);
+           //  php_error(E_WARNING,cwd);
 //std::cerr<<"SaxonProcessorConstructor cp2YYYYYYY cwd:"<<cwd<<std::endl;
  
 	    saxonProc->setcwd(cwd);
@@ -270,21 +256,27 @@ PHP_METHOD(SaxonProcessor, parseXmlFromFile)
     assert (obj != NULL);
     saxonProcessor = obj->saxonProcessor;
     if (saxonProcessor != NULL) {
-        XdmValue* node = (XdmValue*)saxonProcessor->parseXmlFromFile(source);//TODO this needs to be XdmNode object
+        XdmNode* node = saxonProcessor->parseXmlFromFile(source);//TODO this needs to be XdmNode object
         if(node != NULL) {
-            if (object_init_ex(return_value, xdmValue_ce) != SUCCESS) {
+      
+            if (object_init_ex(return_value, xdmNode_ce) != SUCCESS) {
                 RETURN_NULL();
             } else {
-                struct xdmValue_object* vobj = (struct xdmValue_object *)Z_OBJ_P(return_value TSRMLS_CC);
+          
+            zend_object* vvobj = Z_OBJ_P(return_value);
+            xdmNode_object * vobj = (xdmNode_object *)((char *)vvobj - XtOffsetOf(xdmNode_object, std));
+                
                 assert (vobj != NULL);
-                vobj->xdmValue = node;
+                vobj->xdmNode = node;
             }
         } else {
            // obj->xsltProcessor->checkException();//TODO
         }
     } else {
+  //  std::cerr<<"parseXmlFromFile cp2"<<std::endl;
         RETURN_NULL();
     }
+   // std::cerr<<"parseXmlFromFile cp3"<<std::endl;
 }
 
 
@@ -571,29 +563,20 @@ saxonProcessor->registerNativeMethods(SaxonProcessor::sxn_environ->env, "com/sax
 
 void XsltProcessor_free_storage(zend_object *object)
 {
-//std::cerr<<"xsltProcessor free"<<std::endl;
-   /* xsltProcessor_object *obj ;
-    obj =  (xsltProcessor_object *)((char *)object - XtOffsetOf(xsltProcessor_object, std));
-    XsltProcessor * xsltProc= obj->xsltProcessor;
-    delete xsltProc;*/
+
     zend_object_std_dtor(object);
-
-
 }
 
 void XsltProcessor_destroy_storage(zend_object *object)
 {
- 	std::cerr<<"xsltProcessor destroy"<<std::endl;
     xsltProcessor_object *obj;
 
     zend_objects_destroy_object(object);
-    std::cerr<<"xsltProcessor destroy"<<std::endl;
 }
 
 zend_object * xsltProcessor_create_handler(zend_class_entry *type)
 {
    
-   std::cerr<<"xsltProcessor handler called"<<std::endl;
 
     xsltProcessor_object *obj = (xsltProcessor_object *)ecalloc(1, sizeof(xsltProcessor_object)+ zend_object_properties_size(type));
    
@@ -611,7 +594,6 @@ zend_object * xsltProcessor_create_handler(zend_class_entry *type)
 PHP_METHOD(XsltProcessor, __destruct)
 {
 
-std::cerr<<"xsltProcessor __destruct"<<std::endl;
     zend_object* pobj = Z_OBJ_P(getThis()); 
     xsltProcessor_object *obj = (xsltProcessor_object *)((char *)pobj - XtOffsetOf(xsltProcessor_object, std));
 
@@ -734,14 +716,14 @@ PHP_METHOD(XsltProcessor, transformFileToString)
 jobject JNICALL phpNativeCall
   (JNIEnv *env, jobject object, jstring funcName, jobjectArray arguments, jobjectArray argTypes){
 	JNIEnv *senv = SaxonProcessor::sxn_environ->env;
-	std::cerr<<"phpNative called"<<std::endl;
+//	std::cerr<<"phpNative called"<<std::endl;
 	char *nativeString = (char *)senv->GetStringUTFChars(funcName, NULL);
 	string nativeString2 = string(nativeString);
 	if(nativeString == NULL) {
 		return NULL;	
 	}
 	int nativeStrLen = strlen(nativeString);
-std::cerr<<"phpNative called. nativeString="<<nativeString<<", length="<<nativeStrLen<<std::endl;
+//std::cerr<<"phpNative called. nativeString="<<nativeString<<", length="<<nativeStrLen<<std::endl;
 	zval function_name;
 	zval retval;
 	
@@ -771,7 +753,7 @@ std::cerr<<"phpNative called. nativeString="<<nativeString<<", length="<<nativeS
 	jclass xdmValueForCppClass = lookForClass(SaxonProcessor::sxn_environ->env, "net/sf/saxon/option/cpp/XdmValueForCpp");
 	jmethodID procForNodeMID = SaxonProcessor::sxn_environ->env->GetStaticMethodID(xdmValueForCppClass, "getProcessor", "(Ljava/lang/Object;)Lnet/sf/saxon/s9api/Processor;");
 		
-std::cerr<<"phpNative called cp2"<<std::endl;
+//std::cerr<<"phpNative called cp2"<<std::endl;
 
 	for(int i=0; i<argLength;i++){
 
@@ -801,7 +783,7 @@ std::cerr<<"phpNative called cp2"<<std::endl;
 					if (object_init_ex(php_argv[i]._val, xdmNode_ce) != SUCCESS) {
 						//error
 						
-						php_error(E_WARNING,"error phpNative xdmNode creation failed");
+						//php_error(E_WARNING,"error phpNative xdmNode creation failed");
             					break;
         				} 
 					node = new XdmNode(argObj);
@@ -858,14 +840,14 @@ std::cerr<<"phpNative called cp2"<<std::endl;
 		
 // array of zvals to execute
     
-std::cerr<<"phpNative called cp3"<<std::endl;
+//std::cerr<<"phpNative called cp3"<<std::endl;
  
     	// convert all the values
    	 for(int i = 0; i < argLength; i++) { 
 
 		params[i] = *php_argv[i]._val; }
 
-	std::cerr<<"phpNative called cp3-1"<<std::endl;
+	//std::cerr<<"phpNative called cp3-1"<<std::endl;
 	//note: no implicit type conversion.
 
 	zval *argvv = NULL;//xparams;
@@ -874,13 +856,11 @@ std::cerr<<"phpNative called cp3"<<std::endl;
 	//nativeString[nativeStrLen] = '\0';
 
 	ZVAL_STRING(&function_name, nativeString);
-std::cerr<<"phpNative called cp3-2, argumentLen="<<argLength<<std::endl;
+//std::cerr<<"phpNative called cp3-2, argumentLen="<<argLength<<std::endl;
 	if(call_user_function_ex(CG(function_table), (zval*)callOnObj, &function_name, &retval, argLength, params, 0, NULL) != SUCCESS)
 	{
  	   zend_error(E_ERROR, "Function call failed");
 	}
-
-std::cerr<<"phpNative called cp4"<<std::endl;
 
 	if(Z_TYPE(retval) ==0){
 		zend_error(E_ERROR, "Function returned null");
@@ -889,7 +869,6 @@ std::cerr<<"phpNative called cp4"<<std::endl;
 	char * sVal = NULL;
 	int len = 0;
 	jobject obj = NULL;
-	std::cerr<<" Return type="<<Z_TYPE_P(&retval)<<std::endl;
 //TODO handle XdmValue wrapped object
 const char * objName = NULL;
 xdmNode_object* ooth = NULL;
@@ -949,9 +928,7 @@ bool bVal;
 	char * str = estrndup(Z_STRVAL_P(retval), cstrlen);
 	
 	jstring jstrBuf = SaxonProcessor::sxn_environ->env->NewStringUTF(str);*/
-std::cerr<<"phpNative called cp7"<<std::endl;
 	zval_ptr_dtor(&retval);
-std::cerr<<"phpNative called cp8"<<std::endl;
 	return obj;
 }
 
@@ -996,17 +973,12 @@ zval_ptr_dtor(&retval);*/
     zend_object* pobj = Z_OBJ_P(getThis()); 
     xsltProcessor_object *obj = (xsltProcessor_object *)((char *)pobj - XtOffsetOf(xsltProcessor_object, std));
     xsltProcessor = obj->xsltProcessor;
-std::cerr<<"xsltprocessor transformString cp0"<<std::endl;
     if (xsltProcessor != NULL) {
 
         const char * result = xsltProcessor->transformToString();
-std::cerr<<"xsltprocessor transformString cp0-1"<<std::endl;
         if(result != NULL) {
-std::cerr<<"xsltprocessor transformString cp1 - not null"<<std::endl;
-           // char *str = estrdup(result);
             _RETURN_STRING(result);
         } else if(xsltProcessor->exceptionOccurred()){
-std::cerr<<"xsltprocessor exception transformString"<<std::endl;
             xsltProcessor->checkException();
             const char * errStr = xsltProcessor->getErrorMessage(0);
             if(errStr != NULL) {
@@ -1085,7 +1057,6 @@ PHP_METHOD(XsltProcessor, compileFromFile)
     XsltProcessor *xsltProcessor;
     char * name;
     size_t len1;
-std::cerr<<"XsltProcessor, compileFromFile : cp0"<<std::endl;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name, &len1) == FAILURE) {
         RETURN_NULL();
     }
@@ -1095,7 +1066,6 @@ std::cerr<<"XsltProcessor, compileFromFile : cp0"<<std::endl;
     if (xsltProcessor != NULL) {
         xsltProcessor->compileFromFile(name);
     }
-std::cerr<<"XsltProcessor, compileFromFile : cp1"<<std::endl;
 }
 
 PHP_METHOD(XsltProcessor, compileFromString)
@@ -1224,7 +1194,6 @@ PHP_METHOD(XsltProcessor, setSourceFromFile)
     XsltProcessor *xsltProcessor;
     char * inFilename;
     size_t len1;
-std::cerr<<"XsltProcessor, setSourceFromFile : cp0"<<std::endl;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &inFilename, &len1) == FAILURE) {
         RETURN_NULL();
     }
@@ -1233,14 +1202,10 @@ std::cerr<<"XsltProcessor, setSourceFromFile : cp0"<<std::endl;
     xsltProcessor_object *obj = (xsltProcessor_object *)((char *)pobj - XtOffsetOf(xsltProcessor_object, std));
     xsltProcessor = obj->xsltProcessor;
     if (xsltProcessor != NULL && inFilename != NULL) {
-        std::cerr<<"XsltProcessor, setSourceFromFile : cp1: "<<" len="<<size_t2int(len1)<<std::endl;
-std::cerr<<"XsltProcessor, setSourceFromFile : cp2: "<<" name="<<inFilename<<std::endl;
-std::cerr<<"XsltProcessor, setSourceFromFile : cp3 "<<std::endl;
 	 xsltProcessor->setSourceFromFile(inFilename);
             
         
     }
-std::cerr<<"XsltProcessor, setSourceFromFile : cp4 "<<std::endl;
 }
 
 
@@ -1313,7 +1278,6 @@ PHP_METHOD(XsltProcessor, setParameter)
         if(aobj != NULL) {
             XdmAtomicValue * value = aobj->xdmAtomicValue;
             if(value != NULL) {
-		std::cerr<<"php-xslt-setParameter name = "<<name<<endl;
                 xsltProcessor->setParameter(name, (XdmValue *)value);
             }
         }
@@ -1446,17 +1410,12 @@ PHP_METHOD(XsltProcessor, exceptionClear)
 
 void xqueryProcessor_free_storage(zend_object *object)
 {
-    std::cerr<<"xquery free storage"<<std::endl;
     zend_object_std_dtor(object);
 }
 
 void xqueryProcessor_destroy_storage(zend_object *object)
 {
- 	std::cerr<<"xqueryProcessor destroy"<<std::endl;
-   
-
     zend_objects_destroy_object(object);
-    std::cerr<<"xqueryProcessor destroy after"<<std::endl;
 }
 
 zend_object *xqueryProcessor_create_handler(zend_class_entry *type)
@@ -1472,18 +1431,12 @@ zend_object *xqueryProcessor_create_handler(zend_class_entry *type)
 
 PHP_METHOD(XQueryProcessor, __destruct)
 {
-std::cerr<<"xquery __destruct"<<std::endl;
-    //xqueryProcessor_object *obj = (xqueryProcessor_object *) Z_OBJ_P(getThis());
     zend_object* pobj = Z_OBJ_P(getThis());
-std::cerr<<"xquery __destruct cp0"<<std::endl;
     xqueryProcessor_object *obj = (xqueryProcessor_object *)((char *)pobj - XtOffsetOf(xqueryProcessor_object, std));
-std::cerr<<"xquery __destruct cp1"<<std::endl;
     XQueryProcessor * xqueryProcessor= obj->xqueryProcessor;
     if(xqueryProcessor != NULL){
-std::cerr<<"xquery __destruct cp2"<<std::endl;
-    	//delete xqueryProcessor;
+    	delete xqueryProcessor;
     }
-    std::cerr<<"xquery __destruct cp3"<<std::endl;
 }
 
 
@@ -1659,9 +1612,7 @@ PHP_METHOD(XQueryProcessor, setContextItem)
     	zend_object* pobj = Z_OBJ_P(getThis()); 
     	xqueryProcessor_object *obj = (xqueryProcessor_object *)((char *)pobj - XtOffsetOf(xqueryProcessor_object, std));
     	xqueryProcessor = obj->xqueryProcessor;
-    const char * objName =ZSTR_VAL(Z_OBJCE_P(oth)->name);
-Z_ADDREF_P(oth);
-      //std::cerr<<"test type:"<<(Z_OBJCE_P(oth)->name)<<std::endl;
+    const char * objName =ZSTR_VAL(Z_OBJCE_P(oth)->name); 
 	
       if(strcmp(objName, "Saxon\\XdmNode")==0) {
 	zend_object *vvobj =  Z_OBJ_P(oth);
@@ -1671,6 +1622,7 @@ Z_ADDREF_P(oth);
             XdmNode * value = ooth->xdmNode;
             if(value != NULL) {	
 	        xqueryProcessor->setContextItem((XdmItem *)value);
+	       
 	        return;
             }
         }
@@ -1681,6 +1633,7 @@ Z_ADDREF_P(oth);
             XdmItem * value = ooth->xdmItem;
 	    if(value != NULL) {	
                 xqueryProcessor->setContextItem(value);
+               
 		return;
 	    }
          }
@@ -1696,6 +1649,7 @@ Z_ADDREF_P(oth);
             if(value != NULL) {
 		
                 xqueryProcessor->setContextItem((XdmItem *)value);
+      
 		return;
             }
         }
@@ -1705,18 +1659,8 @@ Z_ADDREF_P(oth);
       } 
 
 
-
-
-	/*xdmItem_object* ooth = (xdmItem_object*) Z_OBJ_P(oth TSRMLS_CC);
-        if(ooth != NULL) {
-            XdmItem * value = ooth->xdmItem;
-            if(value != NULL) {
-    		xqueryProcessor->setContextItem(value);
-	    }
-	}*/
     }
 	//throw exception
-	php_error(E_WARNING,"contextItem not set");
 	
     	
 }
@@ -1778,7 +1722,7 @@ PHP_METHOD(XQueryProcessor, setParameter)
 	}
              const char * objName =ZSTR_VAL(Z_OBJCE_P(oth)->name);
       //std::cout<<"test type:"<<(Z_OBJCE_P(oth)->name)<<std::endl;
-Z_ADDREF_P(oth);
+//Z_ADDREF_P(oth);
       if(strcmp(objName, "Saxon\\XdmNode")==0) {
 	zend_object *vvobj =  Z_OBJ_P(oth);
 	xdmNode_object* ooth  = (xdmNode_object *)((char *)vvobj - XtOffsetOf(xdmNode_object, std));
@@ -2803,15 +2747,11 @@ PHP_METHOD(SchemaValidator, exceptionClear)
 /*     ============== PHP Interface of   XdmValue =============== */
 void xdmValue_free_storage(zend_object *object)
 {
-std::cerr<<"XdmValue free storage cp0"<<std::endl;
-    xdmValue_object *obj ;
-   
     zend_object_std_dtor(object);
 }
 
 zend_object *xdmValue_create_handler(zend_class_entry *type)
 {
-std::cerr<<"XdmValue handler cp0"<<std::endl;
     zval *tmp;
     zend_object retval;
     xdmValue_object *obj = (xdmValue_object *)ecalloc(1, sizeof(xdmValue_object)+ zend_object_properties_size(type));
@@ -2825,11 +2765,7 @@ std::cerr<<"XdmValue handler cp0"<<std::endl;
 
 void XdmValue_destroy_storage(zend_object *object)
 {
- 	std::cerr<<"destroy storage call xdmIValue"<<std::endl;
-   
-
     zend_objects_destroy_object(object);
-    
 }
 
 PHP_METHOD(XdmValue, __construct)
@@ -2948,7 +2884,6 @@ PHP_METHOD(XdmValue,  itemAt){
                 return;
             } else {
 		item->incrementRefCount();
-//Z_ADDREF_P(return_value);
 		zend_object * oobj = Z_OBJ_P(return_value);
 		xdmItem_object* vobj = (xdmItem_object *)((char *)oobj - XtOffsetOf(xdmItem_object, std));
                
@@ -3037,15 +2972,11 @@ PHP_METHOD(XdmValue, addXdmItem){
 
 void xdmItem_free_storage(zend_object *object)
 {
-std::cerr<<"XdmItem free_storage cp0"<<std::endl;
-
     zend_object_std_dtor(object);
 }
 
 zend_object *xdmItem_create_handler(zend_class_entry *type)
 {
-std::cerr<<"XdmItem handler cp0"<<std::endl;
-php_error(E_WARNING,"XdmItem handler");
     zval *tmp;
     zend_object retval;
     xdmItem_object *obj = (xdmItem_object *)ecalloc(1, sizeof(xdmItem_object)+ zend_object_properties_size(type));
@@ -3060,7 +2991,6 @@ php_error(E_WARNING,"XdmItem handler");
 
 PHP_METHOD(XdmItem, __construct)
 {
-php_error(E_WARNING,"XdmItem constructor");
     XdmItem *xdmItem = NULL;
     bool bVal;
     char * sVal;
@@ -3082,11 +3012,6 @@ php_error(E_WARNING,"XdmItem constructor");
 
 void XdmItem_destroy_storage(zend_object *object)
 {
- 	std::cerr<<"destroy storage call xdmItem"<<std::endl;
-    xdmItem_object *obj;
-	
-    obj =  (xdmItem_object *)((char *)object - XtOffsetOf(xdmItem_object, std));
-
     zend_objects_destroy_object(object);
     
 }
@@ -3108,7 +3033,6 @@ PHP_METHOD(XdmItem, __destruct)
 
 PHP_METHOD(XdmItem, getStringValue)
 {
-php_error(E_WARNING,"XdmItem getStringValue");
     XdmItem *xdmItem;
      zval *object = getThis();
     zend_object * zobj = Z_OBJ_P(object);
@@ -3119,7 +3043,6 @@ php_error(E_WARNING,"XdmItem getStringValue");
     if (xdmItem != NULL) {
         const char * valueStr = xdmItem->getStringValue(NULL);
         if(valueStr != NULL) {
-            //char *str = estrdup(valueStr);
             _RETURN_STRING(valueStr);
         }
     }
@@ -3217,33 +3140,18 @@ PHP_METHOD(XdmItem, getNodeValue)
 
 void xdmNode_free_storage(zend_object *object)
 {
-std::cerr<<"XdmNode free_storage cp0"<<std::endl;
- 
-   /* xdmNode_object * obj =  (xdmNode_object *)((char *)object - XtOffsetOf(xdmNode_object, std));
-    XdmNode * xdmNode= obj->xdmNode;
-    if(xdmNode != NULL) {
-    	//xdmNode->decrementRefCount();
-    	if(xdmNode->getRefCount()< 1){
-		std::cerr<<"XdmNode free_storage cp1 - deleted. ref= "<<xdmNode->getRefCount()<<std::endl;
-    		 zend_object_std_dtor(object);
-    	}
-    }*/
    zend_object_std_dtor(object);
-//std::cerr<<"XdmNode free_storage cp2"<<std::endl;
+
     
 }
 
 zend_object *xdmNode_create_handler(zend_class_entry *type)
 {
-//std::cerr<<"XdmNode handler cp0"<<std::endl;
-
     zval *tmp;
     zend_object retval;
     xdmNode_object *obj = (xdmNode_object *)ecalloc(1, sizeof(xdmNode_object)+ zend_object_properties_size(type));
-//std::cerr<<"XdmNode handler cp1"<<std::endl;
     zend_object_std_init(&obj->std, type); /* take care of the zend_object also ! */
     object_properties_init(&obj->std, type);
-//std::cerr<<"XdmNode handler cp2"<<std::endl;
     obj->std.handlers = &xdmNode_object_handlers;
 	
     return &obj->std;
@@ -3251,31 +3159,18 @@ zend_object *xdmNode_create_handler(zend_class_entry *type)
 
 PHP_METHOD(XdmNode, __construct)
 {
-php_error(E_WARNING,"XdmNode constructor");
-   
     //xdmNode_object *obj = (xdmNode_object *) Z_OBJ_P(getThis() TSRMLS_CC);
 }
 
 void XdmNode_destroy_storage(zend_object *object)
 {
- 	std::cerr<<"destroy storage call xdmNode"<<std::endl;
-   
-    /*xdmNode_object* obj =  (xdmNode_object *)((char *)object - XtOffsetOf(xdmNode_object, std));
-    XdmNode * xdmNode= obj->xdmNode;
-    if(xdmNode != NULL) {
-    //	xdmNode->decrementRefCount();
-    	if(xdmNode->getRefCount()< 1){
-std::cerr<<"destroy storage call xdmNode - deleted. ref= "<<xdmNode->getRefCount()<<std::endl;
- 	  
-	}
-    }*/
+ 
  zend_objects_destroy_object(object);
-std::cerr<<"destroy storage call xdmNode cp2"<<std::endl;    
+   
 }
 
 PHP_METHOD(XdmNode, __destruct)
 {
-std::cerr<<"destruct called in  xdmNode"<<std::endl;
     zval *object = getThis();
      zend_object * zobj = Z_OBJ_P(object);
 
@@ -3286,21 +3181,14 @@ std::cerr<<"destruct called in  xdmNode"<<std::endl;
     if(xdmNode != NULL) {
     	xdmNode->decrementRefCount();
     	if(xdmNode->getRefCount()< 1){
-std::cerr<<"destruct called in  xdmNode - deleted."<<std::endl;
     		delete xdmNode;
-    	} else {
-	std::cerr<<"destruct called in  xdmNode - not deleted."<<std::endl;
-	std::cerr<<"destruct called in  xdmNode - not deleted. ref= "<<xdmNode->getRefCount()<<std::endl;	
-	}
+    	} 
     }
     }
-std::cerr<<"destruct called in  xdmNode-1"<<std::endl;
 }
 
 PHP_METHOD(XdmNode, getStringValue)
 {
-//php_error(E_WARNING,"XdmNode getStringValue");
-std::cerr<<"XdmNode getStringValue"<<std::endl;
     XdmNode *xdmNode;
     zval *object = getThis();
     zend_object * zobj = Z_OBJ_P(object);
@@ -3308,16 +3196,10 @@ std::cerr<<"XdmNode getStringValue"<<std::endl;
     xdmNode_object * obj = (xdmNode_object *)((char *)zobj - XtOffsetOf(xdmNode_object, std));
     xdmNode = obj->xdmNode;
 
-    /*SaxonProcessor * saxonProc;
-    saxonProcessor_object * obj2 = (saxonProcessor_object *)Z_OBJ_P(getThis() TSRMLS_CC);
-    saxonProc =  obj2->saxonProcessor;*/
-
+   
     if (xdmNode != NULL) {
         const char * valueStr = xdmNode->getStringValue(NULL);
-std::cerr<<"XdmNode getStringValue cp0"<<std::endl;
         if(valueStr != NULL) {
-std::cerr<<"XdmNode getStringValue cp1 value:"<<valueStr<<std::endl;
-            //char *str = estrdup(valueStr);
             _RETURN_STRING(valueStr);
 	    return;
         }
@@ -3534,15 +3416,11 @@ PHP_METHOD(XdmNode,  getAttributeValue){
 
 void xdmAtomicValue_free_storage(zend_object *object)
 {
-std::cerr<<"free_storage xdmAtomicValue"<<std::endl;
     zend_object_std_dtor(object);
 }
 
 void XdmAtomicValue_destroy_storage(zend_object *object)
 {
- 	std::cerr<<"destroy storage call xdmAtomicValue"<<std::endl;
-    
-	
     zend_objects_destroy_object(object);
     
 }
@@ -3550,10 +3428,7 @@ void XdmAtomicValue_destroy_storage(zend_object *object)
 zend_object *xdmAtomicValue_create_handler(zend_class_entry *type)
 {
 
-std::cerr<<"XdmAtomicValue handler cp0"<<std::endl;
-    //zval *tmp;
-    //zend_object retval;
-xdmAtomicValue_object *obj = (xdmAtomicValue_object *)ecalloc(1, sizeof(xdmAtomicValue_object)+ zend_object_properties_size(type));
+    xdmAtomicValue_object *obj = (xdmAtomicValue_object *)ecalloc(1, sizeof(xdmAtomicValue_object)+ zend_object_properties_size(type));
 
     zend_object_std_init(&obj->std, type); /* take care of the zend_object also ! */
     object_properties_init(&obj->std, type);
@@ -3565,13 +3440,13 @@ xdmAtomicValue_object *obj = (xdmAtomicValue_object *)ecalloc(1, sizeof(xdmAtomi
 
 PHP_METHOD(XdmAtomicValue, __construct)
 {
-    XdmAtomicValue *xdmValue = NULL;
+   /* XdmAtomicValue *xdmValue = NULL;
     bool bVal;
     char * sVal;
     int len;
     long iVal;
     double dVal;
-    zval *zvalue;
+    zval *zvalue;*/
 
    // xdmAtomicValue_object *obj = (xdmAtomicValue_object *) Z_OBJ_P(getThis() TSRMLS_CC);
 
@@ -3579,7 +3454,6 @@ PHP_METHOD(XdmAtomicValue, __construct)
 
 PHP_METHOD(XdmAtomicValue, __destruct)
 {
-   std::cerr<<"destruct  call xdmAtomicValue"<<std::endl;
      zval *object = getThis();
      zend_object * zobj = Z_OBJ_P(object);
 
@@ -3841,7 +3715,6 @@ zend_function_entry xdmAtomicValue_methods[] = {
 
 PHP_MINIT_FUNCTION(saxon)
 {
-std::cerr<<"MINIT_FUNCTION called"<<std::endl;
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Saxon\\SaxonProcessor", SaxonProcessor_methods);
     saxonProcessor_ce = zend_register_internal_class(&ce);
@@ -3926,7 +3799,6 @@ std::cerr<<"MINIT_FUNCTION called"<<std::endl;
     xdmAtomicValue_object_handlers.free_obj = xdmAtomicValue_free_storage;
     xdmAtomicValue_object_handlers.dtor_obj = XdmAtomicValue_destroy_storage;
     //REGISTER_INI_ENTRIES();
-std::cerr<<"MINIT_FUNCTION called end"<<std::endl;
     return SUCCESS;
 }
 
@@ -3942,7 +3814,6 @@ PHP_MINFO_FUNCTION(saxon)
 }
 
 PHP_MSHUTDOWN_FUNCTION(saxon) {
-std::cerr<<"MSHUTDOWN called"<<std::endl;
     UNREGISTER_INI_ENTRIES();
     //SaxonProcessor::release();
 
@@ -3950,12 +3821,11 @@ std::cerr<<"MSHUTDOWN called"<<std::endl;
 }
 
 PHP_RSHUTDOWN_FUNCTION(saxon) {
-    std::cerr<<"RSHUTDOWN called -start"<<std::endl;
     return SUCCESS;
 }
 
 PHP_RINIT_FUNCTION(saxon) {
-    std::cerr<<"RINIT called -start"<<std::endl;
+   // std::cerr<<"RINIT called -start"<<std::endl;
     return SUCCESS;
 }
 

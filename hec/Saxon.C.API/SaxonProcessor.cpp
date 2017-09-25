@@ -19,7 +19,7 @@
 #include "XdmValue.cpp"*/
 //#include "php_saxon.cpp"
 #endif
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #include <signal.h>
 #endif
