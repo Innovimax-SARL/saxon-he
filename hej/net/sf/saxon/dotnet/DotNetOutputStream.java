@@ -121,7 +121,7 @@ public class DotNetOutputStream extends OutputStream {
      * @throws java.io.IOException if an I/O error occurs.
      */
     public void close() throws IOException {
-        System.err.println("close");
+        //System.err.println("close");
         stream.Close();
     }
 }
