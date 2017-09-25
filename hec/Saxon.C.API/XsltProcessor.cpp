@@ -35,11 +35,11 @@ XsltProcessor::XsltProcessor(SaxonProcessor * p, std::string curr) {
 	cppXT = createSaxonProcessor2(SaxonProcessor::sxn_environ->env, cppClass,
 			"(Lnet/sf/saxon/s9api/Processor;)V", proc->proc);
 
-//#ifdef DEBUG
+#ifdef DEBUG
 	jmethodID debugMID = SaxonProcessor::sxn_environ->env->GetStaticMethodID(cppClass, "setDebugMode", "(Z)V");
 	SaxonProcessor::sxn_environ->env->CallStaticVoidMethod(cppClass, debugMID, (jboolean)true);
     
-//#endif
+#endif
 	nodeCreated = false;
 	proc->exception = NULL;
 	outputfile1 = "";
@@ -68,10 +68,9 @@ void XsltProcessor::setSourceFromXdmValue(XdmItem * value) {
 }
 
 void XsltProcessor::setSourceFromFile(const char * ifile) {
-	if(ifile == NULL) {
-		std::cerr<<"XSLTProc setSourceFromFile is NULL before:"<<std::endl;
+	if(ifile != NULL) {
+		setProperty("s", ifile);
 	}
-	setProperty("s", ifile);
 }
 
 void XsltProcessor::setOutputFile(const char * ofile) {
@@ -98,18 +97,10 @@ bool XsltProcessor::removeParameter(const char* name) {
 	return (bool)(parameters.erase("param:"+string(name)));
 }
 
-void XsltProcessor::setProperty(const char* name, const char* value) {
-//#ifdef DEBUG	
-	if(name == NULL) {
-		std::cerr<<"XSLTProc setProperty-name is NULL"<<std::endl;
+void XsltProcessor::setProperty(const char* name, const char* value) {	
+	if(name != NULL) {
+		properties.insert(std::pair<std::string, std::string>(std::string(name), std::string((value == NULL ? "" : value))));
 	}
-	if(value == NULL) {
-		std::cerr<<"XSLTProc setProperty-value is NULL"<<std::endl;
-	}
-//#endif
-std::cerr<<"name="<<name<<", value="<<value<<std::endl;
-	properties.insert(std::pair<std::string, std::string>(std::string(name), std::string((value == NULL ? "" : value))));
-
 }
 
 const char* XsltProcessor::getProperty(const char* name) {
@@ -123,9 +114,7 @@ const char* XsltProcessor::getProperty(const char* name) {
 void XsltProcessor::clearParameters(bool delValues) {
 	if(delValues){
        		for(std::map<std::string, XdmValue*>::iterator itr = parameters.begin(); itr != parameters.end(); itr++){
-			//cout<<"param-name:"<<itr->first<<endl;
-			/*string s1 = typeid(itr->second).name();
-			cerr<<"Type of itr:"<<s1<<endl;*/
+			
 			XdmValue * value = itr->second;
 			value->decrementRefCount();
 #ifdef DEBUG
@@ -294,7 +283,7 @@ XdmValue * XsltProcessor::transformFileToValue(const char* sourcefile,
 		const char* stylesheetfile) {
 
 	if(sourcefile == NULL && stylesheetfile == NULL && !stylesheetObject){
-		cerr<< "Error: The most recent Stylesheet Object failed. Please check exceptions"<<endl;
+	
 		return NULL;
 	}
 
@@ -377,7 +366,7 @@ void XsltProcessor::transformFileToFile(const char* source,
 		const char* stylesheet, const char* outputfile) {
 
 	if(source == NULL && outputfile == NULL && !stylesheetObject){
-		cerr<< "Error: The most recent Stylesheet Object failed. Please check exceptions"<<endl;
+		
 		return;
 	}
 	setProperty("resources", proc->getResourcesDirectory());
@@ -641,7 +630,6 @@ const char * XsltProcessor::transformFileToString(const char* source,
 		cerr<< "Error: The most recent Stylesheet Object failed or has not been set."<<endl;
 		return NULL;
 	}
-std::cerr<<"transformToString cp0"<<std::endl;
 	return transformFileToString(NULL, NULL);
    }
 

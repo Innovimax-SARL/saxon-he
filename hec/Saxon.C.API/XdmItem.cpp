@@ -44,28 +44,22 @@ bool XdmItem::isAtomic(){
    }
 
 jobject XdmItem::getUnderlyingValue(SaxonProcessor * proc){
-//#ifdef DEBUG
+#ifdef DEBUG
 	std::cerr<<std::endl<<"XdmItem-getUnderlyingValue:"<<std::endl; 
-//#endif 
+#endif 
 	if(value == NULL) {
-//#ifdef DEBUG
-	std::cerr<<std::endl<<"XdmItem-getUnderlyingValue-NULL RETURNED:"<<std::endl; 
-//#endif
 		return NULL;	
 	}
 	return value->xdmvalue;
 }
 
-    const char * XdmItem::getStringValue(SaxonProcessor * proc1){
-std::cerr<<std::endl<<"XdmItem-getStringValue cp0:"<<std::endl; 
+    const char * XdmItem::getStringValue(SaxonProcessor * proc1){ 
 	if(proc != NULL && proc1 != NULL) {	
 		proc = proc1;
 	}
-	if(proc != NULL) {
-std::cerr<<std::endl<<"XdmItem-getStringValue cp1:"<<std::endl; 
+	if(proc != NULL) { 
 		return proc->getStringValue(this);
 	} else {
-std::cerr<<std::endl<<"XdmItem-getStringValue cp2:"<<std::endl; 
 		return "";
 	}
    }

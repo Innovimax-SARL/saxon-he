@@ -7,9 +7,9 @@
 4. [Technical](#tech)
 5. [Limitations](#limitations)
 
-Saxon/C 1.0.2 is the latest release of Saxon-HE/PE/EE on the C/C++ programming platform. The APIs support the specifications XSLT 2.0/3.0, XQuery 1.0/3.0, Schema Validation 1.0/1.1 and XPath 2.0/3.0 from C/C++ or PHP applications.
+Saxon/C 1.1.0 is the latest release of Saxon-HE/PE/EE on the C/C++ programming platform. The APIs support the specifications XSLT 2.0/3.0, XQuery 1.0/3.0, Schema Validation 1.0/1.1 and XPath 2.0/3.0 from C/C++ or PHP applications.
 
-Saxon/C is built from the Saxon 9.6.0.9 Java product using the Excelsior JET tool (version 11 MP3).
+Saxon/C is built from the Saxon 9.8.0.4 Java product using the Excelsior JET tool (version 11 MP3).
 
 Platforms supported: Linux and Mac OS Only. 
 Windows will be supported shortly
@@ -28,7 +28,7 @@ Link the dynamic saxon library so it can be found. For example:
 
 	ln -s /usr/lib/Saxonica/Saxon-EDITIONC#.#.#/libsaxonEDITION.so /usr/lib/libsaxonEDITION.so
 
-You need to setup the environment for the jet jvm. The jvm is in the directory JET-home=Saxonica/Saxon-EDITION1.0.2/rt
+You need to setup the environment for the jet jvm. The jvm is in the directory JET-home=Saxonica/Saxon-EDITION1.1.0/rt
 The directory JET-home/lib/i386  or JET_home/lib/amd64 (for 64-bit machines) must be listed in the LD_LIBRARY_PATH environment variable. For instance, if you
 are using bash or Bourne shell, use the following commands:
 
@@ -572,10 +572,9 @@ The XML parser used is the one supplied by the Excelsior JET runtime. There are 
 <div id='limitations'/>
 ## Limitations: ##
 
-The following limitations apply to the the 1.0 release:
+The following limitations apply to the the 1.1 release:
 
 * No support for the XdmFunction type in the Xdm data model
-* No supports for external functions in XSLT and XQuery
 
 
 ### Feedback/Comments: ###

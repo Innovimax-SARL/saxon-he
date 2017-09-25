@@ -19,7 +19,7 @@
 #include "XdmValue.cpp"*/
 //#include "php_saxon.cpp"
 #endif
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #include <signal.h>
 #endif
@@ -385,7 +385,7 @@ int SaxonProcessor::getNodeKind(jobject obj){
 
 	jobject nodeKindObj = (SaxonProcessor::sxn_environ->env->CallObjectMethod(obj, nodeKindMID));
 	if(!nodeKindObj) {
-		std::cerr<<"saxonProc nodeKind error"<<std::endl;
+		
 		return 0;
 	}
 	jclass xdmUtilsClass = lookForClass(SaxonProcessor::sxn_environ->env, "Lnet/sf/saxon/option/cpp/XdmUtils;");
@@ -452,12 +452,12 @@ XdmNode * SaxonProcessor::parseXmlFromUri(const char* source){
      * @param value of the property
      */
     void SaxonProcessor::setConfigurationProperty(const char * name, const char * value){
-	std::cerr<<"setConfig called:"<<"name = "<<name<<" value="<<value<<std::endl;
-	configProperties.insert(std::pair<std::string, std::string>(std::string(name), std::string(value)));
+	if(name != NULL){
+		configProperties.insert(std::pair<std::string, std::string>(std::string(name), std::string((value == NULL ? "" : value))));
+	}
     }
 
    void SaxonProcessor::clearConfigurationProperties(){
-std::cerr<<"clearConfig called"<<std::endl;
 	configProperties.clear();
    }
 
