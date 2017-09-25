@@ -168,6 +168,13 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     private NodeInfo copiedFrom;
 
     /**
+     * Temporary flag introduced in Saxon 9.8.0.5 to enable or disable fast-path code for copying
+     * element nodes from one TinyTree to another. This code is currently disabled by default until
+     * it has been more thoroughly tested.
+     */
+    public static boolean useFastCopy = false;
+
+    /**
      * Create a tree with a specified initial size
      *
      * @param config     the Saxon configuration
@@ -1646,14 +1653,13 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
     }
 
     /**
-     * Bulk copy an element node from another TinyTree
-     *
+     * Bulk copy an element node from another TinyTree. Type annotations will always be
+     * stripped.
      * @param source        the source tree
      * @param nodeNr        the element node to be deep-copied
-     * @param preserveTypes true if type information is to be preserved
      */
 
-    public void bulkCopy(TinyTree source, int nodeNr, int currentDepth, boolean preserveTypes) {
+    public void bulkCopy(TinyTree source, int nodeNr, int currentDepth) {
         //System.err.println(" **** doing bulk copy **** ");
         int end = source.next[nodeNr];
         while (end < nodeNr && end >= 0) {
@@ -1665,12 +1671,7 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
         int length = end - nodeNr;
         ensureNodeCapacity(Type.ELEMENT, length);
         System.arraycopy(source.nodeKind, nodeNr, nodeKind, numberOfNodes, length);
-        //System.arraycopy(source.nameCode, nodeNr, nameCode, numberOfNodes, length); // TODO: adjust prefix codes
         int depthDiff = currentDepth - source.depth[nodeNr];
-        //int alphaDiff = alpha[numberOfNodes] = source.alpha[nodeNr];
-        //int betaDiff = beta[numberOfNodes] = source.beta[nodeNr];
-        //int charOffset = charBuffer.length();
-        //int commentOffset = commentBuffer.length();
         for (int i = 0; i < length; i++) {
             int from = nodeNr + i;
             int to = numberOfNodes + i;
@@ -1694,7 +1695,20 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
                         System.arraycopy(source.attValue, firstAtt, attValue, aTo, atts);
                         Arrays.fill(attParent, aTo, aTo + atts, to);
                         for (int a = 0; a < atts; a++, aFrom++, aTo++) {
-                            attCode[aTo] = source.attCode[aFrom]; // TODO: prefix
+                            int attNameCode = attCode[aTo] = source.attCode[aFrom];
+                            if (NamePool.isPrefixed(attNameCode)) {
+                                String prefix = source.prefixPool.getPrefix(attNameCode >> 20);
+                                attCode[aTo] |= (prefixPool.obtainPrefixCode(prefix) << 20);
+                            }
+                            if (source.isIdAttribute(aFrom)) {
+                                registerID(getNode(to), source.attValue[aFrom].toString());
+                            }
+                            if (source.isIdrefAttribute(aFrom)) {
+                                if (idRefAttributes == null) {
+                                    idRefAttributes = new IntHashSet();
+                                }
+                                idRefAttributes.add(aTo);
+                            }
                         }
                         numberOfAttributes += atts;
                     } else {
@@ -1716,7 +1730,6 @@ public final class TinyTree extends GenericTreeInfo implements NodeVectorTree {
                     } else {
                         beta[to] = -1;
                     }
-                    // TODO: namespaces
                     break;
                 }
                 case Type.TEXT: {

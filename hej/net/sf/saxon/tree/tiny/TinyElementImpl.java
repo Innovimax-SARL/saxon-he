@@ -7,11 +7,9 @@
 
 package net.sf.saxon.tree.tiny;
 
+import com.saxonica.ee.validate.SkipValidator;
 import net.sf.saxon.Configuration;
-import net.sf.saxon.event.CopyInformee;
-import net.sf.saxon.event.CopyNamespaceSensitiveException;
-import net.sf.saxon.event.Receiver;
-import net.sf.saxon.event.ReceiverOptions;
+import net.sf.saxon.event.*;
 import net.sf.saxon.expr.parser.ExplicitLocation;
 import net.sf.saxon.expr.parser.Location;
 import net.sf.saxon.om.*;
@@ -219,25 +217,27 @@ public final class TinyElementImpl extends TinyParentNodeImpl {
         boolean typed = CopyOptions.includes(copyOptions, CopyOptions.TYPE_ANNOTATIONS);
 
         // Fast path for copying to another TinyTree
-//        boolean copyTypes = typed;
-//        Receiver r1 = receiver;
-//        if (r1 instanceof SkipValidator) {
-//            copyTypes = false;
-//            r1 = ((SkipValidator)r1).getUnderlyingReceiver();
-//        }
-//        if (r1 instanceof ComplexContentOutputter) {
-//            Receiver r2 = ((ComplexContentOutputter)r1).getReceiver();
-//            if (r2 instanceof NamespaceReducer) {
-//                Receiver r3 = ((NamespaceReducer) r2).getUnderlyingReceiver();
-//                if (r3 instanceof TinyBuilder) {
-//                    ((ComplexContentOutputter) r1).beforeBulkCopy();
-//                    TinyBuilder target = (TinyBuilder)r3;
-//                    target.bulkCopy(getTree(), nodeNr, copyTypes);
-//                    ((ComplexContentOutputter) r1).afterBulkCopy();
-//                    return;
-//                }
-//            }
-//        }
+        if (TinyTree.useFastCopy) {
+            boolean copyTypes = typed;
+            Receiver r1 = receiver;
+            if (r1 instanceof SkipValidator) {
+                copyTypes = false;
+                r1 = ((SkipValidator) r1).getUnderlyingReceiver();
+            }
+            if (r1 instanceof ComplexContentOutputter && !copyTypes) {
+                Receiver r2 = ((ComplexContentOutputter) r1).getReceiver();
+                if (r2 instanceof NamespaceReducer) {
+                    Receiver r3 = ((NamespaceReducer) r2).getUnderlyingReceiver();
+                    if (r3 instanceof TinyBuilder) {
+                        ((ComplexContentOutputter) r1).beforeBulkCopy();
+                        TinyBuilder target = (TinyBuilder) r3;
+                        target.bulkCopy(getTree(), nodeNr);
+                        ((ComplexContentOutputter) r1).afterBulkCopy();
+                        return;
+                    }
+                }
+            }
+        }
 
         // control vars
         short level = -1;

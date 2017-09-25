@@ -489,14 +489,20 @@ public class TinyBuilder extends Builder {
         return new TinyBuilderMonitor(this);
     }
 
-    public void bulkCopy(TinyTree source, int nodeNr, boolean preserveTypes) {
+    /**
+     * Copy an element node and its subtree from another TinyTree instance
+     * @param source the TinyTree from which a subtree is to be copied
+     * @param nodeNr the node number of the element node to be copied
+     */
+
+    public void bulkCopy(TinyTree source, int nodeNr) {
         int newNodeNr = tree.numberOfNodes;
-        tree.bulkCopy(source, nodeNr, currentDepth, preserveTypes);
+        tree.bulkCopy(source, nodeNr, currentDepth);
         int prev = prevAtDepth[currentDepth];
         if (prev > 0) {
             tree.next[prev] = newNodeNr;
         }
-        tree.next[newNodeNr] = prevAtDepth[currentDepth - 1];   // *O* owner pointer in last sibling
+        tree.next[newNodeNr] = prevAtDepth[currentDepth - 1];
         prevAtDepth[currentDepth] = newNodeNr;
         siblingsAtDepth[currentDepth]++;
         //tree.diagnosticDump();
