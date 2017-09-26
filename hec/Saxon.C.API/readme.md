@@ -40,12 +40,11 @@ Link the jetvm library so it can be found. For example:
 	ln -s /usr/lib/Saxonica/Saxon-EDITIONC#.#.#/rt /usr/lib/rt
 
 The Saxon-EDITION API assumes the library is installed as follows: '/usr/lib/libsaxonhec.so', '/usr/lib/libsaxonpec.so' or '/usr/lib/libsaxoneec.so'
-The directory 'saxon-data' must be linked ot copied to '/usr/lib', alternatively you can use the ennvironment variable SAXONC_HOME to locate directory.
 
  #### Mac OS: Saxon-HE/C, Saxon-PE/C and Saxon-EE/C: ####
  To install any of the Saxon/C releases on the Mac OS system, unzip the self-contained file libsaxon-EDITION-mac-setup-v#.#.#.zip
  
- The first step is to copy the library libsaxonEDITION.dylib, the saxon-data and rt directories to a your install location. The C/C++ interface by default assumes the library files and directories are installed in the directory '/usr/local/lib'. The location of the Saxon/C library can be set using the SAXONC_HOME environment variable.
+ The first step is to copy the library libsaxonEDITION.dylib and the rt directories to a your install location. The C/C++ interface by default assumes the library files and directories are installed in the directory '/usr/local/lib'. The location of the Saxon/C library can be set using the SAXONC_HOME environment variable.
  
  The DYLD_LIBRARY_PATH environment variable must be set as follows:
  
