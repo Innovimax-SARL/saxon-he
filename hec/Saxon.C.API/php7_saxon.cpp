@@ -533,7 +533,7 @@ PHP_METHOD(SaxonProcessor, setConfigurationProperty)
     
 }
 
-PHP_METHOD(SaxonProcessor, registerPHPFunction)
+PHP_METHOD(SaxonProcessor, registerPHPFunctions)
 {
     SaxonProcessor *saxonProcessor;
     char * libName;
@@ -3568,7 +3568,7 @@ zend_function_entry SaxonProcessor_methods[] = {
 //    PHP_ME(SaxonProcessor,  importDocument,      NULL, ZEND_ACC_PUBLIC)
     PHP_ME(SaxonProcessor,  setResourcesDirectory,      NULL, ZEND_ACC_PUBLIC)
     PHP_ME(SaxonProcessor, setConfigurationProperty,      NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(SaxonProcessor,  registerPHPFunction,      NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(SaxonProcessor,  registerPHPFunctions,      NULL, ZEND_ACC_PUBLIC)
     PHP_ME(SaxonProcessor,  version,      NULL, ZEND_ACC_PUBLIC)
     {NULL, NULL, NULL}
 };

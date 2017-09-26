@@ -9,10 +9,9 @@
 
 Saxon/C 1.1.0 is the latest release of Saxon-HE/PE/EE on the C/C++ programming platform. The APIs support the specifications XSLT 2.0/3.0, XQuery 1.0/3.0, Schema Validation 1.0/1.1 and XPath 2.0/3.0 from C/C++ or PHP applications.
 
-Saxon/C is built from the Saxon 9.8.0.4 Java product using the Excelsior JET tool (version 11 MP3).
+Saxon/C is built from the Saxon 9.8.0.4 Java product using the Excelsior JET tool (version 11.3 MP1).
 
-Platforms supported: Linux and Mac OS Only. 
-Windows will be supported shortly
+Platforms supported: Linux, Mac OS and Windows 64-bit. 
 
 Saxon/C is release in three separate editions which replicating the products on the Java platform: Enterprise (Saxon-EE/C), Professional Editon (Saxon-PE/C), and Home Edition (Saxon-HE/C)
 
@@ -56,7 +55,8 @@ The directory 'saxon-data' must be linked ot copied to '/usr/lib', alternatively
 #### PHP extension: ####
  
 A built php extension module is included in the Saxon/C distrubtion, see the directory 'php-library-module'.
- See the file saxon.so (Available for Linux and Mac OS). This was built using the php 5.5 version.
+ See the file saxon.so (Available for Linux and Mac OS). This was built using the php 7.2 version.
+ For PHP5 please copy files in the PHP5-Build directory into the Saxon.C.API directory.
  
 To build the php extension follow the steps below:
 
@@ -79,6 +79,8 @@ and add contents:
 Enable the module for PHP:
 
 	php5enmod saxon
+	
+Similar for PHP7
 
 Alternatively, you can update the php.ini file (if using ubuntu it is usually in the location '/etc/php5/apache2/') to contain the php extension: insert the following in the Dynamic Extensions section: extension=saxon.so
 
@@ -160,6 +162,8 @@ The properties are a subset to those specified for running XSLT from the [comman
 | 'im'=name | setProperty("im", "mode-name")  | Set the initial mode for the transformation |
 | 's'=filename | setProperty("s", "filename") | Identifies the source file or directory. Mandatory unless the -it option is used. |
 | 'resources'=directory | setProperty("resources", "dir") | Specifies the directory where the resources file are found|
+| 'extc'=dir/saxonc | setProperty("extc", "dir/saxonc") | Specifies the full path to the C/C++ Saxon/C API library which contains the extension function. See example in samples/cppTests|
+| 'm' | setProperty("m", "") | The presence of this property creates a message listener which is available in the C/C++ API of Saxon/C|
 
 
 
@@ -217,6 +221,7 @@ The properties are a subset to those specified for running XQuery from the [comm
 | 's'=filename | setProperty("s", "filename") | Identifies the source file or directory. Mandatory unless the -it option is used. |
 | 'resources'=directory | setProperty("resources", "dir") | Specifies the directory where the resources file are found|
 | 'sa'=boolean | setProperty("sa", "true") | Invoke a schema-aware query. Requires Saxon-EE to be installed. |
+| 'extc'=dir/saxonc | setProperty("extc", "dir/saxonc") | Specifies the full path to the C/C++ Saxon/C API library which contains the extension function. See example in samples/cppTests|
 
 Example:
 
@@ -247,6 +252,7 @@ Example:
 | 'dtd'=boolean | setProperty("dtd", "true") | Set whether DTD validation should be applied to documents loaded |
 | 's'=filename | setProperty("s", "filename") | Identifies the source file or directory. Mandatory unless the -it option is used. |
 | 'resources'=directory | setProperty("resources", "dir") | Specifies the directory where the resources file are found|
+| 'extc'=dir/saxonc | setProperty("extc", "dir/saxonc") | Specifies the full path to the C/C++ Saxon/C API library which contains the extension function. See example in samples/cppTests|
 
 Example:
 
@@ -352,6 +358,7 @@ The methods on these class are given below. For a more comprehensive description
 | Saxon\\XPathProcesssor | newXPathProcessor() <br> *Create an XPathProcessor in the PHP environment. An XPathProcessor is used to compile and execute XPath expressions* |
 | Saxon\\SchemaValidator | newSchemaValidator() <br> *Create a SchemaValidator in the PHP environment. A SchemaValidator provides capabilities to load and cache XML schema definitions. You can also valdiate source documents with egistered XML schema definitions* |
 | string | version() <br> *Report the Java Saxon version* |
+| void | registerPHPFunctions(string $library) <br> *Enables the ability to use PHP functions as XSLT functions. Accepts as parameter the full path of the Saxon/C PHP Extension library. This is needed to do the callbacks* |
 
 
 #### Saxon\\XsltProcessor class ####
@@ -467,6 +474,7 @@ The methods on these class are given below. For a more comprehensive description
 | ----: | :---- |
 | string | getStringValue() <br> *Get the string value of the item. For a node, this gets the string value of the node. For an atomic value, it has the same effect as casting the value to a string. In all cases the result is the same as applying the XPath string() function.* |
 | boolean |  isNode() <br> *Determine whether the item is a node value or not.* |
+| boolean |  isAtomic() <br> *Determine whether the item is an atomic value or not.* |
 |  XdmAtomicValue| getAtomicValue() <br> *Provided the item is an atomic value we return the XdmAtomicValue otherwise return null* |
 | XdmNode |  getNodeValue() <br> *Provided the item is a node value we return the XdmNode otherwise return null* |
 
@@ -572,7 +580,7 @@ The XML parser used is the one supplied by the Excelsior JET runtime. There are 
 <div id='limitations'/>
 ## Limitations: ##
 
-The following limitations apply to the the 1.1 release:
+The following limitations apply to the the 1.1.0 release:
 
 * No support for the XdmFunction type in the Xdm data model
 
