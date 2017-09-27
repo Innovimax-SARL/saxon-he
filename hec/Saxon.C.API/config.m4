@@ -7,6 +7,6 @@ if test $PHP_SAXON != "no"; then
     PHP_SUBST(SAXON_SHARED_LIBADD)
     PHP_ADD_LIBRARY(stdc++, 1, SAXON_SHARED_LIBADD)
     PHP_ADD_LIBRARY(dl, 1, SAXON_SHARED_LIBADD)
-    PHP_NEW_EXTENSION(saxon, php5_saxon.cpp SaxonProcessor.cpp XQueryProcessor.cpp XsltProcessor.cpp XPathProcessor.cpp SchemaValidator.cpp XdmValue.cpp XdmItem.cpp XdmNode.cpp XdmAtomicValue.cpp SaxonCGlue.c SaxonCProcessor.c  SaxonCXPath.c, $ext_shared)
+    PHP_NEW_EXTENSION(saxon, php7_saxon.cpp SaxonProcessor.cpp XQueryProcessor.cpp XsltProcessor.cpp XPathProcessor.cpp SchemaValidator.cpp XdmValue.cpp XdmItem.cpp XdmNode.cpp XdmAtomicValue.cpp SaxonCGlue.c SaxonCProcessor.c  SaxonCXPath.c, $ext_shared)
 fi
 

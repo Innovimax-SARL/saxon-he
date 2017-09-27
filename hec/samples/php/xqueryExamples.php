@@ -51,7 +51,7 @@
             function exampleSimple3($saxonProc){
 		echo '<b>exampleSimple3:</b><br/>';
 		$queryProc = $saxonProc->newXQueryProcessor();
-		$queryProc2 = $saxonProc->newXQueryProcessor();
+		//$queryProc2 = $saxonProc->newXQueryProcessor();
 
 		$sourceNode = $saxonProc->parseXmlFromString("<foo xmlns='http://one.uri/'><bar xmlns='http://two.uri'>12</bar></foo>");
 		if($sourceNode !=null){

@@ -68,9 +68,9 @@ static char tempDllname[] =
 #if defined (__linux__)
         "/libsaxoneec.so";  
     #elif  defined (__APPLE__) && defined(__MACH__)
-        "/libsaxonhec.dylib";
+        "/libsaxoneec.dylib";
     #else
-         "\\libsaxonhec.dll";
+         "\\libsaxoneec.dll";
     #endif
 
 static char tempResources_dir[] = 
