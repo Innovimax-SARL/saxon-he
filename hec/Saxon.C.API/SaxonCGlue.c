@@ -54,8 +54,8 @@ void setDllname(){
 		snprintf(resources_dir, 14+rDir_len+1, "%s%s", "/usr/local/lib", tempResources_dir);
 #else
 		//TODO When windows version of Saxon/C is done we will have to fixup this
-		strncpy(dllname, "C:\\Program Files\\Saxonica\\SaxonEEC1.1.0", 42);
-		strncpy(resources_dir, "C:\\Program Files\\Saxonica\\SaxonEEC1.1.0", 42);
+		strncpy(dllname, "C:\\Program Files\\Saxonica\\SaxonHEC1.1.0", 42);
+		strncpy(resources_dir, "C:\\Program Files\\Saxonica\\SaxonHEC1.1.0", 42);
 #endif
 
 	
