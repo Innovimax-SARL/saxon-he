@@ -50,12 +50,12 @@ public class XsltProcessor extends SaxonCAPI {
         Configuration config = processor.getUnderlyingConfiguration();
         schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
         if (debug) {
-            System.err.println("XsltProcessor constructor(proc, l), Processor: " + System.identityHashCode(proc));
+            System.err.println("XsltProcessor constructor1(proc, l), Processor: " + System.identityHashCode(proc));
         }
 //#if EE==true || PE==true
         if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
             if (debug) {
-                System.err.println("XsltProcessor(l), Processor: function libraries added");
+                System.err.println("XsltProcessor1-1(l), Processor: function libraries added");
             }
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
@@ -70,7 +70,7 @@ public class XsltProcessor extends SaxonCAPI {
     public XsltProcessor() {
         super();
         if (debug) {
-            System.err.println("XsltProcessor constructor(), Processor: " + System.identityHashCode(processor));
+            System.err.println("XsltProcessor constructor2(), Processor: " + System.identityHashCode(processor));
         }
     }
 
@@ -85,12 +85,12 @@ public class XsltProcessor extends SaxonCAPI {
         Configuration config = processor.getUnderlyingConfiguration();
         schemaAware = config.isLicensedFeature(Configuration.LicenseFeature.ENTERPRISE_XSLT);
         if (debug) {
-            System.err.println("XsltProcessor(l), Processor: " + System.identityHashCode(processor));
+            System.err.println("XsltProcessor3(l), Processor: " + System.identityHashCode(processor));
         }
 //#if EE==true || PE==true
         if(config.isLicensedFeature(Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
             if (debug) {
-                System.err.println("XsltProcessor(l), Processor: function libraries added");
+                System.err.println("XsltProcessor3-1(l), Processor: function libraries added");
             }
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(PHPFunctionSet.getInstance());
             config.getBuiltInExtensionLibraryList().addFunctionLibrary(CPPFunctionSet.getInstance());
