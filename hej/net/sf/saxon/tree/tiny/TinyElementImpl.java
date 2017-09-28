@@ -220,9 +220,9 @@ public final class TinyElementImpl extends TinyParentNodeImpl {
         if (TinyTree.useFastCopy) {
             boolean copyTypes = typed;
             Receiver r1 = receiver;
-            if (r1 instanceof SkipValidator) {
+            if (isSkipValidator(r1)) {
                 copyTypes = false;
-                r1 = ((SkipValidator) r1).getUnderlyingReceiver();
+                r1 = ((ProxyReceiver) r1).getUnderlyingReceiver();
             }
             if (r1 instanceof ComplexContentOutputter && !copyTypes) {
                 Receiver r2 = ((ComplexContentOutputter) r1).getReceiver();
@@ -561,6 +561,15 @@ public final class TinyElementImpl extends TinyParentNodeImpl {
 
     public boolean isIdref() {
         return tree.isIdrefElement(nodeNr);
+    }
+
+    private boolean isSkipValidator(Receiver r) {
+        //#if EE==true
+        if (r instanceof SkipValidator) {
+            return true;
+        }
+        //#endif
+        return false;
     }
 
 
