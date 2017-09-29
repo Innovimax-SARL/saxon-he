@@ -120,10 +120,18 @@ public class ParseOptions {
     }
 
     /**
-     * Merge another set of parseOptions into these parseOptions
+     * Merge another set of {@code ParseOptions} into these {@code ParseOptions}.
+     * Properties in the other {@code ParseOptions} take precedence over properties
+     * in these {@code ParseOptions}. "Taking precedence" here means:
      *
-     * @param options the other parseOptions. If both are present,
-     *                the other parseOptions take precedence
+     * <ul>
+     *     <li>If a non-default value for a property is present in one {@code ParseOptions} and the
+     *     default value is present in the other, the non-default value is used.</li>
+     *     <li>If both {@code ParseOptions} objects have non-default values for a property, then the
+     *     value is taken from the one that "takes precedence".</li>
+     * </ul>
+     *
+     * @param options the set of {@code ParseOptions} properties to be merged in.
      */
 
     public void merge(/*@NotNull*/ ParseOptions options) {
@@ -1096,6 +1104,8 @@ public class ParseOptions {
                         is.getCharacterStream().close();
                     }
                 }
+            } else if (source instanceof AugmentedSource) {
+                ((AugmentedSource)source).close();
             }
         } catch (IOException err) {
             // no action

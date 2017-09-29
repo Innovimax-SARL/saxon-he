@@ -4000,7 +4000,8 @@ public class Configuration implements SourceResolver, NotationSet {
      *
      * @param source       the source of the document to be constructed. If this is an
      *                     AugmentedSource, then any parser options contained in the AugmentedSource take precedence
-     *                     over options specified in the parseOptions argument.
+     *                     over options specified in the parseOptions argument. The concept of "taking precedence"
+     *                     is explained in more detail at {@link ParseOptions#merge(ParseOptions)}.
      * @param parseOptions options for parsing and constructing the document. Any options that
      *                     are not explicitly set in parseOptions default first to the values supplied in the source
      *                     argument if it is an AugmentedSource, and then to the values set in this Configuration.
@@ -4031,6 +4032,7 @@ public class Configuration implements SourceResolver, NotationSet {
 
             if (source instanceof AugmentedSource) {
                 options.merge(((AugmentedSource) source).getParseOptions());
+                source = ((AugmentedSource)source).getContainedSource();
             }
 
             options.applyDefaults(this);

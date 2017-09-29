@@ -11,7 +11,6 @@ import net.sf.saxon.Configuration;
 import net.sf.saxon.event.*;
 import net.sf.saxon.expr.EarlyEvaluationContext;
 import net.sf.saxon.expr.JPConverter;
-import net.sf.saxon.lib.AugmentedSource;
 import net.sf.saxon.lib.ParseOptions;
 import net.sf.saxon.lib.Validation;
 import net.sf.saxon.om.*;
@@ -309,9 +308,12 @@ public class DocumentBuilder {
      *               <p>Saxon also accepts an instance of {@link javax.xml.transform.stax.StAXSource} or
      *               {@link net.sf.saxon.pull.PullSource}, which can be used to supply a document that is to be parsed
      *               using a StAX parser.</p>
-     *               <p>(9.2) This method no longer accepts an instance of {@link net.sf.saxon.lib.AugmentedSource}, because of
-     *               confusion over interactions between the properties of the AugmentedSource and the properties
-     *               of this DocumentBuilder.</p>
+     *               <p>(9.8.0.5) This method now (once again) accepts an instance of {@link net.sf.saxon.lib.AugmentedSource}.
+     *               If an {@code AugmentedSource} is supplied, the properties of the {@code AugmentedSource} take
+     *               precedence over any properties set on this {@code DocumentBuilder}, which in turn take precedence
+     *               over properties set at the {@link Processor} or {@link Configuration} level. The concept of
+     *               "taking precedence" is explained more fully at {@link ParseOptions#merge(ParseOptions)}</p>
+     *
      * @return An <code>XdmNode</code>. This will be
      *         the document node at the root of the tree of the resulting in-memory document.
      * @throws NullPointerException     if the source argument is null
@@ -323,9 +325,6 @@ public class DocumentBuilder {
     public XdmNode build(Source source) throws SaxonApiException {
         if (source == null) {
             throw new NullPointerException("source");
-        }
-        if (source instanceof AugmentedSource) {
-            throw new IllegalArgumentException("AugmentedSource not accepted");
         }
         if (!(whitespacePolicy == WhitespaceStrippingPolicy.UNSPECIFIED
                       || whitespacePolicy == WhitespaceStrippingPolicy.IGNORABLE
