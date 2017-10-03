@@ -23,7 +23,7 @@ import net.sf.saxon.z.IntToIntMap;
  * Implement the XPath translate() function
  */
 
-public class Translate extends SystemFunction implements Callable {
+public class Translate extends SystemFunction implements Callable, StatefulSystemFunction {
 
     private IntToIntMap staticMap = null;
 
@@ -168,5 +168,20 @@ public class Translate extends SystemFunction implements Callable {
     public String getCompilerName() {
         return "TranslateCompiler";
     }
+
+    /**
+     * Make a copy of this SystemFunction. This is required only for system functions such as regex
+     * functions that maintain state on behalf of a particular caller.
+     *
+     * @return a copy of the system function able to contain its own copy of the state on behalf of
+     * the caller.
+     */
+    @Override
+    public Translate copy() {
+        Translate copy = (Translate) SystemFunction.makeFunction(getFunctionName().getLocalPart(), getRetainedStaticContext(), getArity());
+        copy.staticMap = staticMap;
+        return copy;
+    }
+
 }
 

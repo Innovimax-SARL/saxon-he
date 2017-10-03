@@ -24,7 +24,7 @@ import java.util.List;
  * This class implements any of the functions matches(), replace(), tokenize(), analyze-string(), in the
  * version where a flags argument is present in the argument list
  */
-public abstract class RegexFunction extends SystemFunction {
+public abstract class RegexFunction extends SystemFunction implements StatefulSystemFunction {
 
     private RegularExpression staticRegex;
 
@@ -55,6 +55,21 @@ public abstract class RegexFunction extends SystemFunction {
             }
         }
     }
+
+    /**
+     * Make a copy of this SystemFunction. This is required only for system functions such as regex
+     * functions that maintain state on behalf of a particular caller.
+     *
+     * @return a copy of the system function able to contain its own copy of the state on behalf of
+     * the caller.
+     */
+    @Override
+    public RegexFunction copy() {
+        RegexFunction copy = (RegexFunction)SystemFunction.makeFunction(getFunctionName().getLocalPart(), getRetainedStaticContext(), getArity());
+        copy.staticRegex = staticRegex;
+        return copy;
+    }
+
 
     protected abstract boolean allowRegexMatchingEmptyString();
 

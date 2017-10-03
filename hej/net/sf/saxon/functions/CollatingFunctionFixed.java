@@ -29,7 +29,7 @@ import java.util.Properties;
  */
 
 
-public abstract class CollatingFunctionFixed extends SystemFunction {
+public abstract class CollatingFunctionFixed extends SystemFunction implements StatefulSystemFunction {
 
     // The absolute collation URI
     private String collationName;
@@ -163,6 +163,33 @@ public abstract class CollatingFunctionFixed extends SystemFunction {
             setCollationName(collationName);
         }
     }
+
+    /**
+     * Make a copy of this SystemFunction. This is required only for system functions such as regex
+     * functions that maintain state on behalf of a particular caller.
+     *
+     * @return a copy of the system function able to contain its own copy of the state on behalf of
+     * the caller.
+     */
+    @Override
+    public CollatingFunctionFixed copy() {
+        SystemFunction copy = SystemFunction.makeFunction(getFunctionName().getLocalPart(), getRetainedStaticContext(), getArity());
+        if (copy instanceof CollatingFunctionFree) {
+            try {
+                copy = ((CollatingFunctionFree)copy).bindCollation(collationName);
+            } catch (XPathException e) {
+                throw new AssertionError(e);
+            }
+        }
+        if (copy instanceof CollatingFunctionFixed) {
+            ((CollatingFunctionFixed) copy).collationName = collationName;
+            ((CollatingFunctionFixed) copy).atomicComparer = atomicComparer;
+            ((CollatingFunctionFixed) copy).stringCollator = stringCollator;
+            return (CollatingFunctionFixed)copy;
+        }
+        throw new IllegalStateException();
+    }
+
 
 }
 
