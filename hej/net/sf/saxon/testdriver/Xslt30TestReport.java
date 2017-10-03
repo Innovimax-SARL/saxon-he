@@ -44,6 +44,7 @@ public class Xslt30TestReport extends TestReport {
         results.writeAttribute("timeRun", getTime());
         results.writeAttribute("lang", testDriver.lang);
         results.writeAttribute("bytecode", testDriver.isByteCode()?"on":"off");
+        results.writeAttribute("jit", testDriver.jitFlag?"on":"off");
         if(testDriver.export) {
             results.writeAttribute("export", "on");
         }
