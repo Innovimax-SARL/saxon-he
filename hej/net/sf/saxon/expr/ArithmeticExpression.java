@@ -28,7 +28,7 @@ import net.sf.saxon.value.SequenceType;
 
 public class ArithmeticExpression extends BinaryExpression {
 
-    private Calculator calculator;
+    protected Calculator calculator;
     private PlainType itemType;
 
     /**
