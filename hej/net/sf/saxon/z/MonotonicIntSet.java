@@ -15,7 +15,7 @@ import java.util.Arrays;
 /**
  * Set of int values. This implementation requires that new entries are added in monotonically
  * increasing order; any attempt to add a value out of sequence, or to remove a value, results
- * in an UnsupportedOperationException
+ * is an UnsupportedOperationException
  */
 
 public class MonotonicIntSet extends AbstractIntSet implements IntSet {
