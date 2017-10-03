@@ -15,6 +15,7 @@ import net.sf.saxon.lib.Logger;
 import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.type.UType;
 import net.sf.saxon.value.Cardinality;
 import net.sf.saxon.value.SequenceType;
 
@@ -43,6 +44,7 @@ public class LoopLifter {
     throws XPathException {
         //exp.verifyParentPointers();
         LoopLifter lifter = new LoopLifter(exp, visitor.getConfiguration());
+        lifter.streaming = visitor.isOptimizeForStreaming();
         RetainedStaticContext rsc = exp.getRetainedStaticContext();
         lifter.gatherInfo(exp);
         lifter.loopLift(exp);
@@ -63,6 +65,7 @@ public class LoopLifter {
     private int sequence = 0;
     private boolean changed = false;
     private boolean tracing = false;
+    private boolean streaming = false;
 
     private static class ExpInfo {
         Expression expression;
@@ -115,6 +118,13 @@ public class LoopLifter {
         }
     }
 
+    private boolean mayReturnStreamedNodes(Expression exp) {
+        // bug 3465: expressions returning streamed nodes cannot be loop-lifted,
+        // because such nodes must not be bound to a variable
+        // TODO: attempt a more rigorous analysis
+        return streaming && !exp.getItemType().getUType().intersection(UType.ANY_NODE).equals(UType.VOID);
+    }
+
     private Expression getContainingConditional(Expression exp) {
         Expression parent = exp.getParentExpression();
         while (parent != null) {
@@ -162,7 +172,7 @@ public class LoopLifter {
         ExpInfo info = expInfoMap.get(exp);
         if (!info.multiThreaded) {
             if (info.loopLevel > 0 && exp.getNetCost() > 0) {
-                if (info.dependees.isEmpty() && exp.isLiftable()) {
+                if (info.dependees.isEmpty() && exp.isLiftable() && !mayReturnStreamedNodes(exp)) {
                     root = lift(exp, root);
                 } else {
                     Expression child = exp;
