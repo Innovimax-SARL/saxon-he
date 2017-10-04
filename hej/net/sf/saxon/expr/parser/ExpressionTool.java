@@ -1070,7 +1070,9 @@ public class ExpressionTool {
             }
         } else {
             for (Operand o : e.operands()) {
-                gatherReferencedVariables(o.getChildExpression(), list);
+                if (!o.getOperandRole().isInChoiceGroup()) {
+                    gatherReferencedVariables(o.getChildExpression(), list);
+                }
             }
         }
     }
