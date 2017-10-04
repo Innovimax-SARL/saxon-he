@@ -303,6 +303,7 @@ public class UseWhenFilter extends ProxyReceiver {
         SequenceType requiredType = SequenceType.ANY_SEQUENCE;
         if (asStr != null) {
             XPathParser parser = new XPathParser();
+            parser.setLanguage(XPathParser.XPATH, 31);
             requiredType = parser.parseSequenceType(asStr, staticContext);
         }
 
