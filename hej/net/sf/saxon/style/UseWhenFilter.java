@@ -302,7 +302,7 @@ public class UseWhenFilter extends ProxyReceiver {
                 new AttributeLocation(elemName.getStructuredQName(), new StructuredQName("", "", "as"), location));
         SequenceType requiredType = SequenceType.ANY_SEQUENCE;
         if (asStr != null) {
-            XPathParser parser = new XPathParser();
+            XPathParser parser = compilation.getConfiguration().newExpressionParser("XP", false,31);
             parser.setLanguage(XPathParser.XPATH, 31);
             requiredType = parser.parseSequenceType(asStr, staticContext);
         }
