@@ -7,6 +7,7 @@
 
 package net.sf.saxon.expr.parser;
 
+import com.saxonica.ee.bytecode.CompiledExpression;
 import com.saxonica.ee.stream.StreamInstr;
 import net.sf.saxon.expr.instruct.IterateInstr;
 import net.sf.saxon.Configuration;
@@ -586,6 +587,9 @@ public class ExpressionTool {
      */
 
     public static boolean changesXsltContext(Expression exp) {
+
+        exp = exp.getInterpretedExpression();
+
         if (exp instanceof ResultDocument || exp instanceof CallTemplate || exp instanceof ApplyTemplates ||
                 exp instanceof NextMatch || exp instanceof ApplyImports || exp.isCallOn(RegexGroup.class)
                 || exp.isCallOn(CurrentGroup.class)) {
