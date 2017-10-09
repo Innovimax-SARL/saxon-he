@@ -32,6 +32,7 @@ import net.sf.saxon.serialize.charcode.CharacterSetFactory;
 import net.sf.saxon.serialize.charcode.XMLCharacterData;
 import net.sf.saxon.style.*;
 import net.sf.saxon.sxpath.IndependentContext;
+import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trace.TraceCodeInjector;
 import net.sf.saxon.trace.XSLTTraceCodeInjector;
 import net.sf.saxon.trans.*;
@@ -3449,6 +3450,10 @@ public class Configuration implements SourceResolver, NotationSet {
         } else {
             throw new XPathException("Unknown expression language " + language);
         }
+    }
+
+    public ExpressionPresenter newExpressionExporter(String target, OutputStream destination) throws XPathException {
+        throw new XPathException("Exporting a stylesheet requires Saxon-EE");
     }
 
     /**

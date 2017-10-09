@@ -551,12 +551,10 @@ public class FixedElement extends ElementCreator {
         out.startElement("elem", this);
         if (elementName.getPrefix().isEmpty()) {
             out.emitAttribute("name", elementName.getLocalPart());
-            if (!elementName.hasURI("")) {
-                out.emitAttribute("nsuri", elementName.getURI());
-            }
         } else {
             out.emitAttribute("name", elementName.getStructuredQName());
         }
+        out.emitAttribute("nsuri", elementName.getURI());
         String flags = getInheritanceFlags();
         if (!elementName.getURI().isEmpty() && elementName.getPrefix().isEmpty()) {
             flags += "d";  // "d" to indicate default namespace

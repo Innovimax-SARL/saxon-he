@@ -263,6 +263,9 @@ public final class FixedAttribute extends AttributeCreator {
     public void export(ExpressionPresenter out) throws XPathException {
         out.startElement("att", this);
         out.emitAttribute("name", nodeName.getStructuredQName());
+        if (!nodeName.getStructuredQName().hasURI("")) {
+            out.emitAttribute("nsuri", nodeName.getStructuredQName().getURI());
+        }
         if (getValidationAction() != Validation.SKIP && getValidationAction() != Validation.BY_TYPE) {
             out.emitAttribute("validation", Validation.toString(getValidationAction()));
         }

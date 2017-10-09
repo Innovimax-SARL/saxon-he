@@ -15,7 +15,6 @@ import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
 
-import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -118,27 +117,11 @@ public class XsltExecutable {
      */
 
     public void export(OutputStream destination) throws SaxonApiException {
-        Configuration config = processor.getUnderlyingConfiguration();
-        ExpressionPresenter presenter = new ExpressionPresenter();
-        if (preparedStylesheet.getTopLevelPackage().getTargetEdition().equals("JS")) {
-            presenter.setOption("target", "JS");
-            presenter.setOption("targetVersion", "1");
-        } else if (preparedStylesheet.getTopLevelPackage().getTargetEdition().equals("JS2")) {
-            presenter.setOption("target", "JS");
-            presenter.setOption("targetVersion", "2");
+        String target = preparedStylesheet.getTopLevelPackage().getTargetEdition();
+        if (target == null) {
+            target = getProcessor().getSaxonEdition();
         }
-        presenter.init(config, new StreamResult(destination), true);
-        presenter.setRelocatable(preparedStylesheet.getTopLevelPackage().isRelocatable());
-        try {
-            preparedStylesheet.getTopLevelPackage().export(presenter);
-        } catch (XPathException e) {
-            throw new SaxonApiException(e);
-        }
-        try {
-            destination.close();
-        } catch (IOException e) {
-            throw new SaxonApiException(e);
-        }
+        export(destination, target);
     }
 
     /**
@@ -147,6 +130,7 @@ public class XsltExecutable {
      * is suitably licensed, then license information will be included in the export file
      * allowing execution of the stylesheet without any additional license.
      * <p><i>The detailed form of the output representation is not documented.<i></p>
+     * <p><i>Requires Saxon-EE.</i></p>
      *
      * @param destination the destination for the XML document containing the diagnostic representation
      *                    of the compiled stylesheet. The stream will be closed when writing has finished.
@@ -157,20 +141,10 @@ public class XsltExecutable {
 
     public void export(OutputStream destination, String target) throws SaxonApiException {
         Configuration config = processor.getUnderlyingConfiguration();
-        ExpressionPresenter presenter = new ExpressionPresenter();
-        if (target.equals("JS")) {
-            presenter.setOption("target", "JS");
-            presenter.setOption("targetVersion", "1");
-        } else if (target.equals("JS2")) {
-            presenter.setOption("target", "JS");
-            presenter.setOption("targetVersion", "2");
-        } else {
-            throw new IllegalArgumentException("target");
-        }
-        presenter.init(config, new StreamResult(destination), true);
-        presenter.setRelocatable(preparedStylesheet.getTopLevelPackage().isRelocatable());
         try {
-            ((StylesheetPackage)preparedStylesheet.getTopLevelPackage()).export(presenter);
+            ExpressionPresenter presenter = config.newExpressionExporter(target, destination);
+            presenter.setRelocatable(preparedStylesheet.getTopLevelPackage().isRelocatable());
+            preparedStylesheet.getTopLevelPackage().export(presenter);
         } catch (XPathException e) {
             throw new SaxonApiException(e);
         }

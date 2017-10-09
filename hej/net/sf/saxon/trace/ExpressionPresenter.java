@@ -129,6 +129,33 @@ public class ExpressionPresenter {
         }
     }
 
+    /**
+     * Make an ExpressionPresenter that writes indented output to a specified output stream,
+     * with checksumming
+     *
+     * @param config   the Saxon configuration
+     * @param out      the output destination
+     * @param checksum true if a checksum is to be written at the end of the file
+     */
+
+    public void init(Configuration config, Receiver out, boolean checksum) {
+
+            receiver = out;
+            receiver = new NamespaceReducer(receiver);
+            if (checksum) {
+                receiver = new CheckSumFilter(receiver);
+            }
+
+        this.config = config;
+        try {
+            receiver.open();
+            receiver.startDocument(0);
+        } catch (XPathException err) {
+            err.printStackTrace();
+            throw new InternalError(err.getMessage());
+        }
+    }
+
 
     /**
      * Make an ExpressionPresenter that writes indented output to a specified output stream

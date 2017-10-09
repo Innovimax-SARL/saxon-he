@@ -16,8 +16,9 @@ import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.CompilerInfo;
 import net.sf.saxon.trans.XPathException;
 
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * An XsltPackage object represents the result of compiling an XSLT 3.0 package, as
@@ -126,25 +127,11 @@ public class XsltPackage {
      */
 
     public void save(File file) throws SaxonApiException {
-        StreamResult destination = new StreamResult(file);
-        ExpressionPresenter out = new ExpressionPresenter();
-        if (stylesheetPackage.getTargetEdition().equals("JS")) {
-            out.setOption("target", "JS");
-            out.setOption("targetVersion", "1");
-        } else if (stylesheetPackage.getTargetEdition().equals("JS2")) {
-            out.setOption("target", "JS");
-            out.setOption("targetVersion", "2");
+        String target = stylesheetPackage.getTargetEdition();
+        if (target == null) {
+            target = getProcessor().getSaxonEdition();
         }
-        out.init(processor.getUnderlyingConfiguration(), destination, true);
-        out.setRelocatable(stylesheetPackage.isRelocatable());
-        try {
-            stylesheetPackage.export(out);
-        } catch (XPathException e) {
-            if (!e.hasBeenReported()) {
-                stylesheetPackage.getConfiguration().getErrorListener().error(e);
-            }
-            throw new SaxonApiException(e);
-        }
+        save(file, target);
     }
 
     /**
@@ -159,20 +146,14 @@ public class XsltPackage {
      */
 
     public void save(File file, String target) throws SaxonApiException {
-        StreamResult destination = new StreamResult(file);
-        ExpressionPresenter out = new ExpressionPresenter();
-        if (target.equals("JS")) {
-            out.setOption("target", "JS");
-            out.setOption("targetVersion", "1");
-        } else if (target.equals("JS2")) {
-            out.setOption("target", "JS");
-            out.setOption("targetVersion", "2");
-        }
-        out.init(processor.getUnderlyingConfiguration(), destination, true);
-        out.setRelocatable(stylesheetPackage.isRelocatable());
         try {
-            stylesheetPackage.export(out);
+            ExpressionPresenter presenter = getProcessor().getUnderlyingConfiguration()
+                    .newExpressionExporter(target, new FileOutputStream(file));
+            presenter.setRelocatable(stylesheetPackage.isRelocatable());
+            stylesheetPackage.export(presenter);
         } catch (XPathException e) {
+            throw new SaxonApiException(e);
+        } catch (FileNotFoundException e) {
             throw new SaxonApiException(e);
         }
     }
