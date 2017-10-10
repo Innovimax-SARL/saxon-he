@@ -693,7 +693,7 @@ public final class XSLTemplate extends StyleElement implements StylesheetCompone
             }
         }
 
-        if (config.isCompileWithTracing()) {
+        if (getCompilation().getCompilerInfo().isCompileWithTracing()) {
             // Add trace wrapper code if required
             body = makeTraceInstruction(this, body);
             if (body instanceof TraceExpression) {

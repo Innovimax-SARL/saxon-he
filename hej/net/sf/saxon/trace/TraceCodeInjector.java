@@ -14,6 +14,7 @@ import net.sf.saxon.expr.flwor.Clause;
 import net.sf.saxon.expr.flwor.TraceClause;
 import net.sf.saxon.expr.instruct.TraceExpression;
 import net.sf.saxon.expr.parser.CodeInjector;
+import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.om.StructuredQName;
 
 /**
@@ -33,7 +34,7 @@ public class TraceCodeInjector implements CodeInjector {
      */
 
     public Expression inject(Expression exp, /*@NotNull*/ StaticContext env, int construct, StructuredQName qName) {
-        if (exp instanceof Literal) {
+        if (exp instanceof Literal && !(construct == StandardNames.XSL_TEMPLATE || construct == StandardNames.XSL_FUNCTION)) {
             return exp;
         }
         TraceExpression trace = new TraceExpression(exp);
