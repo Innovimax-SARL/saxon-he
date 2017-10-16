@@ -7,10 +7,7 @@
 
 package net.sf.saxon.functions;
 
-import net.sf.saxon.expr.Expression;
-import net.sf.saxon.expr.StaticProperty;
-import net.sf.saxon.expr.UntypedSequenceConverter;
-import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.expr.*;
 import net.sf.saxon.expr.parser.ContextItemStaticInfo;
 import net.sf.saxon.expr.parser.ExpressionVisitor;
 import net.sf.saxon.expr.sort.AtomicComparer;
@@ -79,6 +76,16 @@ public abstract class Minimax extends CollatingFunctionFixed {
 
     public PlainType getArgumentType() {
         return argumentType;
+    }
+
+    /*@NotNull*/
+    public ItemType getResultItemType(Expression[] args) {
+        TypeHierarchy th = getRetainedStaticContext().getConfiguration().getTypeHierarchy();
+        ItemType base = Atomizer.getAtomizedItemType(args[0], false, th);
+        if (base.equals(BuiltInAtomicType.UNTYPED_ATOMIC)) {
+            base = BuiltInAtomicType.DOUBLE;
+        }
+        return base.getPrimitiveItemType();
     }
 
     /**

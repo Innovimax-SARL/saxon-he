@@ -8,6 +8,7 @@
 package net.sf.saxon.testdriver;
 
 
+import com.saxonica.js.XsltTestSuiteDriverJS;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.Controller;
 import net.sf.saxon.lib.*;
@@ -381,23 +382,33 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
         QName initialFunctionName = getQNameAttribute(xpath, testInput, "initial-function/@name");
 
         if (runWithJS && !outcome.isException()) {
+            XsltTestSuiteDriverJS jsDriver = (XsltTestSuiteDriverJS)this;
             XdmNode wellFormed = (XdmNode) xpath.evaluateSingle("output/@well-formed", testInput);
             if (wellFormed != null && wellFormed.getStringValue().equals("no")) {
                 outcome.getPrincipalResultDoc().wellFormed = false;
             }
 
-            clearGlobalParameters();
+            jsDriver.clearGlobalParameters();
             Map<QName, XdmValue> caseGlobalParams = getNamedParameters(xpath, testInput, false, false);
             for (Map.Entry<QName, XdmValue> entry : caseGlobalParams.entrySet()) {
-                setGlobalParameter(entry.getKey(), entry.getValue());
+                jsDriver.setGlobalParameter(entry.getKey(), entry.getValue());
             }
             if (initialFunctionName != null) {
-                clearInitialFunctionArguments();
+                jsDriver.clearInitialFunctionArguments();
                 XdmNode iniFunc = (XdmNode)xpath.evaluate("*:initial-function", testInput);
                 XdmValue[] args = getParameters(xpath, iniFunc);
                 for (XdmValue val : args) {
-                    addInitialFunctionArgument(val);
+                    jsDriver.addInitialFunctionArgument(val);
                 }
+            }
+            if (initialMode != null || initialTemplate != null) {
+                XdmNode init = initialMode == null ? initialTemplate : initialMode;
+                Map<QName, XdmValue> params = getNamedParameters(xpath, init, false, false);
+                Map<QName, XdmValue> tunnelledParams = getNamedParameters(xpath, init, false, true);
+
+                jsDriver.setInitialTemplateParams(params);
+                jsDriver.setInitialTunnelParams(tunnelledParams);
+
             }
             URI baseOut = new File(resultsDir + "/results/output.xml").toURI();
             try {
@@ -609,18 +620,18 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
         return false;
     }
 
-    protected void clearGlobalParameters(){}
+    //protected void clearGlobalParameters(){}
 
     protected void setGlobalParameter(QName qName, XdmValue value) {
         // For overriding in Javascript driver
     }
 
-    protected void clearInitialFunctionArguments() {
-    }
-
-    protected void addInitialFunctionArgument(XdmValue value) {
-        // For overriding in Javascript driver
-    }
+//    protected void clearInitialFunctionArguments() {
+//    }
+//
+//    protected void addInitialFunctionArgument(XdmValue value) {
+//        // For overriding in Javascript driver
+//    }
 
     protected boolean runWithXslt30Transformer(XdmNode testCase, XPathCompiler xpath, final TestOutcome outcome,
                                                String testName, String testSetName, Environment env,

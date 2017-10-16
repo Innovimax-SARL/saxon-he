@@ -10,15 +10,13 @@ package net.sf.saxon.expr;
 import com.saxonica.expr.compat.ArithmeticExpression10;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.parser.*;
+import net.sf.saxon.om.GroundedValue;
 import net.sf.saxon.om.SequenceTool;
 import net.sf.saxon.om.StandardNames;
 import net.sf.saxon.trace.ExpressionPresenter;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.*;
-import net.sf.saxon.value.AtomicValue;
-import net.sf.saxon.value.IntegerValue;
-import net.sf.saxon.value.NumericValue;
-import net.sf.saxon.value.SequenceType;
+import net.sf.saxon.value.*;
 
 /**
  * Arithmetic Expression: an expression using one of the operators
@@ -184,6 +182,23 @@ public class ArithmeticExpression extends BinaryExpression {
 
         calculator = Calculator.getCalculator(
                 type0.getFingerprint(), type1.getFingerprint(), mapOpCode(operator), mustResolve);
+
+        // If the calculator is going to promote arguments to xs:double, then promote any literal arguments now.
+        // (Could generalize this, but this is the common case)
+        if (calculator != null && calculator.code().matches("d.d")) {
+            if (getLhsExpression() instanceof Literal && !type0.equals(BuiltInAtomicType.DOUBLE)) {
+                GroundedValue value = ((Literal)getLhsExpression()).getValue();
+                if (value instanceof NumericValue) {
+                    setLhsExpression(Literal.makeLiteral(new DoubleValue(((NumericValue) value).getDoubleValue())));
+                }
+            }
+            if (getRhsExpression() instanceof Literal && !type1.equals(BuiltInAtomicType.DOUBLE)) {
+                GroundedValue value = ((Literal) getRhsExpression()).getValue();
+                if (value instanceof NumericValue) {
+                    setRhsExpression(Literal.makeLiteral(new DoubleValue(((NumericValue) value).getDoubleValue())));
+                }
+            }
+        }
 
         if (calculator == null) {
             XPathException de = new XPathException("Arithmetic operator is not defined for arguments of types (" +
