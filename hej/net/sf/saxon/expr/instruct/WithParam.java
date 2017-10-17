@@ -256,7 +256,7 @@ public class WithParam  {
         if (params != null) {
             for (WithParam param : params) {
                 out.startElement("withParam");
-                out.emitAttribute("name", param.variableQName);
+                out.emitAttribute("name", param.variableQName.getEQName());
                 String flags = "";
                 if (tunnel) {
                     flags += "t";

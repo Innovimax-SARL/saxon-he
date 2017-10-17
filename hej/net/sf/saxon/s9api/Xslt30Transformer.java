@@ -589,6 +589,7 @@ public class Xslt30Transformer {
         prime();
         try {
             Receiver out = getDestinationReceiver(destination);
+            setBuildTreeConditionally(destination);
             controller.transform(source, out);
         } catch (XPathException e) {
             if (!e.hasBeenReported()) {

@@ -627,7 +627,7 @@ public final class LocalParam extends Instruction implements LocalBinding {
 
     public void export(ExpressionPresenter out) throws XPathException {
         out.startElement("param", this);
-        out.emitAttribute("name", getVariableQName());
+        out.emitAttribute("name", getVariableQName().getEQName());
         out.emitAttribute("slot", "" + getSlotNumber());
         String flags = getFlags();
         if (!flags.isEmpty()) {

@@ -169,7 +169,7 @@ public class XsltExecutable {
         if (top.isStripsWhitespace()) {
             return new WhitespaceStrippingPolicy(preparedStylesheet.getTopLevelPackage());
         } else {
-            return WhitespaceStrippingPolicy.NONE;
+            return WhitespaceStrippingPolicy.UNSPECIFIED;
         }
     }
 
