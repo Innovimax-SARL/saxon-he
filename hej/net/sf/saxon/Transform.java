@@ -1222,7 +1222,11 @@ public class Transform {
                             builder.setSchemaValidator(validator);
                         }
                     }
+                    builder.setDTDValidation(getConfiguration().getBooleanProperty(FeatureKeys.DTD_VALIDATION));
                     builder.setWhitespaceStrippingPolicy(sheet.getWhitespaceStrippingPolicy());
+                    if (getConfiguration().getBooleanProperty(FeatureKeys.DTD_VALIDATION_RECOVERABLE)) {
+                        source = new AugmentedSource(source, getConfiguration().getParseOptions());
+                    }
                     XdmNode node = builder.build(source);
                     transformer.setGlobalContextItem(node, true);
                     source = node.asSource();

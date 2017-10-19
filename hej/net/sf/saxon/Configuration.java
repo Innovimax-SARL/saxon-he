@@ -4211,10 +4211,8 @@ public class Configuration implements SourceResolver, NotationSet {
             } else if (name.equals(FeatureKeys.EXPAND_ATTRIBUTE_DEFAULTS)) {
                 boolean b = requireBoolean(name, value);
                 setExpandAttributeDefaults(b);
-            } else {
-                internalSetBooleanProperty(name, value);
             }
-
+            internalSetBooleanProperty(name, value);
 
         } else if (name.equals(FeatureKeys.COLLATION_URI_RESOLVER)) {
             if (!(value instanceof CollationURIResolver)) {
@@ -4266,6 +4264,7 @@ public class Configuration implements SourceResolver, NotationSet {
 
         } else if (name.equals(FeatureKeys.DTD_VALIDATION_RECOVERABLE)) {
             boolean b = requireBoolean(name, value);
+            internalSetBooleanProperty(FeatureKeys.DTD_VALIDATION_RECOVERABLE, value);
             if (b) {
                 defaultParseOptions.setDTDValidationMode(Validation.LAX);
             } else {

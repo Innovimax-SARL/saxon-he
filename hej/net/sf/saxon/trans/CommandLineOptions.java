@@ -310,10 +310,14 @@ public class CommandLineOptions {
         value = getOptionValue("dtd");
         if (value != null) {
             if ("on".equals(value)) {
+                config.setBooleanProperty(FeatureKeys.DTD_VALIDATION, true);
                 config.getParseOptions().setDTDValidationMode(Validation.STRICT);
             } else if ("off".equals(value)) {
+                config.setBooleanProperty(FeatureKeys.DTD_VALIDATION, false);
                 config.getParseOptions().setDTDValidationMode(Validation.SKIP);
             } else if ("recover".equals(value)) {
+                config.setBooleanProperty(FeatureKeys.DTD_VALIDATION, true);
+                config.setBooleanProperty(FeatureKeys.DTD_VALIDATION_RECOVERABLE, true);
                 config.getParseOptions().setDTDValidationMode(Validation.LAX);
             }
         }

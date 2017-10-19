@@ -61,7 +61,10 @@ public class XSLPreserveSpace extends StyleElement {
     @Override
     public void index(ComponentDeclaration decl, PrincipalStylesheetModule top) throws XPathException {
         if (getFingerprint() == StandardNames.XSL_STRIP_SPACE) {
-            top.getStylesheetPackage().setStripsWhitespace(true);
+            String elements = getAttributeValue("", "elements");
+            if (elements != null && !elements.trim().isEmpty()) {
+                top.getStylesheetPackage().setStripsWhitespace(true);
+            }
         }
     }
 

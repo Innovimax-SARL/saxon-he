@@ -11,10 +11,7 @@ import net.sf.saxon.event.Receiver;
 import net.sf.saxon.event.SequenceReceiver;
 import net.sf.saxon.event.TreeReceiver;
 import net.sf.saxon.expr.instruct.TerminationException;
-import net.sf.saxon.lib.FeatureKeys;
-import net.sf.saxon.lib.Logger;
-import net.sf.saxon.lib.ModuleURIResolver;
-import net.sf.saxon.lib.StandardLogger;
+import net.sf.saxon.lib.*;
 import net.sf.saxon.om.*;
 import net.sf.saxon.query.QueryReader;
 import net.sf.saxon.query.QueryResult;
@@ -494,6 +491,8 @@ public class Query {
             quit("Schema processing failed: " + err.getMessage(), 2);
         } catch (XPathException err) {
             quit("Query processing failed: " + err.getMessage(), 2);
+        } catch (SaxonApiException err) {
+            quit("Query processing failed: " + err.getMessage(), 2);
         } catch (TransformerFactoryConfigurationError err) {
             err.printStackTrace();
             quit("Query processing failed", 2);
@@ -901,6 +900,10 @@ public class Query {
                 if (explain) {
                     exp.getUnderlyingCompiledQuery().explainPathMap();
                 }
+            }
+            builder.setDTDValidation(getConfiguration().getBooleanProperty(FeatureKeys.DTD_VALIDATION));
+            if (getConfiguration().getBooleanProperty(FeatureKeys.DTD_VALIDATION_RECOVERABLE)) {
+                sourceInput = new AugmentedSource(sourceInput, getConfiguration().getParseOptions());
             }
             XdmNode doc = builder.build(sourceInput);
             evaluator.setContextItem(doc);
