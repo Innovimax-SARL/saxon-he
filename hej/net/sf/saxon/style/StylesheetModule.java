@@ -122,7 +122,8 @@ public class StylesheetModule {
         options.setSpaceStrippingRule(NoElementsSpaceStrippingRule.getInstance());
         options.setErrorListener(pipe.getErrorListener());
         try {
-            if (options.getXMLReader() == null && options.getXMLReaderMaker() == null && Version.platform.isJava()) {
+            if (options.getXMLReader() == null && options.getXMLReaderMaker() == null && Version.platform.isJava()
+                    && !(styleSource instanceof SAXSource && ((SAXSource)styleSource).getXMLReader() != null)) {
                 XMLReader styleParser = config.getStyleParser();
                 options.setXMLReader(styleParser);
                 Sender.send(styleSource, commentStripper, options);
