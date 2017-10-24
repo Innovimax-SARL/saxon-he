@@ -47,6 +47,8 @@ import java.net.URISyntaxException;
 
 public class DocumentFn extends SystemFunction implements Callable {
 
+    private Location location = null;
+
     /**
      * Determine the static cardinality
      */
@@ -80,6 +82,7 @@ public class DocumentFn extends SystemFunction implements Callable {
 
     @Override
     public Expression makeFunctionCall(Expression... arguments) {
+        location = arguments[0].getLocation();
         Expression expr = Doc.maybePreEvaluate(this, arguments);
         return expr == null ? super.makeFunctionCall(arguments) : expr;
     }
@@ -111,7 +114,7 @@ public class DocumentFn extends SystemFunction implements Callable {
         map.baseURI = baseURI;
         map.stylesheetURI = getStaticBaseUriString();
         map.packageData = getRetainedStaticContext().getPackageData();
-        //map.locator = this;
+        map.locator = location;
 
         ItemMappingIterator iter = new ItemMappingIterator(hrefSequence, map);
 
