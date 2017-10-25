@@ -100,8 +100,9 @@ public class StringToDouble extends StringConverter {
                         break loop;
                     default:
                         // there's something like a sign or an exponent: take the slow train instead
+                        // But keep going to look for disallowed characters - bug 3495
                         useJava = true;
-                        break loop;
+                        break;
                 }
             }
             if (!useJava) {
