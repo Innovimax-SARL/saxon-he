@@ -323,9 +323,11 @@ public class XQueryFunctionLibrary implements FunctionLibrary, XQueryFunctionBin
      *          if an error occurs
      */
 
-    protected void optimizeGlobalFunctions() throws XPathException {
+    protected void optimizeGlobalFunctions(QueryModule topModule) throws XPathException {
         for (XQueryFunction fn : functions.values()) {
-            fn.optimize();
+            if (((QueryModule) fn.getStaticContext()).getTopLevelModule() == topModule) {
+                fn.optimize();
+            }
         }
     }
 

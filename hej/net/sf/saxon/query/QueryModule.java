@@ -1198,7 +1198,7 @@ public class QueryModule implements StaticContext {
      */
 
     public void optimizeGlobalFunctions() throws XPathException {
-        globalFunctionLibrary.optimizeGlobalFunctions();
+        globalFunctionLibrary.optimizeGlobalFunctions(this);
     }
 
 
