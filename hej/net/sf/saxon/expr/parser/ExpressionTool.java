@@ -7,9 +7,7 @@
 
 package net.sf.saxon.expr.parser;
 
-import com.saxonica.ee.bytecode.CompiledExpression;
 import com.saxonica.ee.stream.StreamInstr;
-import net.sf.saxon.expr.instruct.IterateInstr;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.Controller;
 import net.sf.saxon.event.SequenceOutputter;
@@ -19,6 +17,7 @@ import net.sf.saxon.expr.flwor.Clause;
 import net.sf.saxon.expr.flwor.FLWORExpression;
 import net.sf.saxon.expr.flwor.LocalVariableBinding;
 import net.sf.saxon.expr.instruct.*;
+import net.sf.saxon.expr.sort.ConditionalSorter;
 import net.sf.saxon.expr.sort.DocumentSorter;
 import net.sf.saxon.functions.Current;
 import net.sf.saxon.functions.CurrentGroup;
@@ -1257,17 +1256,22 @@ public class ExpressionTool {
 
     private static Expression avoidDocumentSort(Expression exp) {
         if (exp instanceof DocumentSorter) {
-            Expression base = ((DocumentSorter)exp).getBaseExpression();
+            Expression base = ((DocumentSorter) exp).getBaseExpression();
             if ((base.getSpecialProperties() & StaticProperty.ORDERED_NODESET) != 0) {
                 return base;
             }
             return exp;
-        } else {
-            for (Operand o : exp.operands()) {
-                o.setChildExpression(avoidDocumentSort(o.getChildExpression()));
+        } else if (exp instanceof ConditionalSorter) {
+            DocumentSorter sorter = ((ConditionalSorter)exp).getDocumentSorter();
+            Expression eliminatedSorter = avoidDocumentSort(sorter);
+            if (eliminatedSorter != sorter) {
+                return eliminatedSorter;
             }
-            return exp;
         }
+        for (Operand o : exp.operands()) {
+            o.setChildExpression(avoidDocumentSort(o.getChildExpression()));
+        }
+        return exp;
     }
 
     /**
