@@ -28,7 +28,9 @@ import net.sf.saxon.lib.NamespaceConstant;
 import net.sf.saxon.lib.StandardLogger;
 import net.sf.saxon.om.*;
 import net.sf.saxon.pattern.Pattern;
+import net.sf.saxon.query.QueryModule;
 import net.sf.saxon.style.Compilation;
+import net.sf.saxon.style.ExpressionContext;
 import net.sf.saxon.trans.Err;
 import net.sf.saxon.trans.SymbolicName;
 import net.sf.saxon.trans.XPathException;
@@ -1203,7 +1205,19 @@ public class ExpressionTool {
             throws XPathException {
         final Configuration config = visitor.getConfiguration();
         Optimizer opt = config.obtainOptimizer();
-        if (opt.isOptionSet(OptimizerOptions.MISCELLANEOUS) && !config.isCompileWithTracing()) {
+        StaticContext env = visitor.getStaticContext();
+        boolean compileWithTracing = config.isCompileWithTracing();
+        if (!compileWithTracing) {
+            // Bug 3496 - desperate attempts to discover whether tracing was enabled for this particular compilation
+            if (compilation != null) {
+                compileWithTracing = compilation.getCompilerInfo().isCompileWithTracing();
+            } else if (env instanceof QueryModule) {
+                compileWithTracing = ((QueryModule)env).getUserQueryContext().isCompileWithTracing();
+            } else if (env instanceof ExpressionContext) {
+                compileWithTracing = ((ExpressionContext)env).getStyleElement().getCompilation().getCompilerInfo().isCompileWithTracing();
+            }
+        }
+        if (opt.isOptionSet(OptimizerOptions.MISCELLANEOUS) && !compileWithTracing) {
             ExpressionTool.resetPropertiesWithinSubtree(body);
             body = body.optimize(visitor, cit);
             body.setParentExpression(null);

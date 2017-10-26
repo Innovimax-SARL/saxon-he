@@ -370,7 +370,7 @@ public class XQueryFunction implements InstructionInfo, Declaration {
                         new RoleDiagnostic(RoleDiagnostic.FUNCTION_RESULT, functionName.getDisplayName(), 0);
                 //role.setSourceLocator(this);
                 body = config.getTypeChecker(false).staticTypeCheck(body, resultType, role, visitor);
-                if (config.isCompileWithTracing()) {
+                if (staticContext.getUserQueryContext().isCompileWithTracing()) {
                     namespaceResolver = staticContext.getNamespaceResolver();
                     TraceExpression trace = new TraceExpression(body);
                     trace.setConstructType(StandardNames.XSL_FUNCTION);

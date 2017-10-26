@@ -2374,7 +2374,7 @@ public class XQueryParser extends XPathParser {
 
     /*@NotNull*/
     protected LetExpression makeLetExpression() {
-        if (env.getConfiguration().isCompileWithTracing()) {
+        if (((QueryModule) env).getUserQueryContext().isCompileWithTracing()) {
             return new EagerLetExpression();
         } else {
             return new LetExpression();
