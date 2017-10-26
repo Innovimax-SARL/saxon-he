@@ -114,7 +114,7 @@ public abstract class TestDriver {
             if (args[i].startsWith("-debug")) {
                 debug = true;
             }
-            if (args[i].startsWith("-export")) {
+            if (args[i].startsWith("-export") && !args[i].equals("-export:off")) {
                 export = true;
             }
             if (args[i].startsWith("-jit")) {
