@@ -19,6 +19,7 @@ import net.sf.saxon.trans.XPathException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * An XsltPackage object represents the result of compiling an XSLT 3.0 package, as
@@ -147,6 +148,10 @@ public class XsltPackage {
 
     public void save(File file, String target) throws SaxonApiException {
         try {
+            if(!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
             ExpressionPresenter presenter = getProcessor().getUnderlyingConfiguration()
                     .newExpressionExporter(target, new FileOutputStream(file));
             presenter.setRelocatable(stylesheetPackage.isRelocatable());
@@ -154,6 +159,8 @@ public class XsltPackage {
         } catch (XPathException e) {
             throw new SaxonApiException(e);
         } catch (FileNotFoundException e) {
+            throw new SaxonApiException(e);
+        } catch (IOException e) {
             throw new SaxonApiException(e);
         }
     }
