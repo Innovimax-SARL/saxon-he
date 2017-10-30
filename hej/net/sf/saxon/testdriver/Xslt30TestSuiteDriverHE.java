@@ -7,8 +7,6 @@
 
 package net.sf.saxon.testdriver;
 
-
-import com.saxonica.js.XsltTestSuiteDriverJS;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.Controller;
 import net.sf.saxon.lib.*;
@@ -382,45 +380,8 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
         QName initialFunctionName = getQNameAttribute(xpath, testInput, "initial-function/@name");
 
         if (runWithJS && !outcome.isException()) {
-            XsltTestSuiteDriverJS jsDriver = (XsltTestSuiteDriverJS)this;
-            XdmNode wellFormed = (XdmNode) xpath.evaluateSingle("output/@well-formed", testInput);
-            if (wellFormed != null && wellFormed.getStringValue().equals("no")) {
-                outcome.getPrincipalResultDoc().wellFormed = false;
-            }
-
-            jsDriver.clearGlobalParameters();
-            Map<QName, XdmValue> caseGlobalParams = getNamedParameters(xpath, testInput, false, false);
-            for (Map.Entry<QName, XdmValue> entry : caseGlobalParams.entrySet()) {
-                jsDriver.setGlobalParameter(entry.getKey(), entry.getValue());
-            }
-            if (initialFunctionName != null) {
-                jsDriver.clearInitialFunctionArguments();
-                XdmNode iniFunc = (XdmNode)xpath.evaluate("*:initial-function", testInput);
-                XdmValue[] args = getParameters(xpath, iniFunc);
-                for (XdmValue val : args) {
-                    jsDriver.addInitialFunctionArgument(val);
-                }
-            }
-            if (initialMode != null || initialTemplate != null) {
-                XdmNode init = initialMode == null ? initialTemplate : initialMode;
-                Map<QName, XdmValue> params = getNamedParameters(xpath, init, false, false);
-                Map<QName, XdmValue> tunnelledParams = getNamedParameters(xpath, init, false, true);
-
-                jsDriver.setInitialTemplateParams(params);
-                jsDriver.setInitialTunnelParams(tunnelledParams);
-
-            }
-            URI baseOut = new File(resultsDir + "/results/output.xml").toURI();
-            try {
-                runJSTransform(env, outcome, initialTemplateName, initialModeName, initialFunctionName, baseOut);
-            } catch (StackOverflowError e) {
-                notrun++;
-                resultsDoc.writeTestcaseElement(testName, "tooBig", "Stack Overflow");
-                return;
-            }
-            if ("*notJS*".equals(outcome.getComment())) {
-                return;
-            }
+            initializeForSaxonJS(xpath, outcome, testName, env, testInput, initialMode, initialTemplate, initialModeName, initialTemplateName, initialFunctionName);
+            return;
         }
 
         if (sheet != null && !runWithJS) {
@@ -492,6 +453,10 @@ public class Xslt30TestSuiteDriverHE extends TestDriver {
                 resultsDoc.writeTestcaseElement(testName, "fail", outcome.getComment());
             }
         }
+    }
+
+    protected void initializeForSaxonJS(XPathCompiler xpath, TestOutcome outcome, String testName, Environment env, XdmNode testInput, XdmNode initialMode, XdmNode initialTemplate, QName initialModeName, QName initialTemplateName, QName initialFunctionName) throws SaxonApiException {
+
     }
 
     public void runJSTransform(Environment env, TestOutcome outcome, QName initialTemplateName,
