@@ -148,8 +148,11 @@ public class XsltPackage {
 
     public void save(File file, String target) throws SaxonApiException {
         try {
-            if(!file.exists()) {
-                file.getParentFile().mkdirs();
+            if (!file.exists()) {
+                File directory = file.getParentFile();
+                if (directory != null && !directory.exists()) {
+                    directory.mkdirs();
+                }
                 file.createNewFile();
             }
             ExpressionPresenter presenter = getProcessor().getUnderlyingConfiguration()
